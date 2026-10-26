@@ -272,10 +272,22 @@ input[type=range]{width:100%;accent-color:var(--offer)}
 .sol .rk{font-family:var(--f-display);font-size:28px;font-weight:700;color:var(--offer);line-height:1}
 .sol b{color:var(--ink)} .sol p{margin-top:2px}
 .sol .gain{font-size:18px;font-weight:500}
-.clvc svg{display:block;width:100%;max-width:760px;height:auto}
-.clvc .bar{fill:var(--offer)} .clvc .bar.now{fill:var(--muted)} .clvc .bar.blk{fill:var(--line)}
-.clvc .base{stroke:var(--line)} .clvc .ref{stroke:var(--muted);stroke-dasharray:4 3}
-.clvc .bv{font:12px var(--f-mono);fill:var(--ink)} .clvc .bl{font-size:11px;fill:var(--muted)}
+.formula{font-size:14px;color:var(--text);background:var(--panel-2);border-radius:8px;padding:10px 12px}
+.formula b{color:var(--ink)}
+.legend .sw{display:inline-block;width:16px;height:10px;border-radius:3px;vertical-align:-1px;margin-right:6px}
+.sw.pot,.dt .pot{background:color-mix(in srgb,var(--offer) 28%,transparent)} .sw.exp,.dt .exp{background:var(--offer)}
+.dclv{display:flex;flex-direction:column}
+.dr{display:grid;grid-template-columns:minmax(150px,220px) minmax(0,1fr) minmax(150px,auto);gap:6px 16px;align-items:center;padding:10px 0;border-bottom:1px solid var(--line)}
+.dr:last-child{border-bottom:0} .dr.blocked{opacity:.55}
+.dn{font-weight:600;color:var(--ink);display:flex;gap:10px;align-items:baseline;min-width:0}
+.dn .rk{font:700 18px var(--f-display);color:var(--muted);flex:none}
+.dt{position:relative;height:22px}
+.dt span{position:absolute;top:0;height:100%}
+.dt .pot{border-radius:4px} .dt .exp{height:60%;top:20%;border-radius:3px} .dt .exp.neg{background:var(--bad)}
+.dt .zero{width:1px;background:var(--muted);height:130%;top:-15%}
+.dv{text-align:right;display:flex;flex-direction:column}
+.dv b{font:600 18px var(--f-mono);color:var(--good)} .dv b.no{color:var(--bad)}
+.dv span{font:12px var(--f-mono);color:var(--muted)}
 
 /* 360 new readability: calmer, less saturated surfaces; type scale page title > section > item > detail */
 body[data-view="x360"]{min-height:100vh;--bg:#EEF1F5;--panel:#FFFFFF;--panel-2:#F3F5F8;--line:#E1E6ED;--ink:#0F1A2E;--text:#2B3447;--muted:#5E6878;--offer:#1F4FA8;--offer-bg:#E8EEF9}
@@ -315,7 +327,7 @@ body[data-view="x360"]{min-height:100vh;--bg:#EEF1F5;--panel:#FFFFFF;--panel-2:#
 .sol .acts{margin-top:8px}
 
 @media (max-width:1100px){.pipe{grid-template-columns:repeat(4,minmax(0,1fr))}.arch{grid-template-columns:minmax(0,1fr)}.prods{grid-template-columns:repeat(3,minmax(0,1fr))}}
-@media (max-width:700px){.prods{grid-template-columns:minmax(0,1fr)}.xprof{grid-template-columns:minmax(0,1fr)}.tl li{grid-template-columns:minmax(0,1fr)}.tl .when{grid-row:auto}.tl .de{grid-column:1}.sol li{grid-template-columns:32px minmax(0,1fr)}.sol .gain{grid-column:2}}
+@media (max-width:700px){.dr{grid-template-columns:minmax(0,1fr)}.dv{text-align:left}.prods{grid-template-columns:minmax(0,1fr)}.xprof{grid-template-columns:minmax(0,1fr)}.tl li{grid-template-columns:minmax(0,1fr)}.tl .when{grid-row:auto}.tl .de{grid-column:1}.sol li{grid-template-columns:32px minmax(0,1fr)}.sol .gain{grid-column:2}}
 @media (max-width:1000px){.c360,.mk{grid-template-columns:minmax(0,1fr)}.rail,.steer{position:static;max-height:none}.list{max-height:360px}.three,.qa{grid-template-columns:minmax(0,1fr)}}
 @media (max-width:700px){.two,.cmp,.tpl{grid-template-columns:minmax(0,1fr)}.decision .in{grid-template-columns:minmax(0,1fr)}.decision .gain{text-align:left}.bar{grid-template-columns:110px minmax(0,1fr) 90px}.ev{grid-template-columns:minmax(0,1fr)}.head h1{font-size:24px}.pipe{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}.example{grid-template-columns:minmax(0,1fr)}.arch .lane{grid-template-columns:minmax(0,1fr)}}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
@@ -1142,21 +1154,26 @@ function xSolutions(c, d, top) {
         <p class="why">${esc(o.k.why)}</p>
         <p class="small muted">${o.ok ? `${CH[o.b.ch]} · p(accept) ${pct(o.b.p)}` : `Not allowed: ${esc(o.k.blk[0] || "no channel with consent")}`}</p>
         ${o.k.o === pick ? `<div class="acts"><button class="primary" data-x="open">Approve or change</button></div>` : ""}</div>
-      <span class="gain num ${o.v > 0 ? "ok" : "no"}">${sgn(o.v,0)}</span></li>`).join("") || `<li class="muted">No options for this customer.</li>`}</ol></section>`;
+      <span class="gain num ${o.v > 0 ? "ok" : "no"}">${sgn(o.v, Math.abs(o.v) < 1 ? 2 : 0)}</span></li>`).join("") || `<li class="muted">No options for this customer.</li>`}</ol></section>`;
 }
 function xClvChart(c, top) {
-  const bars = [["Today", c.clv, "now"]].concat(top.map((o, i) => [`${i+1}. ${o.k.o==="P-SV-01"?"Service fix":o.k.n}`, o.k.acc, o.ok ? "" : "blk"]));
-  const W = 640, H = 220, L = 8, B = 44, T = 22, lo = Math.min(0, ...bars.map(b => b[1])), hi = Math.max(1, ...bars.map(b => b[1]));
-  const y = v => T + (hi - v) / (hi - lo) * (H - T - B), bw = Math.min(64, (W - 2*L) / bars.length - 18), cx = i => L + (i + .5) * (W - 2*L) / bars.length;
-  const g = bars.map(([n, v, k], i) => { const top_ = Math.min(y(v), y(0)), h = Math.max(2, Math.abs(y(v) - y(0)));
-    return `<g><title>${esc(n)}: ${eur(v,0)}${k==="now"?"":` if accepted (${sgn(v - c.clv,0)} vs today)`}</title>
-      <rect x="${cx(i) - bw/2}" y="${top_}" width="${bw}" height="${h}" rx="4" class="bar ${k}"/>
-      <text x="${cx(i)}" y="${(v >= 0 ? top_ : top_ + h) + (v >= 0 ? -6 : 14)}" text-anchor="middle" class="bv">${eur(v,0)}</text>
-      <text x="${cx(i)}" y="${H - B + 18}" text-anchor="middle" class="bl">${esc(n.length > 18 ? n.slice(0,17) + "…" : n)}</text></g>`; }).join("");
-  return `<section class="card"><div class="sechead"><h2>Customer lifetime value</h2><span class="muted small">Today, and if the customer accepts each solution</span></div>
-    <div class="clvc"><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="CLV today and if each solution is accepted">
-      <line x1="0" x2="${W}" y1="${y(0)}" y2="${y(0)}" class="base"/><line x1="0" x2="${W}" y1="${y(c.clv)}" y2="${y(c.clv)}" class="ref"/>${g}</svg></div>
-    <p class="muted small">Dashed line: CLV today. A solution only adds value if the customer accepts it; the ranking above weighs this by p(accept).</p></section>`;
+  // dCLV = p × (CLV accept − CLV now) + (1 − p) × (CLV reject − CLV now) − contact cost  (sheet clv_method)
+  const rows = top.map((o, i) => { const p = o.b ? o.b.p : o.k.p, ch = o.b ? o.b.ch : null, cost = o.k.o === "P-SV-01" || !ch ? 0 : (D.params[CHCOST[ch]] || 0);
+    return {i, o, p, cost, acc: o.k.acc - c.clv, rej: o.k.rej - c.clv, d: o.v}; });
+  if (!rows.length) return "";
+  const lo = Math.min(0, ...rows.map(r => Math.min(r.acc, r.d))), hi = Math.max(1, ...rows.map(r => Math.max(r.acc, r.d)));
+  const x = v => (v - lo) / (hi - lo) * 100, span = (a, b) => `left:${Math.min(x(a), x(b)).toFixed(2)}%;width:${Math.max(.6, Math.abs(x(b) - x(a))).toFixed(2)}%`;
+  const calc = r => `${pct(r.p,0)} × ${sgn(r.acc,0)}${Math.abs(r.rej) >= .5 ? ` + ${pct(1 - r.p,0)} × ${sgn(r.rej,0)}` : ""}${r.cost ? ` − ${eur(r.cost)}` : ""}`;
+  const anyRej = rows.some(r => Math.abs(r.rej) >= .5);
+  return `<section class="card"><div class="sechead"><h2>Expected gain in customer lifetime value</h2>
+      <span class="muted small">How the ranking above is calculated · CLV today ${eur(c.clv,0)}</span></div>
+    <p class="formula">Expected gain = <b>chance of acceptance</b> × <b>gain if accepted</b>${anyRej ? " + chance of rejection × loss if rejected" : ""} − contact cost</p>
+    <div class="legend" style="margin:10px 0 4px"><span><i class="sw pot"></i>Gain if accepted</span><span><i class="sw exp"></i>Expected gain (ranks the solutions)</span></div>
+    <div class="dclv">${rows.map(r => `<div class="dr ${r.o.ok ? "" : "blocked"}" title="${esc(`${r.o.k.n}: ${calc(r)} = ${sgn(r.d,2)}`)}">
+      <div class="dn"><span class="rk">${r.i + 1}</span>${esc(r.o.k.o === "P-SV-01" ? "Proactive service fix" : r.o.k.n)}</div>
+      <div class="dt"><span class="zero" style="left:${x(0).toFixed(2)}%"></span><span class="pot" style="${span(0, r.acc)}"></span><span class="exp ${r.d < 0 ? "neg" : ""}" style="${span(0, r.d)}"></span></div>
+      <div class="dv"><b class="${r.d < 0 ? "no" : ""}">${sgn(r.d, Math.abs(r.d) < 1 ? 2 : 0)}</b><span>${esc(calc(r))}</span></div></div>`).join("")}</div>
+    <p class="muted small" style="margin-top:12px">A big gain that customers rarely accept can rank below a smaller, likely one. Values per sheet clv_method: 10-year CLV at 6%.</p></section>`;
 }
 
 function renderX360() {
