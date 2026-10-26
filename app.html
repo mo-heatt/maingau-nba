@@ -1,0 +1,906 @@
+<title>Maingau NBA Console</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+Condensed:wght@500;600;700&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap">
+<style>
+/* Layout: operator console in MAINGAU navy + yellow. Four views that mirror the brief:
+   Recommendations (engine) · Marketing (orchestration) · Customer 360° · How it works. Answer first, detail behind "Show". */
+:root{
+  --brand:#0F2C63; --brand-yellow:#FFE500; --brand-soft:#C5D0E6; --focus:#1F4FA8;
+  --bg:#F4F6FA; --panel:#FFFFFF; --panel-2:#EBEFF6; --ink:#0F2C63; --text:#1B2A44; --muted:#4F5D78; --line:#D6DDE8;
+  --accent:#FFE500; --accent-ink:#0F2C63; --offer:#1F4FA8; --offer-bg:#E6ECF8;
+  --good:#1D7A4C; --good-bg:#E3F3EA; --warn:#8A5300; --warn-bg:#FBEFD9; --bad:#B4362B; --bad-bg:#FBE6E3;
+  --f-display:"IBM Plex Sans Condensed","Arial Narrow",Arial,sans-serif;
+  --f-body:"IBM Plex Sans",-apple-system,"Segoe UI",Arial,sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --focus:#FFE500;
+  --bg:#0A1B3D; --panel:#10264F; --panel-2:#163160; --ink:#EEF2F9; --text:#DCE3EF; --muted:#A7B4CD; --line:#24427A;
+  --accent:#FFE500; --accent-ink:#0F2C63; --offer:#8FB0F0; --offer-bg:#1A3768;
+  --good:#5CCB93; --good-bg:#14301F; --warn:#F2AE4E; --warn-bg:#33240F; --bad:#F2857A; --bad-bg:#3A1A17; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --focus:#FFE500;
+  --bg:#0A1B3D; --panel:#10264F; --panel-2:#163160; --ink:#EEF2F9; --text:#DCE3EF; --muted:#A7B4CD; --line:#24427A;
+  --accent:#FFE500; --accent-ink:#0F2C63; --offer:#8FB0F0; --offer-bg:#1A3768;
+  --good:#5CCB93; --good-bg:#14301F; --warn:#F2AE4E; --warn-bg:#33240F; --bad:#F2857A; --bad-bg:#3A1A17; color-scheme:dark}
+*{box-sizing:border-box}
+html,body{background:var(--bg);color:var(--text)}
+body{font-family:var(--f-body);font-size:15px;line-height:1.5}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--brand)}
+.wrap{padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));max-width:1440px;margin:0 auto}
+header.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--brand);border-bottom:3px solid var(--brand-yellow)}
+.topin{display:flex;align-items:center;gap:12px 20px;flex-wrap:wrap;padding-block:10px}
+.brand{display:flex;align-items:center;gap:12px;min-width:0;flex-wrap:wrap}
+.brand b{font-family:var(--f-display);font-size:21px;font-weight:700;letter-spacing:.2px;color:#FFFFFF}
+.brand span{color:var(--brand-soft);font-size:13px}
+.logo{height:30px;width:auto;display:block}
+.sync{font-size:12px;color:var(--brand-soft);display:inline-flex;align-items:center;gap:6px}
+.sync i{width:8px;height:8px;border-radius:50%;background:var(--brand-soft);display:inline-block}
+.sync.on i{background:#5CCB93}
+nav.tabs{display:flex;gap:2px;margin-left:auto;flex-wrap:wrap}
+nav.tabs a{font-family:var(--f-display);font-weight:600;font-size:15px;color:var(--brand-soft);text-decoration:none;padding:7px 11px;border-radius:6px}
+nav.tabs a:hover{color:#FFFFFF}
+nav.tabs a[aria-current="page"]{background:var(--brand-yellow);color:var(--brand)}
+nav.tabs a:focus-visible{outline:2px solid var(--brand-yellow);outline-offset:2px}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,.li:focus-visible,summary:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+main{padding-block:20px 56px}
+h1,h2,h3{font-family:var(--f-display);text-wrap:balance;margin:0;color:var(--ink)}
+h1{font-size:30px;font-weight:700;line-height:1.15}
+h2{font-size:20px;font-weight:600}
+h3{font-size:16px;font-weight:600}
+p{margin:0}
+.eyebrow{font-size:11.5px;letter-spacing:.9px;text-transform:uppercase;color:var(--muted);font-weight:600}
+.mono,.num{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+.muted{color:var(--muted)} .small{font-size:13px}
+.stack{display:flex;flex-direction:column;gap:16px;min-width:0}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:16px;min-width:0}
+.card > h2 + p,.card > h3 + p{margin-top:4px}
+.pill{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;padding:2px 8px;border-radius:999px;white-space:nowrap}
+.k-offer{background:var(--offer-bg);color:var(--offer)} .k-service{background:var(--warn-bg);color:var(--warn)}
+.k-none,.k-wait,.k-plain{background:var(--panel-2);color:var(--muted)} .k-human{background:var(--bad-bg);color:var(--bad)}
+.k-ok{background:var(--good-bg);color:var(--good)} .k-ctl{background:var(--panel-2);color:var(--ink);border:1px dashed var(--muted)}
+.ok{color:var(--good)} .no{color:var(--bad)}
+button{font:inherit;cursor:pointer;border-radius:6px;border:1px solid var(--line);background:var(--panel);color:var(--ink);padding:6px 12px}
+button:hover{border-color:var(--muted)}
+button.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink);font-weight:600}
+button.ghost{background:transparent}
+button:disabled{opacity:.5;cursor:default}
+input[type=search],input[type=number],input[type=text],select,textarea{font:inherit;color:var(--text);background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:7px 10px}
+input[type=search],textarea{width:100%}
+table{border-collapse:collapse;width:100%;font-size:13.5px}
+th{font-size:11.5px;text-transform:uppercase;letter-spacing:.6px;color:var(--muted);text-align:left;font-weight:600;padding:8px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
+td{padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+td.r,th.r{text-align:right}
+.tscroll{overflow-x:auto}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
+.tile{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px 14px}
+.tile .n{font-family:var(--f-mono);font-size:24px;font-weight:500;margin-top:4px;color:var(--ink)}
+.tile .sub{font-size:12px;color:var(--muted);margin-top:2px}
+.tile.hero .sub{color:var(--brand-soft)}
+details.more{border:1px solid var(--line);border-radius:10px;background:var(--panel);min-width:0}
+details.more > summary{cursor:pointer;list-style:none;padding:13px 16px;font-family:var(--f-display);font-weight:600;font-size:16px;color:var(--ink);display:flex;justify-content:space-between;gap:12px;align-items:center}
+details.more > summary::-webkit-details-marker{display:none}
+details.more > summary::after{content:"Show";font-family:var(--f-body);font-size:12.5px;font-weight:600;color:var(--offer);flex:none}
+details.more[open] > summary::after{content:"Hide"}
+details.more[open] > summary{border-bottom:1px solid var(--line)}
+details.more > .body{padding:14px 16px 16px}
+.steer details.more{border-radius:8px}
+.steer details.more > summary{font-size:14px;padding:10px 12px}
+.steer details.more > .body{padding:10px 12px}
+
+.tile.hero{background:var(--brand);border-color:var(--brand)}
+.tile.hero .eyebrow{color:var(--brand-soft)} .tile.hero .n{color:var(--brand-yellow)}
+.viewhead{display:flex;flex-wrap:wrap;gap:12px 24px;align-items:flex-end;justify-content:space-between}
+.viewhead p{max-width:72ch;margin-top:6px}
+.q{border-left:4px solid var(--brand-yellow);padding:2px 0 2px 12px;font-size:14px;color:var(--muted)}
+.q b{color:var(--ink)}
+
+/* Recommendations */
+.rec td.reason{min-width:280px;max-width:520px;color:var(--text)}
+.rec tr{cursor:pointer} .rec tbody tr:hover td{background:var(--panel-2)}
+.rec td.id{font-family:var(--f-mono);white-space:nowrap}
+.filters{display:flex;gap:6px;flex-wrap:wrap}
+.filters button{font-size:12.5px;padding:4px 9px}
+.filters button[aria-pressed="true"]{background:var(--ink);color:var(--panel);border-color:var(--ink)}
+.toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.toolbar input[type=search]{max-width:260px}
+
+/* Customer 360 */
+.c360{display:grid;grid-template-columns:320px minmax(0,1fr);gap:20px;align-items:start}
+.rail{position:sticky;top:calc(env(safe-area-inset-top,0px) + 70px);display:flex;flex-direction:column;gap:10px;max-height:calc(100vh - 100px)}
+.demos{display:flex;flex-direction:column;gap:6px}
+.demo{display:flex;justify-content:space-between;align-items:center;gap:8px;text-align:left;padding:8px 10px;background:var(--panel)}
+.demo small{color:var(--muted);font-size:12px;text-align:right}
+.list{overflow:auto;border:1px solid var(--line);border-radius:10px;background:var(--panel);min-height:200px}
+.li{display:grid;grid-template-columns:1fr auto;gap:2px 10px;padding:9px 12px;border-bottom:1px solid var(--line);cursor:pointer}
+.li:hover{background:var(--panel-2)} .li[aria-selected="true"]{background:var(--offer-bg)}
+.li .id{font-family:var(--f-mono);font-size:13px}
+.li .t{grid-column:1;color:var(--muted);font-size:12.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.li .v{grid-row:1/3;grid-column:2;align-self:center;font-family:var(--f-mono);font-size:13px}
+.head{display:flex;flex-wrap:wrap;gap:16px;align-items:flex-end;justify-content:space-between}
+.head h1{font-family:var(--f-mono);letter-spacing:-.5px}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
+.kpis{display:flex;gap:22px;flex-wrap:wrap}
+.kpi .n{font-family:var(--f-mono);font-size:22px;font-weight:500;color:var(--ink)}
+.decision{border:1px solid var(--line);border-radius:12px;background:var(--panel);overflow:hidden}
+.decision .band{height:6px;background:var(--offer)}
+.decision.service .band{background:var(--accent)} .decision.none .band,.decision.wait .band{background:var(--line)} .decision.human .band{background:var(--bad)}
+.decision .in{padding:18px 20px;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:14px 24px;align-items:start}
+.decision h2{font-size:28px;font-weight:700}
+.decision .meta{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+.decision .gain{text-align:right}
+.decision .gain .n{font-family:var(--f-mono);font-size:34px;font-weight:500;color:var(--good)}
+.decision .reason{grid-column:1/-1;font-size:16px;max-width:80ch;color:var(--ink)}
+.decision .calc{grid-column:1/-1;font-family:var(--f-mono);font-size:12.5px;color:var(--muted);background:var(--panel-2);border-radius:6px;padding:8px 10px;overflow-x:auto;white-space:nowrap}
+.decision .acts{grid-column:1/-1;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.change{grid-column:1/-1;border-top:1px solid var(--line);padding-top:12px;display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.change select{max-width:100%} .change input[type=text]{flex:1;min-width:180px}
+.two{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px}
+.three{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+.checks{list-style:none;margin:10px 0 0;padding:0;display:flex;flex-direction:column;gap:8px}
+.checks li{display:grid;grid-template-columns:22px minmax(0,1fr);gap:6px;font-size:14px}
+.checks .ic{font-weight:700}
+.chgrid{display:flex;flex-wrap:wrap;gap:4px;margin-top:4px}
+.msg{border:1px dashed var(--line);border-radius:8px;padding:12px 14px;margin-top:10px;background:var(--panel-2)}
+.msg .subj{font-weight:600;margin-bottom:4px;color:var(--ink)}
+.msg.ai{border-style:solid;border-color:var(--offer)}
+blockquote{margin:10px 0 0;padding:6px 12px;border-left:3px solid var(--line);color:var(--muted);font-style:italic;font-size:13.5px}
+tr.picked td{background:var(--good-bg)}
+tr.blocked td{color:var(--muted)}
+.sig{display:flex;flex-direction:column;gap:6px;margin-top:8px;font-size:13.5px}
+.sig > div{display:grid;grid-template-columns:auto minmax(0,1fr);gap:8px}
+.tag{font-size:11px;font-weight:600;padding:1px 6px;border-radius:4px;background:var(--panel-2);color:var(--muted);align-self:start;white-space:nowrap}
+.guard{list-style:none;padding:0;margin:8px 0 0;display:flex;flex-direction:column;gap:4px;font-size:13px}
+
+/* Marketing */
+.mk{display:grid;grid-template-columns:320px minmax(0,1fr);gap:20px;align-items:start}
+.steer{display:flex;flex-direction:column;gap:18px;position:sticky;top:calc(env(safe-area-inset-top,0px) + 70px);max-height:calc(100vh - 100px);overflow:auto}
+.steer label{display:flex;gap:8px;align-items:center;font-size:13.5px;cursor:pointer}
+.offrow{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:6px;align-items:center;font-size:13.5px;padding:4px 0;border-bottom:1px solid var(--line)}
+.offrow select{padding:3px 6px;font-size:12.5px}
+.togs{display:flex;flex-direction:column;gap:4px;margin-top:6px}
+input[type=range]{width:100%;accent-color:var(--offer)}
+.bars{display:flex;flex-direction:column;gap:8px;margin-top:10px}
+.bar{display:grid;grid-template-columns:180px minmax(0,1fr) 130px;gap:10px;align-items:center;font-size:13.5px}
+.bar .track{height:14px;background:var(--panel-2);border-radius:3px;overflow:hidden}
+.bar .fill{height:100%;background:var(--offer);display:block}
+.bar .fill.service{background:var(--accent);box-shadow:inset 0 0 0 1px rgba(15,44,99,.4)} .bar .fill.muted{background:var(--line)} .bar .fill.human{background:var(--bad)}
+.bar .val{font-family:var(--f-mono);font-size:12.5px;text-align:right;color:var(--muted)}
+.matrix td,.matrix th{min-width:150px}
+.matrix td b{display:block;color:var(--ink)}
+.tpl{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px;padding:12px 0;border-bottom:1px solid var(--line)}
+.tpl:last-child{border-bottom:0}
+.tpl .t{border:1px solid var(--line);border-radius:8px;padding:10px 12px;font-size:13.5px;background:var(--panel-2)}
+.tpl .t.off{opacity:.55;border-style:dashed}
+.tpl .t b{color:var(--ink)}
+.tpl header{grid-column:1/-1;display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;align-items:baseline}
+.cmp{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.cmp .big{font-family:var(--f-mono);font-size:28px;color:var(--ink)}
+.ro{font-size:13px;color:var(--warn);background:var(--warn-bg);border-radius:6px;padding:6px 10px}
+
+/* Replay */
+.ev{display:grid;grid-template-columns:120px 110px minmax(0,1fr);gap:4px 16px;padding:12px 14px;border-bottom:1px solid var(--line);transition:background .3s}
+.ev.now{background:var(--offer-bg)}
+.ev .when{font-family:var(--f-mono);font-size:13px}
+.linkbtn{font-family:var(--f-mono);font-size:13px;color:var(--offer);background:none;border:0;padding:0;text-align:left;text-decoration:underline;text-underline-offset:3px}
+.ev .flow{display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-size:13.5px}
+.ev .after.chg{font-weight:600;color:var(--good)}
+.late{background:var(--warn-bg);color:var(--warn)}
+
+/* How it works */
+.qa{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+.qa .card{display:flex;flex-direction:column;gap:8px}
+.qa .no{font-family:var(--f-display);font-size:34px;font-weight:700;color:var(--offer);line-height:1}
+.pipe{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:10px}
+.pipe .card{display:flex;flex-direction:column;gap:6px;padding:14px}
+.pipe .card:last-child{background:var(--brand);border-color:var(--brand)}
+.pipe .card:last-child h3,.pipe .card:last-child .live{color:#FFFFFF} .pipe .card:last-child p{color:var(--brand-soft)} .pipe .card:last-child .no{color:var(--brand-yellow)}
+.pipe .no{font-family:var(--f-mono);font-size:12px;color:var(--offer);font-weight:500}
+.pipe p{font-size:13px;color:var(--muted)}
+.pipe .live{font-family:var(--f-mono);font-size:12.5px;color:var(--ink);border-top:1px solid var(--line);padding-top:6px;margin-top:auto}
+.pipe .card:last-child .live{border-color:rgba(255,255,255,.2)}
+.example{display:grid;grid-template-columns:140px minmax(0,1fr) minmax(0,1fr);gap:16px;align-items:center}
+.dayone{background:var(--accent);color:var(--accent-ink);border-radius:10px;padding:14px 16px;font-weight:600}
+.arch{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,2fr) minmax(0,1fr);gap:14px;align-items:stretch}
+.arch .col{display:flex;flex-direction:column;gap:8px}
+.arch .box{border:1px solid var(--line);border-radius:8px;padding:10px 12px;background:var(--panel);font-size:13.5px}
+.arch .box b{display:block;color:var(--ink);font-family:var(--f-display);font-size:15px}
+.arch .db{background:var(--offer-bg);border-color:var(--offer)}
+.arch .mcp{background:var(--brand);border-color:var(--brand);color:var(--brand-soft)}
+.arch .mcp b{color:var(--brand-yellow)}
+.arch .lane{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.prose{max-width:75ch} .prose ul{margin:8px 0 0;padding-left:20px} .prose li{margin-bottom:6px}
+
+@media (max-width:1100px){.pipe{grid-template-columns:repeat(4,minmax(0,1fr))}.arch{grid-template-columns:minmax(0,1fr)}}
+@media (max-width:1000px){.c360,.mk{grid-template-columns:minmax(0,1fr)}.rail,.steer{position:static;max-height:none}.list{max-height:360px}.three,.qa{grid-template-columns:minmax(0,1fr)}}
+@media (max-width:700px){.two,.cmp,.tpl{grid-template-columns:minmax(0,1fr)}.decision .in{grid-template-columns:minmax(0,1fr)}.decision .gain{text-align:left}.bar{grid-template-columns:110px minmax(0,1fr) 90px}.ev{grid-template-columns:minmax(0,1fr)}.head h1{font-size:24px}.pipe{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}.example{grid-template-columns:minmax(0,1fr)}.arch .lane{grid-template-columns:minmax(0,1fr)}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<header class="top"><div class="wrap topin">
+  <div class="brand"><img class="logo" src="data:image/png;base64,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" alt="MAINGAU" width="116" height="30"><b>NBA Console</b><span>Build Days prototype · mock data</span><span class="sync" id="sync" title="Where approvals and settings are saved"><i></i><span id="synct">Local only</span></span></div>
+  <nav class="tabs" aria-label="Views">
+    <a href="#recommendations" data-v="recommendations">Recommendations</a>
+    <a href="#marketing" data-v="marketing">Marketing</a>
+    <a href="#customers" data-v="customers">Customer 360°</a>
+    <a href="#method" data-v="method">How it works</a>
+  </nav>
+</div></header>
+
+<main class="wrap">
+  <!-- ENGINE: one recommendation per customer -->
+  <section id="v-recommendations" class="stack">
+    <div class="viewhead"><div><div class="eyebrow">Engine</div><h1>The next best action for every customer</h1>
+      <p class="muted">Offer, channel and tone, ranked by the expected gain in customer value. Click a customer to see why.</p></div>
+      <button id="exportLog">Download decision log</button></div>
+    <div class="tiles" id="recTiles"></div>
+    <div class="card" style="padding:0">
+      <div class="toolbar" style="padding:14px 16px"><input type="search" id="rq" placeholder="Find a customer, e.g. MG-100074" aria-label="Find customer"><div class="filters" id="rf" role="group" aria-label="Filter by decision"></div></div>
+      <div class="tscroll"><table class="rec"><thead><tr><th>Customer</th><th>Next best action</th><th>Channel · tone</th><th class="r">Expected gain</th><th>Why</th></tr></thead><tbody id="recBody"></tbody></table></div>
+      <div class="row" style="padding:12px 16px;justify-content:space-between"><span class="muted small" id="recMore"></span><button class="ghost" id="recMoreBtn">Show 50 more</button></div>
+    </div>
+  </section>
+
+  <!-- MARKETING: steer and approve -->
+  <section id="v-marketing" hidden>
+    <div class="mk">
+      <div class="steer card" id="steer"></div>
+      <div class="stack">
+        <div class="viewhead"><div><div class="eyebrow">For marketing</div><h1>Steer and approve</h1><p class="muted">Change a rule on the left and all 750 decisions update. Nothing is sent before you approve it.</p></div></div>
+        <div class="tiles" id="tiles"></div>
+        <div class="card"><div class="row" style="justify-content:space-between"><div><h2>Approval queue</h2><p class="muted small" style="margin-top:4px">The 25 most valuable actions. Control-group customers are held out.</p></div><button class="primary" id="approveTop">Approve top 10</button></div><div class="tscroll" style="margin-top:8px"><table id="queue"></table></div></div>
+        <div class="card"><h2>Top actions</h2><p class="muted small">Customers per action and the expected gain they add up to.</p><div class="bars" id="mix"></div></div>
+        <details class="more" data-k="m-seg"><summary>Top action per segment</summary><div class="body"><p class="muted small">Segments by customer value and product mix: the most frequent action and the segment’s total expected gain.</p><div class="tscroll" style="margin-top:10px"><table class="matrix" id="matrix"></table></div></div></details>
+        <details class="more" data-k="m-tpl"><summary id="tplSum">Approve texts</summary><div class="body"><p class="muted small">Only approved texts can be sent. Switching one off holds every action that would use it.</p><div id="tpls"></div></div></details>
+      </div>
+    </div>
+  </section>
+
+  <!-- CUSTOMER SERVICE: Customer 360 -->
+  <section id="v-customers" hidden>
+    <div class="c360">
+      <div class="rail">
+        <div class="demos" id="demos"></div>
+        <input type="search" id="q" placeholder="Find a customer, e.g. MG-100004" aria-label="Find customer">
+        <div class="list" id="list" role="listbox" aria-label="Customers ranked by expected value"></div>
+      </div>
+      <div class="stack" id="detail"></div>
+    </div>
+  </section>
+
+  <!-- HOW IT WORKS: questions, pipeline, architecture, then the deep dives -->
+  <section id="v-method" class="stack" hidden>
+    <div id="methodTop" class="stack"></div>
+    <details class="more" data-k="h-events"><summary>Live events: what changed on 1 October</summary><div class="body stack" id="v-replay">
+      <div class="row" style="justify-content:space-between"><p class="muted small" style="max-width:70ch">Each event is applied to the customer’s state and the decision is re-run. Late events show how long they took to arrive.</p>
+        <div class="row"><label class="row small"><input type="checkbox" id="onlyChg" checked> Only changed decisions</label><button class="primary" id="play">Play the day</button></div></div>
+      <div class="tiles" id="rstats"></div>
+      <div class="card" style="padding:0" id="timeline"></div>
+    </div></details>
+    <details class="more" data-k="h-learn"><summary>Learning loop: control group and uplift</summary><div class="body stack" id="v-learn"></div></details>
+    <div id="methodBottom" class="stack"></div>
+  </section>
+</main>
+
+<script>
+const D = /*__DATA__*/null;
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const eur = (x, d=2) => (x < 0 ? "−€" : "€") + Math.abs(x).toLocaleString("en-GB", {minimumFractionDigits:d, maximumFractionDigits:d});
+const sgn = (x, d=2) => (x >= 0 ? "+" : "") + eur(x, d);
+const pct = (x, d=1) => (x*100).toFixed(d) + "%";
+const CH = {portal_popup:"Portal pop-up", app_push:"App push", newsletter_email:"Newsletter e-mail", email:"Marketing e-mail", sms:"SMS", outbound_call:"Outbound call", agent_callback:"Service agent callback"};
+const CHCOST = {portal_popup:"contact_cost_popup_eur", app_push:"contact_cost_popup_eur", newsletter_email:"contact_cost_email_eur", email:"contact_cost_email_eur", sms:"contact_cost_sms_eur", outbound_call:"contact_cost_call_eur"};
+const CHNEED = {portal_popup:"portal_app_personalisation", app_push:"portal_app_personalisation", newsletter_email:"newsletter_email", email:"marketing_email", sms:"marketing_sms", outbound_call:"marketing_phone"};
+const CONSENT_LABEL = {newsletter_email:"Newsletter", marketing_email:"Marketing e-mail", marketing_phone:"Phone", marketing_sms:"SMS", portal_app_personalisation:"Portal & app", profiling_analytics:"Profiling"};
+const OFFER = Object.fromEntries(D.catalog.map(o => [o.id, o]));
+const BY = Object.fromEntries(D.customers.map(c => [c.id, c]));
+const DEMO = [["MG-100068","Growth","Heat pump + wallbox"],["MG-100325","Retention","Guarantee ended"],["MG-100004","Service","Complaint + dunning"],["MG-100074","Brief’s example","Formal, portal weekly"]];
+const PRIO = {low:0.5, normal:1, high:1.5};
+const PRIO_LABEL = {low:"Low", normal:"Normal", high:"High"};
+const KIND = {offer:["k-offer","Offer"], service:["k-service","Service fix"], none:["k-none","No action"], wait:["k-wait","Wait"], human:["k-human","Human review"]};
+
+/* ---------- shared state: marketing settings + human decisions ---------- */
+const DEFAULTS = () => ({cap: D.settings.contact_cap_30d, min: D.settings.min_dclv_eur, offersOff: [], chansOff: [], prio: {}, toneMode: "mirror", content: {}});
+let ST = DEFAULTS();          // marketing settings (shared)
+let REC = {};                 // per customer: {status, at, override:{offer,note}, draft:{...}} (shared)
+let PMULT = {};               // learn tab what-if, local only
+const Store = {
+  mode: "local", db: null, canWrite: true, q: {},
+  async init() {
+    try { const s = JSON.parse(localStorage.getItem("nba-v2") || "null"); if (s) { ST = Object.assign(DEFAULTS(), s.ST || {}); REC = s.REC || {}; } } catch (e) {}
+    let db = null;
+    try { db = window.claude && window.claude.use ? await window.claude.use("db") : null; } catch (e) { db = null; }
+    if (!db) { this.badge(); refresh(true); return; }
+    this.db = db; this.mode = "shared"; ST = DEFAULTS(); REC = {};
+    try { const u = await window.claude.use("user"); if (u) { const w = await u.can("data.write"); if (w === false) this.canWrite = false; } } catch (e) {}
+    this.badge();
+    db.doc("shared/settings").onSnapshot(s => {
+      if (s.metadata && s.metadata.hasPendingWrites) return;
+      if (Date.now() - this.lastLocal < 1500) return;
+      const next = Object.assign(DEFAULTS(), s.exists ? s.data() : {});
+      if (JSON.stringify(next) !== JSON.stringify(ST)) { ST = JSON.parse(JSON.stringify(next)); refresh(true); }
+    }, () => {});
+    db.collection("decisions").onSnapshot(q => {
+      const next = {}; q.docs.forEach(d => { next[d.id] = JSON.parse(JSON.stringify(d.data())); });
+      REC = next; refresh(false);
+    }, () => {});
+    refresh(true);
+  },
+  badge() { const el = $("#sync"); el.classList.toggle("on", this.mode === "shared");
+    $("#synct").textContent = this.mode === "shared" ? (this.canWrite ? "Shared with your team" : "View only") : "Saved in this browser"; },
+  _chain(path, fn) { this.q[path] = (this.q[path] || Promise.resolve()).then(fn).catch(e => { if (e && e.code === "invalid_argument") { this.canWrite = false; this.badge(); refresh(true); } }); },
+  local() { try { localStorage.setItem("nba-v2", JSON.stringify({ST, REC})); } catch (e) {} },
+  _t: null, lastLocal: 0,
+  saveSettings() {
+    this.lastLocal = Date.now();
+    if (this.mode !== "shared") return this.local();
+    clearTimeout(this._t); const snap = JSON.parse(JSON.stringify(ST));
+    this._t = setTimeout(() => { this.lastLocal = Date.now(); this._chain("shared/settings", () => this.db.doc("shared/settings").set(snap)); }, 400);
+  },
+  saveRec(id) {
+    if (this.mode !== "shared") return this.local();
+    const r = REC[id];
+    this._chain("decisions/" + id, () => r ? this.db.doc("decisions/" + id).set(JSON.parse(JSON.stringify(r))) : this.db.doc("decisions/" + id).delete());
+  },
+};
+const canEdit = () => Store.canWrite;
+const prioOf = o => ST.prio[o] || "normal";
+const contentOk = (o, tone) => !(ST.content[o] && ST.content[o][tone] === false);
+
+/* ---------- control group: stable 10% hold-out ---------- */
+function inControl(id) { let h = 2166136261; for (const ch of id) { h ^= ch.charCodeAt(0); h = Math.imul(h, 16777619) >>> 0; } return h % 100 < 10; }
+
+/* ---------- segments ---------- */
+function valueTier(c) { return c.clv >= 1000 ? "High value (≥ €1,000)" : c.clv >= 400 ? "Mid value (€400–999)" : c.clv >= 0 ? "Low value (< €400)" : "Negative value"; }
+function mixOf(c) { const ls = new Set(c.products.map(p => p.line)); if (ls.size === 1 && ls.has("e_mobility")) return "Autostrom only"; return c.lines >= 2 ? "Multi-product" : "Single product"; }
+const TIERS = ["High value (≥ €1,000)","Mid value (€400–999)","Low value (< €400)","Negative value"];
+const MIXES = ["Multi-product","Single product","Autostrom only"];
+
+/* ---------- arbitration: mirror of engine.py, plus marketing settings ---------- */
+function toneFor(c) { return ST.toneMode === "sie" ? "sie" : c.tone; }
+function dval(c, cand, ch, p) { const cost = D.params[CHCOST[ch]] || 0; return p * (cand.acc - c.clv) + (1 - p) * (cand.rej - c.clv) - cost; }
+function best(c, cand) {
+  if (cand.o === "P-SV-01") return {ch: "agent_callback", p: cand.p, d: cand.d};
+  const m = PMULT[cand.o] || 1;
+  let b = null;
+  for (const [ch, p0, d0] of cand.pc) { if (ST.chansOff.includes(ch)) continue;
+    const p = Math.min(0.95, p0 * m), d = m === 1 ? d0 : dval(c, cand, ch, p);
+    if (!b || d > b.d) b = {ch, p, d}; }
+  return b;
+}
+function engineDecide(c) {
+  const log = [], tone = toneFor(c);
+  if (c.cancel) return {a:"human", title:"Hand to retention team", reason:"Cancellation received. A person decides; no automated contact.", log:["Rule: cancellation pending → human review"], tone};
+  const svcC = c.cands.find(x => x.o === "P-SV-01" && !ST.offersOff.includes("P-SV-01"));
+  const all = c.cands.filter(x => x.o !== "P-SV-01" && !x.blk.length && !ST.offersOff.includes(x.o)).map(x => ({cand:x, b:best(c,x)})).filter(x => x.b);
+  const held = all.filter(x => !contentOk(x.cand.o, tone));
+  const sales = all.filter(x => contentOk(x.cand.o, tone)).sort((a,b) => b.b.d * PRIO[prioOf(b.cand.o)] - a.b.d * PRIO[prioOf(a.cand.o)]);
+  const viable = sales.filter(x => x.b.d > ST.min);
+  if (c.case.length) log.push("Rule: " + c.case.join(", ") + " → sales content blocked");
+  if (held.length) log.push("Held: text not approved for " + held.map(x => x.cand.n).join(", "));
+  if (svcC && svcC.d > ST.min && (c.case.length || !viable.length || svcC.d >= viable[0].b.d))
+    return {a:"service", pick:{cand:svcC, ch:"agent_callback", p:svcC.p, d:svcC.d}, title:"Proactive service fix", reason: svcC.why + ". Fix first: expected " + sgn(svcC.d,0) + " customer value.", log: log.concat(["Picked service fix"]), tone};
+  if (c.case.length) return {a:"none", title:"No contact", reason:"Open service case and no fix worth doing. Leave the customer alone.", log, tone};
+  if (!viable.length) {
+    const t = sales[0];
+    return {a:"none", title:"No action", reason: t ? `Best option (${t.cand.n}) is worth only ${eur(t.b.d)}, at or below the ${eur(ST.min)} threshold. Not worth a contact.` : held.length ? `The best option needs a text that marketing has not approved.` : "No relevant offer for this customer.", log: log.concat(["No action above minimum value"]), tone};
+  }
+  const v = viable[0], pr = prioOf(v.cand.o);
+  if (c.contacts >= ST.cap) return {a:"wait", pick:{cand:v.cand, ...v.b}, title:"Wait (contact limit)", reason:`Already contacted ${c.contacts}× in the last 30 days (limit ${ST.cap}). Next best: ${v.cand.n}.`, log: log.concat(["Rule: contact limit reached"]), tone};
+  return {a:"offer", pick:{cand:v.cand, ...v.b}, title:v.cand.n, reason:`${v.cand.why}. Via ${CH[v.b.ch]} (p = ${pct(v.b.p)}) → expected ${sgn(v.b.d)}${pr !== "normal" ? ` · marketing priority ${PRIO_LABEL[pr].toLowerCase()}` : ""}.`, log: log.concat([`Picked ${v.cand.o} via ${CH[v.b.ch]}`]), tone};
+}
+function decide(c) {
+  const eng = engineDecide(c), r = REC[c.id];
+  eng.ctl = inControl(c.id);
+  if (r && r.override && r.override.offer) {
+    const k = c.cands.find(x => x.o === r.override.offer);
+    if (k && (!k.blk.length || k.o === "P-SV-01")) {
+      const b = best(c, k);
+      if (b) return {a: k.o === "P-SV-01" ? "service" : "offer", pick:{cand:k, ...b}, title:k.n, tone:eng.tone, ctl:eng.ctl, overridden:true, engine:eng,
+        reason:`Changed by marketing${r.override.note ? ": " + r.override.note : ""}. The engine’s own pick was ${eng.title}${eng.pick ? " (" + sgn(eng.pick.d) + ")" : ""}.`, log:["Override by marketing"]};
+    }
+  }
+  return eng;
+}
+let DEC = {};
+function recompute() { DEC = {}; for (const c of D.customers) DEC[c.id] = decide(c); }
+const valueOf = d => d.pick && d.a !== "wait" ? d.pick.d : (d.a === "wait" ? -1e6 : -1e9);
+function statusOf(id) { const d = DEC[id], r = REC[id];
+  if (!d.pick || d.a === "wait" || d.a === "human") return null;
+  if (d.ctl) return ["k-ctl","Control group"];
+  if (r && r.status === "approved") return ["k-ok", d.a === "service" ? "Task created" : "Approved"];
+  if (r && r.status === "rejected") return ["k-human","Rejected"];
+  return ["k-plain","Awaiting approval"]; }
+
+function message(c, dec) {
+  if (!dec.pick) return null;
+  const r = REC[c.id];
+  if (r && r.draft && r.draft.offer === dec.pick.cand.o && r.draft.tone === dec.tone) return {subj: r.draft.subject, body: r.draft.body, ai: true, approved: !!r.draft.approved};
+  return templText(c, dec.pick.cand.o, dec.tone);
+}
+function templText(c, o, tone) {
+  const t = D.templates[o]; if (!t) return null;
+  let [subj, body] = t[tone];
+  let gt = "bald aus";
+  if (c.guar) { const [y,m,d] = c.guar.split("-"); gt = (c.guar >= "2026-10-01" ? `am ${d}.${m}.${y} aus` : `seit dem ${d}.${m}.${y} nicht mehr`); }
+  return {subj, body: body.replace("{guarantee_text}", gt)};
+}
+
+/* ---------- Recommendations (engine) ---------- */
+let rfilter = "all", rlimit = 50;
+const OPEN = new Set();
+const op = k => OPEN.has(k) ? "open" : "";
+document.addEventListener("toggle", e => { const k = e.target && e.target.dataset && e.target.dataset.k; if (!k) return; if (e.target.open) OPEN.add(k); else OPEN.delete(k); }, true);
+function renderRec() {
+  const ids = Object.keys(DEC), by = a => ids.filter(id => DEC[id].a === a).length;
+  const gain = ids.filter(id => ["offer","service"].includes(DEC[id].a)).reduce((s,id) => s + DEC[id].pick.d, 0);
+  $("#recTiles").innerHTML = [["hero","Expected gain in customer value", eur(gain,0), "across all 750 customers"],["","Offers", by("offer"), "sales, upsell, retention"],["","Service fixes first", by("service"), "no sales during a problem"],["","Rule violations", violations(), `old engine: ${D.legacy.unchecked_and_no_consent} without consent`]]
+    .map(([k,l,n,s]) => `<div class="tile ${k}"><div class="eyebrow">${l}</div><div class="n">${n}</div><div class="sub">${s}</div></div>`).join("");
+  const F = [["all","All"],["offer","Offers"],["service","Service fix"],["none","No action"]];
+  $("#rf").innerHTML = F.map(([k,l]) => `<button data-f="${k}" aria-pressed="${k===rfilter}">${l}</button>`).join("");
+  const q = $("#rq").value.trim().toUpperCase();
+  const match = d => rfilter === "all" || (rfilter === "none" ? ["none","wait","human"].includes(d.a) : d.a === rfilter);
+  const rows = D.customers.filter(c => match(DEC[c.id]) && (!q || c.id.includes(q))).sort((a,b) => valueOf(DEC[b.id]) - valueOf(DEC[a.id]));
+  const shown = rows.slice(0, rlimit);
+  $("#recBody").innerHTML = shown.map(c => { const d = DEC[c.id], st = statusOf(c.id);
+    const name = d.a === "service" ? "Proactive service fix" : d.title;
+    const tag = d.a !== "offer" ? `<span class="pill ${KIND[d.a][0]}">${KIND[d.a][1]}</span> ` : "";
+    const extra = (d.overridden ? ` <span class="pill k-human">changed</span>` : "") + (st && st[1] !== "Awaiting approval" ? ` <span class="pill ${st[0]}">${st[1]}</span>` : "");
+    return `<tr data-open="${c.id}"><td class="id">${c.id}</td><td>${tag}<b style="color:var(--ink)">${esc(name)}</b>${extra}</td>
+      <td>${d.pick ? CH[d.pick.ch] + (d.a !== "service" ? " · " + (d.tone === "du" ? "Du" : "Sie") : "") : "–"}</td>
+      <td class="r num">${d.pick && d.a !== "wait" ? sgn(d.pick.d) : "–"}</td><td class="reason small">${esc(d.reason)}</td></tr>`; }).join("") || `<tr><td colspan="5" class="muted">No customer matches.</td></tr>`;
+  $("#recMore").textContent = `Showing ${shown.length} of ${rows.length} customers, highest gain first.`;
+  $("#recMoreBtn").hidden = shown.length >= rows.length;
+}
+$("#rf").addEventListener("click", e => { const b = e.target.closest("[data-f]"); if (b) { rfilter = b.dataset.f; rlimit = 50; renderRec(); } });
+$("#rq").addEventListener("input", () => { rlimit = 50; renderRec(); });
+$("#recMoreBtn").addEventListener("click", () => { rlimit += 50; renderRec(); });
+$("#recBody").addEventListener("click", e => { const r = e.target.closest("[data-open]"); if (r) select(r.dataset.open); });
+
+function csvCell(x) { const s = String(x ?? ""); return /[",\n;]/.test(s) ? `"${s.replace(/"/g,'""')}"` : s; }
+$("#exportLog").onclick = async () => {
+  const head = ["customer_id","segment_value","segment_mix","decision","action_id","action","channel","tone","p_accept","expected_dclv_eur","reason","rules","top_alternatives","control_group","approval","overridden"];
+  const lines = [head.join(",")];
+  for (const c of D.customers) { const d = DEC[c.id], r = REC[c.id] || {};
+    const alts = c.cands.filter(k => !d.pick || k.o !== d.pick.cand.o).slice(0,3).map(k => { const b = best(c,k); return `${k.o} ${b ? b.d.toFixed(2) : k.d.toFixed(2)}${k.blk.length ? " (blocked: " + k.blk[0] + ")" : ""}`; }).join(" | ");
+    lines.push([c.id, valueTier(c), mixOf(c), d.a, d.pick ? d.pick.cand.o : "", d.pick ? d.pick.cand.n : d.title, d.pick ? d.pick.ch : "", d.tone, d.pick ? d.pick.p.toFixed(4) : "", d.pick ? d.pick.d.toFixed(2) : "", d.reason, d.log.join(" · "), alts, d.ctl ? "yes" : "no", r.status || "", d.overridden ? "yes" : "no"].map(csvCell).join(",")); }
+  const btn = $("#exportLog");
+  try { const dl = window.claude && window.claude.use ? await window.claude.use("downloads") : null;
+    if (!dl) { btn.textContent = "Download not available here"; return; }
+    await dl.save({filename: "maingau_nba_decision_log.csv", data: lines.join("\n")}); btn.textContent = "Decision log saved";
+  } catch (e) { btn.textContent = e && e.code === "declined" ? "Download decision log (CSV)" : "Download not available here"; }
+};
+
+/* ---------- Customer 360 ---------- */
+let selected = "MG-100068";
+function renderDemos() {
+  $("#demos").innerHTML = `<div class="eyebrow">Demo customers</div>` + DEMO.map(([id, k, t]) =>
+    `<button class="demo" data-id="${id}"><span><b>${k}</b> · <span class="mono">${id}</span></span><small>${t}</small></button>`).join("");
+}
+$("#demos").addEventListener("click", e => { const b = e.target.closest("[data-id]"); if (b) select(b.dataset.id); });
+function renderList() {
+  const q = $("#q").value.trim().toUpperCase();
+  const rows = D.customers.filter(c => !q || c.id.includes(q)).sort((a,b) => valueOf(DEC[b.id]) - valueOf(DEC[a.id]));
+  $("#list").innerHTML = rows.map(c => { const d = DEC[c.id];
+    return `<div class="li" role="option" tabindex="0" data-id="${c.id}" aria-selected="${c.id===selected}"><span class="id">${c.id}</span><span class="v">${d.pick && d.a!=="wait" ? sgn(d.pick.d,0) : `<span class="pill ${KIND[d.a][0]}">${KIND[d.a][1]}</span>`}</span><span class="t">${esc(d.a === "service" ? "Proactive service fix" : d.title)}${d.pick && d.a==="offer" ? " · " + CH[d.pick.ch] : ""}</span></div>`; }).join("") || `<p class="muted" style="padding:12px">No customer matches.</p>`;
+}
+$("#list").addEventListener("click", e => { const r = e.target.closest("[data-id]"); if (r) select(r.dataset.id); });
+$("#list").addEventListener("keydown", e => { if (e.key === "Enter") { const r = e.target.closest("[data-id]"); if (r) select(r.dataset.id); } });
+$("#q").addEventListener("input", renderList);
+function select(id) { if (!BY[id]) return; selected = id; aiState = {}; renderList(); renderDetail(); if (location.hash !== "#customers") go("customers"); window.scrollTo({top:0}); }
+
+function calcLine(c, dec) {
+  const p = dec.pick; if (!p) return "";
+  const k = p.cand; const cost = k.o === "P-SV-01" ? 0 : D.params[CHCOST[p.ch]];
+  if (k.o === "P-SV-01") return `p × (CLV after fix − CLV now) = ${p.p.toFixed(3)} × (${eur(k.acc,0)} − ${eur(c.clv,0)}) = ${sgn(p.d)}   ·   fix cost ${eur(D.params.service_resolution_cost_eur,0)} included`;
+  return `p × (CLV accept − CLV now) + (1 − p) × (CLV reject − CLV now) − contact cost = ${p.p.toFixed(3)} × (${eur(k.acc,0)} − ${eur(c.clv,0)}) + ${(1-p.p).toFixed(3)} × (${eur(k.rej,0)} − ${eur(c.clv,0)}) − ${eur(cost)} = ${sgn(p.d)}`;
+}
+
+let aiState = {};   // {busy, error, ctl}
+function renderDetail() {
+  const c = BY[selected], d = DEC[selected], m = message(c, d), r = REC[c.id] || {};
+  const cls = {offer:"", service:"service", none:"none", wait:"wait", human:"human"}[d.a];
+  const chanList = c.chans.map(x => `<span class="pill ${x.ok && !ST.chansOff.includes(x.ch) ? "k-offer" : "k-none"}" title="${esc(x.no || (ST.chansOff.includes(x.ch) ? "switched off by marketing" : "allowed"))}">${x.ok ? "✓" : "✕"} ${CH[x.ch]}</span>`).join("");
+  const consentRows = Object.entries(c.consent).map(([k,v]) => `<span class="pill ${v==="granted"?"k-offer":(v==="withdrawn"?"k-human":"k-none")}">${CONSENT_LABEL[k]||k}: ${v.replace("_"," ")}</span>`).join("");
+  const rows = c.cands.map(k => {
+    const b = best(c, k), picked = d.pick && d.pick.cand.o === k.o;
+    let st = picked ? `<b class="ok">${d.overridden ? "Picked by marketing" : "Picked"}</b>` : k.blk.length ? `<span class="no">${esc(k.blk[0])}</span>` : ST.offersOff.includes(k.o) ? "Offer switched off" : !contentOk(k.o, d.tone) ? "Text not approved" : !b ? "No allowed channel" : b.d <= ST.min ? "Not worth a contact" : "Lower value";
+    return `<tr class="${picked?"picked":k.blk.length?"blocked":""}"><td><b style="color:var(--ink)">${esc(k.o==="P-SV-01"?"Proactive service fix":k.n)}</b></td><td style="min-width:200px">${esc(k.why)}</td><td>${b ? CH[b.ch] : "–"}</td><td class="r num">${pct(b ? b.p : k.p)}</td><td class="r num">${sgn(b ? b.d : k.d)}</td><td style="min-width:140px">${st}</td></tr>`;
+  }).join("");
+  const alts = c.cands.filter(k => !k.blk.length || k.o === "P-SV-01").filter(k => best(c,k));
+  const sig = Object.entries(c.signals).map(([k,[v,cl,ev]]) => `<div><span class="tag">${cl==="behavioural"?"behaviour":"contract"}</span><span>${esc(ev[0] || k.replace(/_/g," "))}${cl==="behavioural" && !c.prof ? ` <span class="no">(not used: no profiling consent)</span>`:""}</span></div>`).join("") || `<span class="muted">No special signals.</span>`;
+  const prods = c.products.map(p => `<div><span class="tag">${esc(p.line.replace("_"," "))}</span><span>${esc(p.name)}${p.status && p.status!=="active" && p.status!=="online" ? ` <span class="no">(${esc(p.status.replace(/_/g," "))})</span>`:""}${p.price_guarantee_until ? ` · guarantee until ${p.price_guarantee_until}`:""}${p.dunning_level ? ` · <span class="no">dunning ${p.dunning_level}</span>`:""}</span></div>`).join("") || `<span class="muted">No products.</span>`;
+  const tix = c.tickets.map(t => `<div style="display:block"><span class="tag">${esc(t.cat)}</span> <span class="muted mono" style="font-size:12px">${esc(t.at.slice(0,10))} · ${esc(t.ch)} · ${t.st==="open"?`<b class="no">open</b>`:"closed"}${t.csat?` · CSAT ${t.csat}`:""}${t.rep?" · repeat":""}</span>${t.txt?`<div style="font-size:13px;margin-top:2px">${esc(t.txt)}</div>`:""}</div>`).join("") || `<span class="muted">No tickets.</span>`;
+  const leg = c.legacy.map(a => `<div><span class="tag">${esc(a.date)}</span><span>${esc((OFFER[a.offer]||{}).name || a.offer)} · ${esc(CH[a.channel]||a.channel)} → <b>${esc(a.response)}</b></span></div>`).join("") || `<span class="muted">No earlier actions.</span>`;
+  const st = statusOf(c.id);
+  const actBtns = !d.pick || d.a === "wait" ? `<span class="muted small">${esc(d.log.join(" · "))}</span>`
+    : d.ctl ? `<span class="pill k-ctl">Control group</span><span class="muted small">Logged but not sent: part of the 10% hold-out that proves uplift.</span>`
+    : r.status ? `<span class="pill ${st[0]}">${st[1]}</span>${canEdit()?`<button class="ghost" data-act="undo">Undo</button>`:""}`
+    : canEdit() ? `<button class="primary" data-act="approved">${d.a==="service"?"Create service task":"Approve"}</button><button data-act="rejected">Reject</button>` : `<span class="pill k-plain">Awaiting approval</span>`;
+  const msgCard = m ? `<div class="msg ${m.ai?"ai":""}"><div class="subj">${esc(m.subj)}</div><div>${esc(m.body)}</div></div>` : `<p class="muted" style="margin-top:8px">No message: ${d.a==="human"?"a person handles this customer.":"the engine recommends no contact."}</p>`;
+  const aiBlock = !d.pick || d.a !== "offer" ? "" : !c.prof ? `<p class="muted small" style="margin-top:8px">No AI personalisation: this customer did not agree to profiling.</p>`
+    : `<div class="row" style="margin-top:10px">${m && m.ai ? `<span class="pill ${m.approved?"k-ok":"k-plain"}">${m.approved?"AI text approved":"AI draft · needs approval"}</span>${canEdit()?`${m.approved?"":`<button class="primary" data-ai="approve">Approve text</button>`}<button class="ghost" data-ai="discard">Back to template</button>`:""}` : (canEdit() ? `<button data-ai="write" ${aiState.busy?"disabled":""}>${aiState.busy ? "Writing…" : "Personalise with AI"}</button>${aiState.busy?`<button class="ghost" data-ai="stop">Stop</button>`:""}` : "")}</div>
+      ${aiState.error ? `<p class="no small" style="margin-top:6px">${esc(aiState.error)}</p>` : ""}${m && m.ai ? guardList(c, d, m) : ""}`;
+  const chk = (ok, txt) => `<li><span class="ic ${ok?"ok":"no"}">${ok?"✓":"✕"}</span><span>${txt}</span></li>`;
+
+  $("#detail").innerHTML = `
+  <div class="head">
+    <div><div class="eyebrow">Customer 360° · ${esc(c.city)} · customer since ${esc(c.since.slice(0,4))}</div><h1>${c.id}</h1>
+      <div class="chips">${c.case.map(x=>`<span class="pill k-human">${esc(x)}</span>`).join("")}${d.ctl?`<span class="pill k-ctl">Control group</span>`:""}</div></div>
+    <div class="kpis"><div class="kpi"><div class="eyebrow">CLV now</div><div class="n">${eur(c.clv,0)}</div></div><div class="kpi"><div class="eyebrow">Churn risk</div><div class="n">${pct(c.churn,0)}</div></div><div class="kpi"><div class="eyebrow">Open cases</div><div class="n">${c.open.length}</div></div></div>
+  </div>
+  <div class="decision ${cls}"><div class="band"></div><div class="in">
+    <div><div class="eyebrow">Next best action</div><h2>${esc(d.a==="service"?"Proactive service fix":d.title)}</h2>
+      <div class="meta"><span class="pill ${KIND[d.a][0]}">${KIND[d.a][1]}</span>${d.overridden?`<span class="pill k-human">Changed by marketing</span>`:""}${d.pick?`<span class="pill k-none">${CH[d.pick.ch]}</span>`:""}${d.pick && d.a!=="service"?`<span class="pill k-none">“${d.tone==="du"?"Du":"Sie"}”</span>`:""}</div></div>
+    <div class="gain">${d.pick && d.a!=="wait"?`<div class="eyebrow">Expected gain</div><div class="n">${sgn(d.pick.d)}</div><div class="muted" style="font-size:12px">customer lifetime value</div>`:""}</div>
+    <div class="reason">${esc(d.reason)}</div>
+    <div class="acts">${actBtns}</div>
+  </div></div>
+  <div class="two">
+    <div class="card"><h3>Message ${d.a==="service"?"after the call":"for approval"}</h3>${msgCard}${aiBlock}
+      <p class="muted small" style="margin-top:10px">“${d.tone==="du"?"Du":"Sie"}” because: ${ST.toneMode==="sie" && c.tone==="du" ? "marketing set Sie for everyone." : esc(c.toneWhy) + "."}</p></div>
+    <div class="card"><h3>Rule checks</h3><ul class="checks">
+      ${chk(!c.case.length, c.case.length ? `Open service case (${esc(c.case.join(", "))}): no sales content.` : "No complaint, dunning or cancellation.")}
+      ${chk(c.prof, c.prof ? "Profiling allowed: behaviour signals may be used." : "No profiling consent: contract data only.")}
+      ${chk(c.contacts < ST.cap, `Contacts: ${c.contacts} of ${ST.cap} in the last 30 days.`)}
+      ${chk(true, d.pick && d.a !== "service" ? `Channel has consent: ${CH[d.pick.ch]}.` : "No marketing channel used.")}
+    </ul></div>
+  </div>
+  <details class="more" data-k="c-why" ${op("c-why")}><summary>Why this action: all ${c.cands.length} options scored</summary><div class="body">
+    ${d.pick && d.a!=="wait" ? `<div class="calc mono small" style="background:var(--panel-2);border-radius:6px;padding:8px 10px;overflow-x:auto;white-space:nowrap">${esc(calcLine(c,d))}</div>` : ""}
+    <p class="muted small" style="margin:8px 0">Expected change in customer lifetime value, best allowed channel per option. Negative values are the economic reason behind the hard rules.</p>
+    <div class="tscroll"><table><thead><tr><th>Option</th><th>Why considered</th><th>Channel</th><th class="r">p(accept)</th><th class="r">Expected ΔCLV</th><th>Result</th></tr></thead><tbody>${rows || `<tr><td colspan="6" class="muted">No options.</td></tr>`}</tbody></table></div>
+  </div></details>
+  ${canEdit() && alts.length ? `<details class="more" data-k="c-change" ${op("c-change")}><summary>Change this decision</summary><div class="body"><div class="change" style="border:0;padding:0">
+      <select id="ovSel" aria-label="Choose another action"><option value="">Engine’s choice</option>${alts.map(k => { const b = best(c,k); return `<option value="${k.o}" ${r.override && r.override.offer===k.o?"selected":""}>${esc(k.o==="P-SV-01"?"Proactive service fix":k.n)} (${sgn(b.d,0)})</option>`; }).join("")}</select>
+      <input type="text" id="ovNote" placeholder="Why? e.g. the customer asked on the phone" value="${esc(r.override ? r.override.note : "")}" aria-label="Reason for the change"><button id="ovSave">Save change</button></div>
+      <p class="muted small" style="margin-top:8px">Only options that pass the rules are listed. The change and the reason are logged.</p></div></details>` : ""}
+  <details class="more" data-k="c-info" ${op("c-info")}><summary>Customer details</summary><div class="body stack">
+    <div class="three">
+      <div><h3>Products</h3><div class="sig">${prods}</div></div>
+      <div><h3>Signals</h3><div class="sig">${sig}</div></div>
+      <div><h3>Service history</h3><div class="sig">${tix}</div><h3 style="margin-top:14px">Earlier campaigns</h3><div class="sig">${leg}</div></div>
+    </div>
+    <div><h3>Consent and channels</h3><div class="chgrid" style="margin-top:6px">${consentRows}</div><div class="chgrid" style="margin-top:6px">${chanList}</div></div>
+    ${c.toneSample?`<div><h3>In the customer’s own words</h3><blockquote>${esc(c.toneSample)}</blockquote></div>`:""}
+  </div></details>`;
+}
+$("#detail").addEventListener("click", async e => {
+  const c = BY[selected];
+  const a = e.target.closest("[data-act]");
+  if (a) { const v = a.dataset.act; const r = REC[c.id] || {};
+    if (v === "undo") delete r.status; else { r.status = v; r.at = new Date().toISOString(); }
+    REC[c.id] = r; clean(c.id); Store.saveRec(c.id); refresh(false); return; }
+  if (e.target.id === "ovSave") { const o = $("#ovSel").value, note = $("#ovNote").value.trim().slice(0, 200); const r = REC[c.id] || {};
+    if (o) r.override = {offer:o, note, at:new Date().toISOString()}; else delete r.override;
+    delete r.status; REC[c.id] = r; clean(c.id); Store.saveRec(c.id); refresh(false); return; }
+  const ai = e.target.closest("[data-ai]");
+  if (ai) { const v = ai.dataset.ai;
+    if (v === "write") return writeWithAI(c);
+    if (v === "stop") { if (aiState.ctl) aiState.ctl.abort(); return; }
+    const r = REC[c.id] || {};
+    if (v === "discard") delete r.draft;
+    if (v === "approve" && r.draft) r.draft.approved = true;
+    REC[c.id] = r; clean(c.id); Store.saveRec(c.id); refresh(false); }
+});
+function clean(id) { const r = REC[id]; if (r && !r.status && !r.override && !r.draft) delete REC[id]; }
+
+/* ---------- Content: AI writes inside the approved template ---------- */
+const BANNED = ["nur heute","sofort","letzte chance","jetzt zugreifen","limitiert","exklusiv für sie","nicht verpassen","schnell sein","nur noch"];
+function guards(c, d, m) {
+  const t = templText(c, d.pick.cand.o, d.tone), tplText = t.subj + " " + t.body;
+  const nums = (m.subj + " " + m.body).match(/\d+(?:[.,]\d+)*/g) || [];
+  const newNums = nums.filter(n => !tplText.includes(n));
+  const low = (m.subj + " " + m.body).toLowerCase();
+  const pressure = BANNED.filter(w => low.includes(w));
+  const duWords = /\b(du|dich|dir|dein|deine|deinen|deinem|deiner)\b/i.test(m.body + " " + m.subj);
+  const sieWords = /\b(Sie|Ihnen|Ihr|Ihre|Ihren|Ihrem|Ihrer)\b/.test(m.body + " " + m.subj);
+  const toneOk = d.tone === "du" ? !sieWords || duWords : !duWords;
+  const words = m.body.trim().split(/\s+/).length;
+  return [["No new prices or numbers", newNums.length === 0, newNums.join(", ")], ["No pressure or fake urgency", pressure.length === 0, pressure.join(", ")],
+          [`Tone stays “${d.tone==="du"?"Du":"Sie"}”`, toneOk, ""], ["Short enough (≤ 70 words)", words <= 70, words + " words"]];
+}
+function guardList(c, d, m) { return `<ul class="guard">${guards(c,d,m).map(([l,ok,x]) => `<li><span class="${ok?"ok":"no"}">${ok?"✓":"✕"}</span> ${esc(l)}${!ok && x ? `: ${esc(x)}` : ""}</li>`).join("")}</ul>`; }
+async function writeWithAI(c) {
+  const d = DEC[c.id]; if (!d.pick || d.a !== "offer" || !c.prof) return;
+  let sample = null;
+  try { sample = window.claude && window.claude.use ? await window.claude.use("sample") : null; } catch (e) {}
+  if (!sample) { aiState = {error:"AI writing is not available in this view. The approved template is used."}; return renderDetail(); }
+  const tpl = templText(c, d.pick.cand.o, d.tone);
+  const prompt = [
+    "You write one short German customer message for MAINGAU Energie (an energy and mobility provider).",
+    "Rewrite the APPROVED TEMPLATE below so it fits this customer, using only the reason given. Rules:",
+    `- Address the customer consistently with "${d.tone === "du" ? "du" : "Sie"}".`,
+    "- Keep the offer and every fact of the template. Do not add prices, discounts, numbers, dates or claims that are not in the template.",
+    "- No pressure and no urgency: no 'nur heute', 'sofort', 'letzte Chance', 'nicht verpassen' or similar.",
+    "- No names (they are unknown), no emojis, no personal data beyond the reason.",
+    `- Channel: ${CH[d.pick.ch]}. Subject at most 60 characters, body at most 60 words.`,
+    "",
+    "APPROVED TEMPLATE",
+    "Subject: " + tpl.subj,
+    "Body: " + tpl.body,
+    "",
+    "REASON THE ENGINE CHOSE THIS OFFER (English, from the customer's data): " + d.pick.cand.why,
+    "",
+    'Reply with only JSON: {"subject": string, "body": string}'
+  ].join("\n");
+  aiState = {busy:true, ctl:new AbortController()}; renderDetail();
+  try {
+    const out = await sample.json(prompt, {modelTier:"quick", signal: aiState.ctl.signal, cache:false});
+    if (!out || typeof out.subject !== "string" || typeof out.body !== "string") throw {code:"invalid_json"};
+    const r = REC[c.id] || {};
+    r.draft = {offer: d.pick.cand.o, tone: d.tone, subject: out.subject.slice(0, 120), body: out.body.slice(0, 900), approved:false, at:new Date().toISOString()};
+    REC[c.id] = r; Store.saveRec(c.id); aiState = {};
+  } catch (e) {
+    const code = e && e.code;
+    aiState = {error: code === "cancelled" ? "" : code === "not_granted" || code === "sampling_disabled" ? "AI writing was not allowed in this view. The approved template is used." : code === "rate_limited" ? "Too many requests right now. Try again in a minute." : "The AI text could not be written. Try again, or keep the approved template."};
+  }
+  refresh(false);
+}
+
+/* ---------- Marketing ---------- */
+function renderSteer() {
+  const counts = {}; for (const id in DEC) { const d = DEC[id]; if (d.pick && (d.a==="offer"||d.a==="service")) counts[d.pick.cand.o] = (counts[d.pick.cand.o]||0) + 1; }
+  const offers = D.catalog.filter(o => o.id !== "P-EN-04");
+  const dis = canEdit() ? "" : "disabled";
+  const off = ST.offersOff.length, chOff = ST.chansOff.length, pr = Object.keys(ST.prio).length;
+  $("#steer").innerHTML = `
+    <div><h2>Rules</h2><p class="muted small" style="margin-top:4px">Saved for the whole team.</p></div>
+    ${canEdit() ? "" : `<p class="ro">You can look, but only Contributors and Editors can change rules.</p>`}
+    <div><label for="cap" style="justify-content:space-between"><span><b style="color:var(--ink)">Contact limit</b> per 30 days</span><b class="mono" id="capv">${ST.cap}</b></label><input type="range" id="cap" min="1" max="6" value="${ST.cap}" ${dis}></div>
+    <div><label for="min"><b style="color:var(--ink)">Minimum gain</b> per contact (€)</label><input type="number" id="min" min="0" step="1" value="${ST.min}" ${dis} style="width:100%;margin-top:4px"></div>
+    <div><b style="color:var(--ink);font-size:13.5px">Tone</b><div class="togs"><label><input type="radio" name="tone" value="mirror" ${ST.toneMode==="mirror"?"checked":""} ${dis}> Mirror the customer</label><label><input type="radio" name="tone" value="sie" ${ST.toneMode==="sie"?"checked":""} ${dis}> Always “Sie”</label></div></div>
+    <details class="more" data-k="s-off" ${op("s-off")}><summary>Offers and priority${off||pr ? ` · ${off} off, ${pr} changed` : ""}</summary><div class="body"><div class="togs">${offers.map(o => `<div class="offrow"><label><input type="checkbox" data-off="${o.id}" ${ST.offersOff.includes(o.id)?"":"checked"} ${dis}><span>${esc(o.id==="P-SV-01"?"Proactive service fix":o.name)}</span></label><select data-prio="${o.id}" aria-label="Priority for ${esc(o.name)}" ${dis} ${o.id==="P-SV-01"?"hidden":""}>${Object.keys(PRIO).map(p => `<option value="${p}" ${prioOf(o.id)===p?"selected":""}>${PRIO_LABEL[p]}</option>`).join("")}</select><span class="mono muted small" data-cnt="${o.id}">${counts[o.id]||0}</span></div>`).join("")}</div>
+      <p class="muted small" style="margin-top:6px">Priority weighs the ranking (low ×0.5, high ×1.5). The € shown stays the real expected gain.</p></div></details>
+    <details class="more" data-k="s-ch" ${op("s-ch")}><summary>Channels${chOff ? ` · ${chOff} off` : ""}</summary><div class="body"><div class="togs">${Object.keys(CHCOST).map(ch => `<label><input type="checkbox" data-ch="${ch}" ${ST.chansOff.includes(ch)?"":"checked"} ${dis}>${CH[ch]}</label>`).join("")}</div></div></details>
+    ${canEdit() ? `<button class="ghost" id="reset">Reset to defaults</button>` : ""}`;
+}
+$("#steer").addEventListener("input", e => { if (e.target.id === "cap") { ST.cap = +e.target.value; $("#capv").textContent = ST.cap; changed(); } });
+$("#steer").addEventListener("change", e => { const t = e.target;
+  if (t.id === "min") ST.min = Math.max(0, +t.value || 0);
+  else if (t.name === "tone") ST.toneMode = t.value;
+  else if (t.dataset.off) { const o = t.dataset.off; ST.offersOff = t.checked ? ST.offersOff.filter(y => y!==o) : ST.offersOff.concat(o); }
+  else if (t.dataset.prio) { const o = t.dataset.prio; if (t.value === "normal") delete ST.prio[o]; else ST.prio[o] = t.value; }
+  else if (t.dataset.ch) { const o = t.dataset.ch; ST.chansOff = t.checked ? ST.chansOff.filter(y => y!==o) : ST.chansOff.concat(o); }
+  else return;
+  changed(); });
+$("#steer").addEventListener("click", e => { if (e.target.id === "reset") { ST = DEFAULTS(); changed(); renderSteer(); renderTemplates(); } });
+function changed() { Store.saveSettings(); refresh(false);
+  const cnt = {}; for (const id in DEC) { const d = DEC[id]; if (d.pick && (d.a==="offer"||d.a==="service")) cnt[d.pick.cand.o] = (cnt[d.pick.cand.o]||0) + 1; }
+  document.querySelectorAll("[data-cnt]").forEach(x => x.textContent = cnt[x.dataset.cnt] || 0); }
+
+function violations() {
+  let v = 0;
+  for (const c of D.customers) { const d = DEC[c.id]; if (d.a !== "offer") continue;
+    if (c.consent[CHNEED[d.pick.ch]] !== "granted" || c.case.length || d.pick.cand.blk.length) v++; }
+  return v;
+}
+function renderMarketing() {
+  const all = Object.entries(DEC);
+  const by = a => all.filter(([,d]) => d.a === a);
+  const gain = all.filter(([,d]) => d.a==="offer"||d.a==="service").reduce((s,[,d]) => s + d.pick.d, 0);
+  const appr = Object.values(REC).filter(r => r.status === "approved").length;
+  $("#tiles").innerHTML = [["hero","Expected gain", eur(gain,0)],["","Offers proposed", by("offer").length],["","Service fixes first", by("service").length],["","Approved so far", appr]]
+    .map(([k,l,n]) => `<div class="tile ${k}"><div class="eyebrow">${l}</div><div class="n">${n}</div></div>`).join("");
+  const nm = k => k==="P-SV-01" ? "Proactive service fix" : OFFER[k] ? OFFER[k].name : KIND[k][1];
+  // queue
+  const q = all.filter(([,d]) => (d.a==="offer"||d.a==="service") && !d.ctl).sort((a,b) => b[1].pick.d - a[1].pick.d).slice(0, 25);
+  $("#queue").innerHTML = `<thead><tr><th>Customer</th><th>Action</th><th>Channel · tone</th><th class="r">Expected gain</th><th></th></tr></thead><tbody>` + q.map(([id,d]) => { const st = statusOf(id);
+    return `<tr><td><button class="linkbtn" data-open="${id}">${id}</button></td><td>${esc(nm(d.pick.cand.o))}${d.overridden?` <span class="pill k-human">changed</span>`:""}</td><td>${CH[d.pick.ch]}${d.a==="service"?"":" · " + (d.tone==="du"?"Du":"Sie")}</td><td class="r num">${sgn(d.pick.d)}</td><td>${st && st[1] !== "Awaiting approval" ? `<span class="pill ${st[0]}">${st[1]}</span>` : canEdit() ? `<button data-ok="${id}">${d.a==="service"?"Create task":"Approve"}</button>` : `<span class="pill k-plain">Awaiting</span>`}</td></tr>`; }).join("") + `</tbody>`;
+  $("#approveTop").hidden = !canEdit();
+  $("#approveTop").onclick = () => { q.slice(0,10).forEach(([id]) => { if (!(REC[id] && REC[id].status)) { REC[id] = Object.assign(REC[id] || {}, {status:"approved", at:new Date().toISOString()}); Store.saveRec(id); } }); refresh(false); };
+  // top actions
+  const agg = {};
+  for (const [,d] of all) if (d.a==="offer"||d.a==="service") { const key = d.pick.cand.o; agg[key] = agg[key] || {n:0, g:0, a:d.a}; agg[key].n++; agg[key].g += d.pick.d; }
+  const left = all.length - Object.values(agg).reduce((s,v) => s + v.n, 0);
+  const items = Object.entries(agg).sort((a,b) => b[1].g - a[1].g); const mx = Math.max(1, ...items.map(x => x[1].g));
+  $("#mix").innerHTML = items.map(([k,v]) => `<div class="bar"><span>${esc(nm(k))}</span><span class="track"><span class="fill ${v.a==="service"?"service":""}" style="width:${v.g/mx*100}%"></span></span><span class="val">${eur(v.g,0)} · ${v.n}</span></div>`).join("") + `<p class="muted small" style="margin-top:4px">${left} customers get no contact (no worthwhile offer, contact limit or human review).</p>`;
+  // segments
+  const cell = {};
+  for (const c of D.customers) { const d = DEC[c.id], k = valueTier(c) + "|" + mixOf(c); const x = cell[k] = cell[k] || {n:0, g:0, act:{}};
+    x.n++; const an = d.a==="offer"||d.a==="service" ? nm(d.pick.cand.o) : "No contact"; x.act[an] = (x.act[an]||0) + 1; if (d.a==="offer"||d.a==="service") x.g += d.pick.d; }
+  $("#matrix").innerHTML = `<thead><tr><th>Customer value</th>${MIXES.map(m => `<th>${m}</th>`).join("")}</tr></thead><tbody>` + TIERS.map(t => `<tr><th style="text-transform:none;letter-spacing:0;font-size:13px;color:var(--ink)">${t}</th>${MIXES.map(m => { const x = cell[t+"|"+m];
+    if (!x) return `<td class="muted">–</td>`; const top = Object.entries(x.act).sort((a,b) => b[1]-a[1])[0];
+    return `<td><b>${esc(top[0])}</b><span class="small muted">${top[1]} of ${x.n} · ${eur(x.g,0)}</span></td>`; }).join("")}</tr>`).join("") + `</tbody>`;
+  const tplAll = (Object.keys(D.templates).length - 1) * 2;
+  const tplOn = Object.keys(D.templates).filter(o => o !== "P-SV-01").reduce((s,o) => s + (contentOk(o,"sie")?1:0) + (contentOk(o,"du")?1:0), 0);
+  $("#tplSum").textContent = `Approve texts · ${tplOn} of ${tplAll} approved`;
+}
+$("#queue").addEventListener("click", e => { const o = e.target.closest("[data-open]"); if (o) return select(o.dataset.open);
+  const k = e.target.closest("[data-ok]"); if (k) { const id = k.dataset.ok; REC[id] = Object.assign(REC[id] || {}, {status:"approved", at:new Date().toISOString()}); Store.saveRec(id); refresh(false); } });
+function renderTemplates() {
+  const use = {}; for (const [,d] of Object.entries(DEC)) if (d.pick && d.a === "offer") { const k = d.pick.cand.o + "|" + d.tone; use[k] = (use[k]||0) + 1; }
+  const ids = Object.keys(D.templates).filter(o => o !== "P-SV-01").sort((a,b) => ((use[b+"|sie"]||0)+(use[b+"|du"]||0)) - ((use[a+"|sie"]||0)+(use[a+"|du"]||0)));
+  const dis = canEdit() ? "" : "disabled";
+  $("#tpls").innerHTML = ids.map(o => { const t = D.templates[o];
+    const box = tone => { const ok = contentOk(o, tone); const [s, b] = t[tone];
+      return `<div class="t ${ok?"":"off"}"><div class="row" style="justify-content:space-between"><span class="eyebrow">“${tone==="du"?"Du":"Sie"}” · used for ${use[o+"|"+tone]||0}</span><label class="row small"><input type="checkbox" data-tpl="${o}|${tone}" ${ok?"checked":""} ${dis}> Approved</label></div><b>${esc(s)}</b><div>${esc(b.replace("{guarantee_text}", "am 01.12.2026 aus"))}</div></div>`; };
+    return `<div class="tpl"><header><h3>${esc((OFFER[o]||{}).name || o)}</h3><span class="mono muted small">${o}</span></header>${box("sie")}${box("du")}</div>`; }).join("");
+}
+$("#tpls").addEventListener("change", e => { const t = e.target.dataset.tpl; if (!t) return; const [o, tone] = t.split("|");
+  ST.content = Object.assign({}, ST.content); ST.content[o] = Object.assign({}, ST.content[o] || {}); if (e.target.checked) delete ST.content[o][tone]; else ST.content[o][tone] = false;
+  if (!Object.keys(ST.content[o]).length) delete ST.content[o]; changed(); renderTemplates(); });
+
+/* ---------- Live events ---------- */
+let playing = null;
+function renderReplay() {
+  const only = $("#onlyChg").checked;
+  const rows = D.replay.filter(r => !only || r.changed);
+  const late = D.replay.filter(r => r.lag_min > 60).length;
+  $("#rstats").innerHTML = [["Events in the file","647"],["Duplicates skipped", D.dups],["Events that touch a decision", D.replay.length],["Decisions changed", D.replay.filter(r=>r.changed).length],["Arrived more than 1 h late", late]]
+    .map(([l,n]) => `<div class="tile"><div class="eyebrow">${l}</div><div class="n">${n}</div></div>`).join("");
+  $("#timeline").innerHTML = rows.map((r,i) => `<div class="ev" id="ev${i}">
+      <div><div class="when">${r.occurred_at.slice(11,16)}</div>${r.lag_min>60?`<span class="pill late">${r.lag_min>=120?Math.round(r.lag_min/60)+" h":r.lag_min+" min"} late</span>`:""}</div>
+      <div><button class="linkbtn" data-open="${r.customer_id}">${r.customer_id}</button><div class="muted" style="font-size:12px">${esc(r.source)}</div></div>
+      <div><div><b style="color:var(--ink)">${esc(r.note)}</b></div><div class="flow"><span class="muted">${esc(r.before)}</span><span aria-hidden="true">→</span><span class="after ${r.changed?"chg":""}">${esc(r.after)}</span></div>${r.changed?`<div class="muted" style="font-size:13px;margin-top:2px">${esc(r.after_reason)}</div>`:""}</div>
+    </div>`).join("") || `<p class="muted" style="padding:14px">No events.</p>`;
+}
+$("#timeline").addEventListener("click", e => { const o = e.target.closest("[data-open]"); if (o) select(o.dataset.open); });
+$("#onlyChg").onchange = renderReplay;
+$("#play").onclick = () => {
+  if (playing) { clearInterval(playing); playing = null; $("#play").textContent = "Play the day"; return; }
+  let i = 0; $("#play").textContent = "Stop";
+  playing = setInterval(() => { document.querySelectorAll(".ev.now").forEach(x => x.classList.remove("now")); const el = $("#ev"+i);
+    if (!el) { clearInterval(playing); playing = null; $("#play").textContent = "Play the day"; return; }
+    el.classList.add("now"); el.scrollIntoView({block:"nearest", behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth"}); i++; }, 1100);
+};
+
+/* ---------- Learn ---------- */
+let wiOffer = "P-MO-01", wiRate = null;
+function wiCompute() {
+  const u = D.acc.uplift.find(x => x.offer === wiOffer) || D.acc.uplift[0];
+  if (wiRate == null) wiRate = Math.round(u.treated_rate * 100);
+  const k = 20, g = D.acc.global, conv = Math.round(u.treated_rate * u.treated_n);
+  const pOld = (conv + k * g) / (u.treated_n + k), pNew = (conv + wiRate + k * g) / (u.treated_n + 100 + k);
+  const key = d => d.pick ? d.pick.cand.o + d.a : d.a;
+  PMULT = {[wiOffer]: pOld > 0 ? pNew / pOld : 1};
+  let moved = 0, gained = 0;
+  for (const c of D.customers) { const d = decide(c); if (key(d) !== key(DEC[c.id])) { moved++; if (d.pick && d.pick.cand.o === wiOffer) gained++; } }
+  PMULT = {};
+  return {k, g, pOld, pNew, moved, gained};
+}
+function wiPaint() {
+  const r = wiCompute();
+  $("#wiRateV").textContent = wiRate;
+  $("#wiCalc").textContent = `p = (conversions + ${r.k} × ${pct(r.g)}) / (contacts + ${r.k}) → ${pct(r.pOld,2)} becomes ${pct(r.pNew,2)}`;
+  $("#wiMoved").innerHTML = `<b style="color:var(--ink)">${r.moved}</b> ${r.moved === 1 ? "customer" : "customers"} would get a different next best action${r.moved ? `, ${r.gained} of them this offer` : ""}.`;
+}
+function renderLearn() {
+  const ctl = D.customers.filter(c => inControl(c.id) && ["offer","service"].includes(DEC[c.id].a)).length;
+  const sent = D.customers.filter(c => !inControl(c.id) && ["offer","service"].includes(DEC[c.id].a)).length;
+  const O = D.acc.overall, base = O.treated, need = Math.ceil(16 * base * (1 - base) / Math.pow(0.02, 2));
+  const up = D.acc.uplift.map(u => `<tr><td>${esc((OFFER[u.offer]||{}).name||u.offer)}</td><td class="r num">${u.treated_n}</td><td class="r num">${pct(u.treated_rate)}</td><td class="r num">${u.control_n}</td><td class="r num">${u.control_rate==null?"–":pct(u.control_rate)}</td><td class="r num">${u.uplift==null?"–":(u.uplift>=0?"+":"")+(u.uplift*100).toFixed(1)+" pp"}</td></tr>`).join("");
+  if (wiRate == null) wiCompute();
+  const offersHist = D.acc.uplift.map(x => x.offer);
+  $("#v-learn").innerHTML = `
+  <p class="muted small" style="max-width:72ch">Every decision is logged. A random 10% of customers is held out, so the difference between contacted and held-out customers is the effect of the action itself.</p>
+  <div class="tiles">
+    <div class="tile hero"><div class="eyebrow">Held out this run (control)</div><div class="n">${ctl}</div></div>
+    <div class="tile"><div class="eyebrow">Actions to be sent</div><div class="n">${sent}</div></div>
+    <div class="tile"><div class="eyebrow">Old engine: contacted converted</div><div class="n">${pct(O.treated)}</div></div>
+    <div class="tile"><div class="eyebrow">Old engine: control converted</div><div class="n">${pct(O.control)}</div></div>
+  </div>
+  <div class="two">
+    <div class="card"><h2>Did the old actions cause anything?</h2><p class="muted small">Conversion within 14 days, contacted vs. 10% control group, from the action history. Control groups per offer are small (about 20), so read this as a first signal, not proof.</p>
+      <div class="tscroll" style="margin-top:10px"><table><thead><tr><th>Offer</th><th class="r">Contacted</th><th class="r">Rate</th><th class="r">Control</th><th class="r">Rate</th><th class="r">Uplift</th></tr></thead><tbody>${up}</tbody></table></div></div>
+    <div class="card stack" style="gap:12px"><div><h2>How a reaction changes the engine</h2><p class="muted small" style="margin-top:4px">Each response updates p(accept) for that offer. Try it: say the next 100 contacts for one offer convert at a different rate.</p></div>
+      <div class="row"><select id="wiOffer" aria-label="Offer">${offersHist.map(o => `<option value="${o}" ${o===wiOffer?"selected":""}>${esc((OFFER[o]||{}).name||o)}</option>`).join("")}</select></div>
+      <label for="wiRate" class="small">Next 100 contacts: <b class="mono" id="wiRateV">${wiRate}</b> conversions</label><input type="range" id="wiRate" min="0" max="20" value="${wiRate}">
+      <div class="mono small" id="wiCalc" style="background:var(--panel-2);border-radius:6px;padding:8px 10px;overflow-x:auto"></div>
+      <p id="wiMoved"></p>
+      <p class="muted small">In production this runs nightly on the decision log; the same formula is in the engine today, fed by the 2,022 logged responses.</p></div>
+  </div>
+  <div class="card prose"><h2>How we prove an action caused a result</h2><ul>
+    <li><b>Random hold-out.</b> 10% of customers are picked by a fixed hash of their customer id before any rule runs. They get a logged recommendation, but nothing is sent.</li>
+    <li><b>Same measure for both.</b> Conversion to the offered product within 14 days, for contacted and held-out customers alike.</li>
+    <li><b>Uplift</b> = conversion rate (contacted) − conversion rate (control). Only uplift goes back into p(accept), so the engine learns what the action causes, not what would have happened anyway.</li>
+    <li><b>Enough data.</b> At today’s base rate of ${pct(base)}, seeing a 2-point uplift needs about ${need.toLocaleString("en-GB")} customers per group. Until then results are pooled across offers and the prior keeps p stable.</li>
+  </ul></div>`;
+  wiPaint();
+  $("#wiOffer").onchange = e => { wiOffer = e.target.value; wiRate = null; wiCompute(); $("#wiRate").value = wiRate; wiPaint(); };
+  $("#wiRate").oninput = e => { wiRate = +e.target.value; wiPaint(); };
+}
+
+/* ---------- How it works ---------- */
+function renderMethod() {
+  const keepST = ST; ST = DEFAULTS();
+  const parity = D.customers.filter(c => { const d = engineDecide(c); const a = {offer:"offer",service:"offer",none:"none",wait:"wait",human:"human_review"}[d.a];
+    const o = d.pick ? d.pick.cand.o : null; return a !== c.py.a || (c.py.a!=="none" && c.py.a!=="human_review" && o !== c.py.o); }).length;
+  ST = keepST;
+  const ids = Object.keys(DEC);
+  const cands = D.customers.reduce((s,c) => s + c.cands.length, 0), blockedN = D.customers.reduce((s,c) => s + c.cands.filter(k => k.blk.length).length, 0);
+  const negN = D.customers.reduce((s,c) => s + c.cands.filter(k => k.d <= 0).length, 0);
+  const n = a => ids.filter(id => DEC[id].a === a).length;
+  const offersN = ids.filter(id => DEC[id].a === "offer"), chTop = {}; offersN.forEach(id => { const ch = DEC[id].pick.ch; chTop[ch] = (chTop[ch]||0)+1; });
+  const topCh = Object.entries(chTop).sort((a,b) => b[1]-a[1])[0];
+  const du = offersN.filter(id => DEC[id].tone === "du").length;
+  const tplOn = Object.keys(D.templates).filter(o => o !== "P-SV-01").reduce((s,o) => s + (contentOk(o,"sie")?1:0) + (contentOk(o,"du")?1:0), 0), tplAll = (Object.keys(D.templates).length - 1) * 2;
+  const drafts = Object.values(REC).filter(r => r.draft).length, appr = Object.values(REC).filter(r => r.status === "approved").length;
+  const ctl = ids.filter(id => DEC[id].ctl && ["offer","service"].includes(DEC[id].a)).length;
+  const steps = [
+    ["Trigger","Event or scheduled run selects a customer", `750 daily · ${D.replay.length} events`],
+    ["Eligibility","Consent, products held, exclusions, frequency", `${blockedN} of ${cands} options blocked`],
+    ["Scoring","Expected change in CLV, can be negative", `${negN} options ≤ €0`],
+    ["Arbitration","Best gain wins, negatives dropped, limits kept", `${n("offer")} offers · ${n("service")} fixes`],
+    ["Channel & tone","Where and how to address the customer", `${topCh ? CH[topCh[0]] : "–"} most · Du ${du} / Sie ${offersN.length - du}`],
+    ["Content","LLM, within approved templates", `${tplOn}/${tplAll} texts · ${drafts} AI drafts`],
+    ["Delivery & log","Track response, back to step 1", `${appr} approved · ${ctl} held out`],
+  ];
+  const ex = BY["MG-100074"], exd = DEC["MG-100074"];
+  $("#methodTop").innerHTML = `
+  <div class="viewhead"><div><div class="eyebrow">How it works</div><h1>Sell when it helps, fix when it hurts</h1><p class="muted">For each customer the engine scores every relevant action by the expected change in customer lifetime value, after the hard rules, and proposes the best one: an offer, a service fix, or nothing.</p></div></div>
+  <div class="qa">
+    <div class="card"><div class="no">01</div><h2>Decide</h2><p class="q">Which offer, channel and tone per customer, ranked by expected CLV gain?</p><p>Every allowed option is scored with Maingau’s own CLV model. The best positive one wins, on a channel the customer agreed to, in the tone they write in.</p><p class="small"><a href="#recommendations">See all recommendations</a></p></div>
+    <div class="card"><div class="no">02</div><h2>Explain</h2><p class="q">Can a marketer see in one line why, and change it?</p><p>Each decision has a one-line reason and every option it beat. Marketing sets rules and priorities, approves texts, or changes a single decision. All of it is logged.</p><p class="small"><a href="#customers">Open a customer</a> · <a href="#marketing">Steer the engine</a></p></div>
+    <div class="card"><div class="no">03</div><h2>Learn</h2><p class="q">How do reactions improve it, and how do you prove cause?</p><p>A fixed 10% of customers gets no contact. The difference to the contacted group (uplift) feeds back into the acceptance rates, so the ranking moves toward what works.</p></div>
+  </div>
+  <div class="card stack"><div><h2>The pipeline, as built</h2><p class="muted small" style="margin-top:4px">The seven steps from Maingau’s brief, with what each one did in this run.</p></div>
+    <div class="pipe">${steps.map(([t,x,l],i) => `<div class="card"><div class="no">${i+1}</div><h3>${t}</h3><p>${esc(x)}</p><div class="live">${esc(l)}</div></div>`).join("")}</div>
+    <div class="card example" style="background:var(--panel-2)"><div class="eyebrow">The brief’s example</div>
+      <div><button class="linkbtn" data-open="MG-100074">MG-100074</button> writes formal e-mails, opened none of ${ex.mail.delivered} newsletters (${ex.mail.machine_opens} machine opens ignored) and logged into the portal ${ex.portal90} times in 90 days.</div>
+      <div><b style="color:var(--ink)">→ ${esc(exd.title)} via ${exd.pick ? CH[exd.pick.ch] : "–"}, addressed with “${exd.tone==="du"?"Du":"Sie"}”.</b></div></div>
+  </div>
+  <div class="card stack"><div><h2>Target architecture: Databricks with MCP</h2><p class="muted small" style="margin-top:4px">How this would run at Maingau.</p></div>
+    <div class="arch">
+      <div class="col"><div class="eyebrow">Sources, one customer_id</div>
+        <div class="box"><b>CRM, Billing, Telco</b>CDC and nightly files</div><div class="box"><b>Shop, HEMS, Autostrom</b>webhooks and APIs</div><div class="box"><b>Consent platform</b>events, binding within a minute</div><div class="box"><b>Newsletter, portal</b>hourly and streaming</div></div>
+      <div class="col"><div class="eyebrow">Databricks</div>
+        <div class="lane"><div class="box db"><b>Bronze</b>Raw events and files, with arrival time.</div>
+        <div class="box db"><b>Silver</b>customer_state: one row per customer.</div>
+        <div class="box db"><b>Gold</b>Scored options and the decision log.</div></div>
+        <div class="lane"><div class="box"><b>Scoring job</b>Nightly, plus per event.</div><div class="box"><b>MLflow</b>Acceptance rates and uplift.</div><div class="box"><b>Model Serving</b>LLM inside approved templates.</div></div>
+        <div class="box mcp"><b>MCP server</b>get_customer_360 · get_next_best_action · explain_decision · record_feedback. Consent is enforced inside the tool.</div></div>
+      <div class="col"><div class="eyebrow">Used by</div>
+        <div class="box"><b>Marketing</b>this console</div><div class="box"><b>Service agents</b>Customer 360° in the CRM</div><div class="box"><b>Channels</b>only after approval</div><div class="box"><b>Feedback</b>responses back to Bronze</div></div>
+    </div></div>
+  <div class="dayone">As the brief advises for day one: rules, the precomputed CLV and acceptance rates from the action history. Every decision is logged and a control group is kept.</div>`;
+  const L = D.legacy, r = L.responses, tot = Object.values(r).reduce((a,b)=>a+b,0);
+  $("#methodBottom").innerHTML = `
+  <details class="more" data-k="h-cmp" ${op("h-cmp")}><summary>Today’s rule engine vs. this engine</summary><div class="body"><div class="cmp">
+    <div><div class="eyebrow">Today’s rule engine (Jun–Sep)</div><div class="big">${L.actions.toLocaleString("en-GB")}</div><div class="muted">actions decided</div>
+      <ul class="checks"><li><span class="ic no">✕</span><span><b>${L.consent_not_checked}</b> skipped the consent check; <b>${L.unchecked_and_no_consent}</b> of those went to a channel without consent.</span></li>
+      <li><span class="ic no">✕</span><span><b>${L.sales_during_open_complaint}</b> sales offers sent during an open complaint.</span></li>
+      <li><span class="ic no">✕</span><span>${pct(((r.ignored||0)+(r.dismissed||0))/tot,0)} ignored or dismissed; ${pct((r.clicked||0)/tot,0)} clicked.</span></li></ul></div>
+    <div><div class="eyebrow">This engine, current rules</div><div class="big">${violations()}</div><div class="muted">consent or exclusion violations, checked live</div>
+      <ul class="checks"><li><span class="ic ok">✓</span><span>Consent checked per channel before scoring.</span></li>
+      <li><span class="ic ok">✓</span><span>Open complaint, dunning or cancellation: service fix first, no sales.</span></li>
+      <li><span class="ic ok">✓</span><span>One action per customer, with a logged reason.</span></li></ul></div></div></div></details>
+  <details class="more" data-k="h-assume" ${op("h-assume")}><summary>Assumptions, data traps and self-checks</summary><div class="body two">
+    <div class="prose"><h3>Assumptions to confirm with Maingau</h3><ul>
+      <li>p(accept) starts from the conversion rate per offer in the action history (smoothed) × channel factor. Strong signals lift it ×${D.signalLift.strong}, medium ×${D.signalLift.medium}; a matching click or abandoned cart ×${D.intentLift}.</li>
+      <li>Service fix success = ${pct(D.fcr,0)}, the first-contact resolution rate of complaints.</li>
+      <li>Without profiling consent: contract data only, no behaviour data, no AI personalisation.</li>
+      <li>Dunning level 1 already blocks sales content.</li>
+      <li>Cancellations go to a person, never to an automated message.</li>
+      <li>Contact limit: ${D.settings.contact_cap_30d} marketing contacts in 30 days.</li></ul></div>
+    <div class="prose"><h3>Data traps handled</h3><ul>
+      <li>Apple Mail machine opens ignored.</li><li>${D.dups} duplicate events skipped.</li><li>Late events ordered by when they happened and flagged.</li><li>Consent withdrawals apply before any scoring.</li></ul>
+      <h3 style="margin-top:12px">Self-checks</h3><ul><li>Violations now: <b>${violations()}</b>.</li><li>Browser ranking matches the Python engine on <b>${750 - parity} of 750</b> customers at default rules.</li><li>Snapshot ${esc(D.snapshot)}; events of 1 October 2026.</li></ul></div>
+  </div></details>`;
+}
+$("#v-method").addEventListener("click", e => { const o = e.target.closest("[data-open]"); if (o) select(o.dataset.open); });
+
+/* ---------- routing ---------- */
+const VIEWS = ["recommendations","marketing","customers","method"];
+let view = "recommendations";
+function go(v) { if (v === "replay" || v === "learn") v = "method"; if (!VIEWS.includes(v)) v = "recommendations"; view = v;
+  VIEWS.forEach(x => { $("#v-"+x).hidden = x !== v; });
+  document.querySelectorAll("nav.tabs a").forEach(a => a.setAttribute("aria-current", a.dataset.v===v ? "page" : "false"));
+  if (location.hash !== "#"+v) history.replaceState(null, "", "#"+v);
+  draw(true); }
+function draw(full) {
+  if (view === "recommendations") renderRec();
+  if (view === "customers") { renderList(); renderDetail(); }
+  if (view === "marketing") { if (full) { renderSteer(); renderTemplates(); } renderMarketing(); }
+  if (view === "method") { renderMethod(); renderReplay(); renderLearn(); }
+}
+function refresh(full) { recompute(); draw(full); }
+window.addEventListener("hashchange", () => go(location.hash.slice(1)));
+recompute(); renderDemos();
+go(location.hash.slice(1) || "recommendations");
+Store.init();
+</script>

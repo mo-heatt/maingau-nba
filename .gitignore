@@ -1,0 +1,9 @@
+# Mock data from MAINGAU: shared for the event only, keep it out of the repo
+data/
+
+# Generated (contains the mock data)
+out/
+
+__pycache__/
+*.pyc
+.DS_Store
