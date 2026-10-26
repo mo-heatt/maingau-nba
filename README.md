@@ -87,3 +87,15 @@ Customer 360 includes observed usage/activity charts and an **Engine / AI** swit
 For a saved mobile example, open `http://127.0.0.1:5173/#customers?customer=MG-100005`. Demo offer interest is recorded locally and does not create a contract. All sending remains disabled. See the AI contract for price provenance and channel-preview limitations.
 
 Email previews use the same escaped, branded HTML document as the HTML part of the downloaded `.eml`. The draft includes a plain-text alternative. AI generates copy; the server renders the MAINGAU layout and validated quote. The responsive email uses presentation tables and inline styles; browser preview and MIME structure are verified, but individual mail clients have not been exhaustively tested. `NBA_PUBLIC_APP_URL` sets the demo CTA destination (defaults to localhost).
+
+## Online demo (no server)
+
+The shared link is a read-only snapshot of this app. To rebuild it, with the server running on port 8001:
+
+```bash
+python3 tools/static_demo/snap.py                      # writes snapshot.json.gz (all API answers)
+(cd frontend && VITE_STATIC=1 npx vite build --base ./ --outDir ../static-dist --emptyOutDir)
+python3 tools/static_demo/inline.py static-dist snapshot.json.gz maingau-nba.html
+```
+
+In the demo, approvals work for the browser session only; rules changes and AI drafts need the full app.

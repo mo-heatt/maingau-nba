@@ -17,3 +17,6 @@ frontend/dist/
 .env
 .env.*
 !.env.example
+static-dist/
+snapshot.json.gz
+maingau-nba.html
