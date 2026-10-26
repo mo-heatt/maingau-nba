@@ -33,7 +33,7 @@ From the `clv_method` sheet:
 | `templates.py` | Approved German message templates, Du and Sie |
 | `app.html` | Web app template: Recommendations, Marketing, Customer 360°, How it works |
 | `build_web.py` | Puts the engine output into `app.html` → `out/nba_console.html` |
-| `build_360.py` | Joins all source sheets and the event stream into one profile and timeline per customer, for the 360 new tab |
+| `build_360.py` | Joins all source sheets and the event stream into one profile and timeline per customer, for the Customer 360° New tab |
 | `nba/`, `run.py` | Second, independent engine used as a cross-check (`python run.py`) |
 
 Tunable assumptions are at the top of `engine.py` (`SETTINGS`, `SIGNAL_LIFT`, `INTENT_LIFT`).
@@ -43,7 +43,7 @@ Tunable assumptions are at the top of `engine.py` (`SETTINGS`, `SIGNAL_LIFT`, `I
 - **Recommendations:** one next best action per customer, with the one-line reason and a downloadable decision log.
 - **Marketing:** contact limit, minimum gain, tone, offers and priorities, channels; approval queue; text approval.
 - **Customer 360°:** status, CLV, every option scored, change a decision, AI personalisation inside the approved template.
-- **360 new:** every source system joined around one customer: what they hold in each business line and the best next product where they hold nothing, channels and permissions, one timeline across service, campaigns, newsletter, portal, shop, charging, smart home, consent and live events, plus value, home energy, charging and service panels, and which of the 18 sources hold data on them.
+- **Customer 360° New:** one customer on one page, every source system joined on customer_id: profile and CLV at a glance, a history timeline from the first contract to today, products and contracts per business line (greyed out when not in use), warnings and good signs, the top 5 solutions ranked by expected CLV gain, and how that gain is calculated.
 - **How it works:** Decide / Explain / Learn, the 7-step pipeline, live events, control group and uplift, target architecture on Databricks with MCP.
 
 When published as a claude.ai artifact, approvals and settings are shared with the team and the AI writing uses the viewer's Claude account. Opened as a plain file, the app saves them in the browser only.
