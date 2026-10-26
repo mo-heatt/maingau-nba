@@ -90,14 +90,14 @@ def channel_options(s, A, P):
     return out
 
 
-def score_customer(s, X, P, A, catalog, fcr_rate, settings=None):
+def score_customer(s, X, P, A, catalog, fcr_rate, settings=None, candidate_pool=None):
     settings = settings or SETTINGS
     m, c = s["value"]["annual_margin"], s["value"]["cost_to_serve"]
     churn_now = current_churn(s, P)
     clv_now = clv(m, c, churn_now)
     parts = churn_parts(s, P)
     case = service_case(s)
-    C, intent = candidate_offers(s)
+    C, intent = candidate_offers(s) if candidate_pool is None else (candidate_pool, {})
     C = {oid:v for oid,v in C.items() if oid not in settings.get("offers_off", [])}
     chans = channel_options(s, A, P)
     for ch in chans:

@@ -2,7 +2,7 @@ import json
 from contextlib import asynccontextmanager
 from typing import Dict, List, Literal, Optional
 from pathlib import Path
-from fastapi import FastAPI, HTTPException, Query
+from fastapi import FastAPI, HTTPException, Query, BackgroundTasks
 from fastapi.responses import FileResponse, Response
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
@@ -10,10 +10,16 @@ from . import database as db
 from .ingestion import import_sources
 from .service import EngineService, safe
 from .replay import preview
+from . import ai_nba, outreach
+from .insights import customer_insights
+from .email_template import for_draft
 
 @asynccontextmanager
 async def lifespan(app):
-    db.initialize();import_sources();app.state.engine=EngineService();yield
+    db.initialize();import_sources();app.state.engine=EngineService()
+    with db.connect() as c:
+        c.execute("UPDATE ai_batches SET status='interrupted' WHERE status IN ('queued','running')")
+    yield
 
 app=FastAPI(title='MAINGAU NBA',version='1.0.0',lifespan=lifespan,docs_url='/api/docs',openapi_url='/api/openapi.json',redoc_url=None)
 
@@ -68,6 +74,9 @@ def customers(q:str='',action:Optional[str]=None,offset:int=Query(0,ge=0),limit:
 @app.get('/api/customers/{cid}')
 def customer(cid:str):return call(engine().customer,cid)
 
+@app.get('/api/customers/{cid}/insights')
+def insights(cid:str):return call(customer_insights,engine(),cid)
+
 @app.post('/api/customers/{cid}/reviews')
 def review(cid:str,body:Review):return call(engine().review,cid,body.decision_id,body.status,body.note)
 
@@ -99,7 +108,71 @@ def download(did:int):
     with db.connect() as c:r=c.execute('SELECT * FROM drafts WHERE id=?',(did,)).fetchone()
     if not r:raise HTTPException(404,'Draft not found')
     m=EmailMessage();m['Subject']=r['subject'];m['From']='MAINGAU Demo <demo@example.invalid>';m['To']=r['customer_id'].lower()+'@example.invalid';m['X-Unsent']='1';m.set_content(r['body']+'\n\nHackathon demo. Synthetic data. No message has been sent.')
+    html=for_draft(r)
+    if html:m.add_alternative(html,subtype='html')
     return Response(m.as_bytes(),media_type='message/rfc822',headers={'Content-Disposition':f'attachment; filename="maingau-{did}.eml"'})
+
+@app.get('/api/drafts/{did}/preview')
+def draft_preview(did:int):
+    with db.connect() as c:r=c.execute('SELECT * FROM drafts WHERE id=?',(did,)).fetchone()
+    if not r:raise HTTPException(404,'Draft not found')
+    html=for_draft(r)
+    if not html:raise HTTPException(409,'No HTML template for this draft')
+    return Response(html,media_type='text/html',headers={'Content-Security-Policy':"default-src 'none'; img-src https://cdn0.scrvt.com; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'",'Referrer-Policy':'no-referrer'})
+
+class AIGenerate(BaseModel):
+    refresh:bool=False
+
+class AIBatch(BaseModel):
+    limit:int=Field(default=30,ge=1,le=50)
+
+@app.get('/api/ai/status')
+def ai_status():return ai_nba.provider_status()
+
+@app.get('/api/customers/{cid}/ai-context')
+def ai_context(cid:str):
+    packet,fingerprint=call(ai_nba.context,engine(),cid)
+    return {'context':packet,'input_hash':fingerprint}
+
+@app.get('/api/customers/{cid}/ai-nba')
+def ai_latest(cid:str):return call(ai_nba.latest,engine(),cid)
+
+@app.post('/api/customers/{cid}/ai-nba')
+def ai_generate(cid:str,body:AIGenerate):
+    if not ai_nba.provider_status()['configured']:raise HTTPException(503,'Hessian AI key is not configured')
+    return call(ai_nba.generate,engine(),cid,body.refresh)
+
+@app.get('/api/ai/batches/latest')
+def ai_batch_latest():return ai_nba.batch_latest()
+
+@app.post('/api/ai/batches')
+def ai_batch(body:AIBatch,background:BackgroundTasks):
+    if not ai_nba.provider_status()['configured']:raise HTTPException(503,'Hessian AI key is not configured')
+    job,created=ai_nba.start_batch(engine(),body.limit)
+    if created:background.add_task(ai_nba.run_batch,engine(),job['id'])
+    return job
+
+class OutreachRequest(BaseModel):
+    decision_id:int=Field(ge=1)
+    channel:Literal['email','newsletter_email','outbound_call','agent_callback','sms','app_push','portal_popup']
+    refresh:bool=False
+
+@app.get('/api/customers/{cid}/outreach-context')
+def outreach_context(cid:str):return call(outreach.workspace,engine(),cid)
+
+@app.get('/api/customers/{cid}/outreach')
+def outreach_history(cid:str):return call(outreach.history,engine(),cid)
+
+@app.post('/api/customers/{cid}/outreach')
+def outreach_generate(cid:str,body:OutreachRequest):
+    return call(outreach.generate,engine(),cid,body.decision_id,body.channel,body.refresh)
+
+class OfferResponse(BaseModel):
+    response:Literal['interested','not_now']
+
+@app.post('/api/customers/{cid}/outreach/{mid}/response')
+def offer_response(cid:str,mid:int,body:OfferResponse):
+    return call(outreach.demo_response,engine(),cid,mid,body.response)
 
 DIST=db.ROOT/'frontend/dist'
 if (DIST/'assets').exists():app.mount('/assets',StaticFiles(directory=DIST/'assets'),name='assets')

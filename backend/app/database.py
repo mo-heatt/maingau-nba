@@ -29,7 +29,12 @@ def initialize():
         CREATE TABLE IF NOT EXISTS overrides(customer_id TEXT PRIMARY KEY,offer_id TEXT,note TEXT NOT NULL,created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP);
         CREATE TABLE IF NOT EXISTS drafts(id INTEGER PRIMARY KEY,customer_id TEXT NOT NULL,decision_id TEXT NOT NULL,subject TEXT NOT NULL,body TEXT NOT NULL,generator TEXT NOT NULL,status TEXT NOT NULL DEFAULT 'draft',created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP);
         CREATE TABLE IF NOT EXISTS audit(id INTEGER PRIMARY KEY,kind TEXT NOT NULL,customer_id TEXT,payload TEXT NOT NULL,created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP);
-        PRAGMA user_version=1;
+        CREATE TABLE IF NOT EXISTS ai_decisions(id INTEGER PRIMARY KEY,customer_id TEXT NOT NULL,input_hash TEXT NOT NULL,status TEXT NOT NULL,payload TEXT NOT NULL,created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP);
+        CREATE INDEX IF NOT EXISTS ai_customer ON ai_decisions(customer_id,id);
+        CREATE TABLE IF NOT EXISTS ai_batches(id INTEGER PRIMARY KEY,status TEXT NOT NULL,payload TEXT NOT NULL,created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP);
+        CREATE TABLE IF NOT EXISTS outreach_materials(id INTEGER PRIMARY KEY,customer_id TEXT NOT NULL,decision_id INTEGER NOT NULL,identity TEXT NOT NULL,channel TEXT NOT NULL,status TEXT NOT NULL,payload TEXT NOT NULL,created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP);
+        CREATE INDEX IF NOT EXISTS outreach_identity ON outreach_materials(identity,id);
+        PRAGMA user_version=3;
         ''')
         c.execute('INSERT OR IGNORE INTO settings VALUES (1,1,?)',(json.dumps({'contact_cap_30d':3,'min_dclv_eur':0,'offers_off':[],'channels_off':[],'priorities':{},'tone_mode':'mirror','content_approvals':{}}),))
 
