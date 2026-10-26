@@ -10,7 +10,7 @@ for p in ["/health", "/radar", "/overview", "/settings", "/catalog", "/marketing
 S["/ai/status"]["configured"] = False
 S["__list"] = get("/customers?limit=750")["items"]
 paths = [f"/customers/{c['id']}{suf}" for c in S["__list"]
-         for suf in ["", "/insights", "/ai-nba", "/products", "/outreach-context", "/outreach", "/newsletter-context", "/newsletters"]]
+         for suf in ["", "/insights", "/ai-nba", "/products", "/outreach-context", "/outreach", "/newsletter-context", "/newsletters", "/timeline"]]
 with ThreadPoolExecutor(8) as pool:
     for p, body in zip(paths, pool.map(get, paths)):
         S[p] = body

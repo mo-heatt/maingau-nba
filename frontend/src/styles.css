@@ -112,3 +112,31 @@ main{max-width:1740px}.customer-layout{grid-template-columns:208px minmax(0,1fr)
 .radar-track .rt-billing i{border:0;border-radius:0;width:0;height:0;border-left:6px solid transparent;border-right:6px solid transparent;border-bottom:11px solid #c0392b;background:none}
 .radar-track .rt-text small{display:block;color:var(--muted);font-size:11px;margin-top:3px}
 .radar-box.compact{margin-bottom:18px}
+/* Customer timeline (History tab) */
+.tl-filters{display:flex;flex-wrap:wrap;gap:6px;padding:0 23px 16px}
+.tl-filters button{font-size:11px;padding:6px 10px;border-radius:14px;border:1px solid var(--line);background:var(--surface);color:var(--text)}
+.tl-filters button span{color:var(--text-muted);margin-left:3px;font-variant-numeric:tabular-nums}
+.tl-filters button.active{background:var(--text-strong);border-color:var(--text-strong);color:var(--surface)}
+.tl-filters button.active span{color:var(--surface)}
+.tl{list-style:none;margin:0;padding:0 23px 10px;position:relative}
+.tl-item{display:grid;grid-template-columns:104px 16px minmax(0,1fr);gap:10px;align-items:start;padding:7px 0;position:relative}
+.tl-item::before{content:"";position:absolute;left:119px;top:0;bottom:0;width:2px;background:var(--line)}
+.tl-year{grid-column:1/-1;font-size:12px;font-weight:700;color:var(--text-strong);padding:12px 0 4px;position:relative;z-index:1;background:var(--surface);width:max-content;padding-right:10px}
+.tl-date{font-size:11px;color:var(--text-muted);font-variant-numeric:tabular-nums;padding-top:2px}
+.tl-dot{width:12px;height:12px;border-radius:50%;margin-top:3px;background:var(--surface);border:2px solid var(--text-muted);position:relative;z-index:1}
+.tl-bad .tl-dot{background:var(--danger-text);border-color:var(--danger-text)}
+.tl-warn .tl-dot{background:#d9901a;border-color:#d9901a}
+.tl-good .tl-dot{background:var(--success-text);border-color:var(--success-text)}
+.tl-muted{opacity:.62}
+.tl-upcoming .tl-dot{border-style:dashed}
+.tl-body{min-width:0;font-size:12px;color:var(--text-strong);line-height:1.45}
+.tl-body b{font-weight:600}
+.tl-body small{display:block;font-size:11px;color:var(--text-muted);margin-top:2px;overflow-wrap:anywhere}
+.tl-src{display:inline-block;font-size:9px;letter-spacing:.4px;text-transform:uppercase;padding:2px 6px;border-radius:3px;margin-right:7px;background:var(--surface-raised);color:var(--text);vertical-align:1px}
+.tl-bad .tl-body b{color:var(--danger-text)}
+.tl-next{background:var(--warning-bg);color:var(--warning-text)}
+.tl-src-svc,.tl-src-call,.tl-src-agent{background:var(--warning-bg);color:var(--warning-text)}
+.tl-src-nba{background:var(--danger-bg);color:var(--danger-text)}
+.tl-src-contract,.tl-src-crm{background:var(--success-bg);color:var(--success-text)}
+.tl-note{margin:6px 23px 20px}
+@media(max-width:640px){.tl-item{grid-template-columns:74px 14px minmax(0,1fr);gap:8px}.tl-item::before{left:87px}.tl{padding:0 16px 10px}.tl-filters{padding:0 16px 14px}}
