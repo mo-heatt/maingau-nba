@@ -82,7 +82,7 @@ This fixture is for automated tests only; the running application never substitu
 
 ## Customer offer studio
 
-Customer 360 includes observed usage/activity charts and a **Before / Now** switch. The AI view has email, call, web, push and SMS formats, a concrete demo tariff comparison, and an internal customer dossier. Generate each material separately; downloaded email drafts use the selected quote. The call format has discovery questions, a spoken offer, objection handling and contact-timing observations. Observed activity is not confirmed availability.
+Customer 360 includes observed usage/activity charts and an **Engine / AI** switch. It opens on the engine decision (works without an AI key); the AI view has email, call, web, push and SMS formats, a concrete demo tariff comparison, and an internal customer dossier. Generate each material separately; downloaded email drafts use the selected quote. The call format has discovery questions, a spoken offer, objection handling and contact-timing observations. Observed activity is not confirmed availability.
 
 For a saved mobile example, open `http://127.0.0.1:5173/#customers?customer=MG-100005`. Demo offer interest is recorded locally and does not create a contract. All sending remains disabled. See the AI contract for price provenance and channel-preview limitations.
 

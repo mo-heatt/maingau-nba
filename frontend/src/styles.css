@@ -72,3 +72,4 @@ main{max-width:1740px}.customer-layout{grid-template-columns:208px minmax(0,1fr)
 .arch-mcp{background:var(--navy);color:#c0cee0;border-radius:7px;padding:12px 14px;font-size:12px}
 .arch-mcp b{display:block;color:var(--yellow);font-size:13px}
 @media(max-width:1000px){.arch-grid{grid-template-columns:minmax(0,1fr)}.arch-row{grid-template-columns:minmax(0,1fr)}}
+.show-more{display:flex;justify-content:center;padding:16px}

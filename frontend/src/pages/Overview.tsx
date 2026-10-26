@@ -113,7 +113,7 @@ export default function Overview({revision, onGo, onSelect}: {revision: number; 
       </>}
       {sale && <div className="ov-sale"><div className="eyebrow">And a sale done right</div>
         <p><button className="link" onClick={() => onSelect(sale.id)}>{sale.id}</button> · today: {sale.history.length ? sale.history.map(h => `${names[h.offer] || h.offer} by ${channel(h.channel).toLowerCase()}${h.channel === 'app_push' && !sale.app_installed ? ' (no app installed)' : ''}, ${h.response === 'ignored' ? 'no reaction' : h.response}`).join('; ') : 'no earlier contact'}.</p>
-        <p>Ours: <b>{sale.decision.name}</b> by {channel(sale.decision.channel).toLowerCase()}, “{sale.decision.tone === 'du' ? 'Du' : 'Sie'}”, expected <b>{signed(sale.decision.expected_gain_eur)}</b>. {sale.decision.reason}</p></div>}
+        <p>Ours: <b>{sale.decision.name}</b> by {channel(sale.decision.channel).toLowerCase()}, “{sale.decision.tone === 'du' ? 'Du' : 'Sie'}”, expected <b>{signed(sale.decision.expected_gain_eur)}</b>. Why: {sale.decision.reason.split('. Via ')[0]}.</p></div>}
     </Panel>
 
     <div className="ov-go">
