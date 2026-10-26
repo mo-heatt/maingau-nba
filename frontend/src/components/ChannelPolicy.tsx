@@ -4,7 +4,7 @@ import type {Customer} from '../types';
 import {CheckCircle2,XCircle} from 'lucide-react';
 import {useApi} from '../api';
 import type {Quote,Dossier} from './OutreachWorkbench';
-export type ChannelPolicy={decision_id:number|null;quote:Quote|null;dossier:Dossier;current:boolean;editorial_newsletter_allowed:boolean;editorial_newsletter:{allowed:boolean;reasons:string[]};allowed_channels:string[];channels:{channel:string;label:string;allowed:boolean;reasons:string[];contact_allowed:boolean|null;contact_reason:string|null}[]};
+export type ChannelPolicy={decision_id:number|null;quote:Quote|null;dossier:Dossier;current:boolean;editorial_newsletter_allowed:boolean;editorial_newsletter:{allowed:boolean;reasons:string[]};allowed_channels:string[];channels:{channel:string;label:string;allowed:boolean;reasons:string[];recommended?:boolean;advisories?:string[];contact_allowed:boolean|null;contact_reason:string|null}[]};
 const Context=createContext<{data:ChannelPolicy|null;error:string;loading:boolean;refresh:()=>void}>({data:null,error:'',loading:true,refresh:()=>{}});
 export function ChannelPolicyProvider({id,revision,children}:{id:string;revision:number;children:ReactNode}){
  const[tick,setTick]=useState(0);
@@ -15,7 +15,9 @@ export const useChannelPolicy=()=>useContext(Context);
 export function ChannelPermissions(){
  const{data,error}=useChannelPolicy();
  if(!data)return <p className="small-text muted">{error||'Checking channel eligibility…'}</p>;
- return <><p className="small-text muted">Decision availability is derived from source consent and policy checks. A blocked action does not change the recorded consent.</p><div className="checks">{data.channels.map(ch=><p key={ch.channel} className={ch.allowed?'':'muted'}>{ch.allowed?<CheckCircle2 size={14}/>:<XCircle size={14}/>}<span>{ch.label}<small>{ch.allowed?'Available for this recommendation':ch.reasons.join(' · ')}</small><small>{ch.contact_allowed===null?ch.contact_reason:ch.contact_allowed?'Contact permission granted':'Contact permission: '+ch.contact_reason}</small></span></p>)}</div><p className="small-text"><b>Informational newsletter: {data.editorial_newsletter.allowed?'available':'unavailable'}</b><br/>{data.editorial_newsletter.allowed?'Separate purpose: helpful updates without a personalised product offer.':data.editorial_newsletter.reasons.join(' · ')}</p></>;
+ const service=data.quote?.product_id==='P-SV-01';
+ const visible=data.channels.filter(ch=>ch.channel!==(service?'outbound_call':'agent_callback'));
+ return <><p className="small-text muted">Decision availability is derived from source consent and policy checks. A blocked action does not change the recorded consent.</p><div className="checks">{visible.map(ch=><p key={ch.channel} className={ch.allowed?'':'muted'}>{ch.allowed?<CheckCircle2 size={14}/>:<XCircle size={14}/>}<span>{['outbound_call','agent_callback'].includes(ch.channel)?'Call':ch.label}{ch.recommended&&<b className="channel-recommended">Recommended now</b>}<small>{ch.allowed?(ch.recommended?'Recommended for the current need':'Available alternative'):ch.reasons.join(' · ')}</small>{ch.allowed&&ch.advisories?.length?<small>{ch.advisories.join(' · ')}</small>:null}<small>{ch.contact_allowed===null?ch.contact_reason:ch.contact_allowed?'Contact permission granted':'Contact permission: '+ch.contact_reason}</small></span></p>)}</div><p className="small-text"><b>Informational newsletter: {data.editorial_newsletter.allowed?'available':'unavailable'}</b><br/>{data.editorial_newsletter.allowed?'Separate purpose: helpful updates without a personalised product offer.':data.editorial_newsletter.reasons.join(' · ')}</p></>;
 }
 
 const consentLabels:Record<string,string>={newsletter_email:'Newsletter email',marketing_email:'Marketing email',marketing_phone:'Marketing phone',marketing_sms:'Marketing SMS',portal_app_personalisation:'Portal & app personalisation',profiling_analytics:'Profiling & analytics'};

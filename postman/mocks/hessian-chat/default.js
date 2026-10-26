@@ -24,6 +24,11 @@ http.createServer(async (req, res) => {
       body:body.model==='bad-price'?'Das kostet 99,99 €.':'Ein passendes Angebot auf Basis der vorhandenen Daten.',benefit_points:['Passendes Datenvolumen'],
       opening:call?'Passt es gerade?':null,discovery_questions:call?['Wie passt der aktuelle Tarif?']:[],offer_pitch:call?'Der vorgeschlagene Tarif passt zum Bedarf.':null,
       objections:call?[{concern:'Ich möchte überlegen.',response:'Natürlich, gerne in Ruhe prüfen.'}]:[],closing:call?'Wie möchten wir weiter vorgehen?':null,evidence};
+    if(source.proposal?.action==='service'){
+      const formal=source.tone==='sie';
+      result={...result,headline:'Gemeinsam das Anliegen klären',subject:result.subject?(formal?'Hilfe zu Ihrem Anliegen':'Hilfe zu deinem Anliegen'):null,body:formal?'Wir helfen Ihnen gern, Ihr offenes Anliegen zu klären.':'Wir helfen dir gern, dein offenes Anliegen zu klären.',benefit_points:['Unterstützung beim offenen Anliegen'],discovery_questions:call?[formal?'Was ist Ihnen bei der Klärung wichtig?':'Was ist dir bei der Klärung wichtig?']:[],offer_pitch:call?(formal?'Wir klären gemeinsam Ihr Anliegen.':'Wir klären gemeinsam dein Anliegen.'):null};
+      if(call)result.body='Offenes Serviceanliegen; nächster Schritt ist die gemeinsame Klärung.';
+    }
   } else if(body.messages[0].content.includes('German MAINGAU email')){
     result={subject:'Ein passender nächster Schritt',body:'Guten Tag, wir möchten gemeinsam eine passende Option prüfen.',evidence};
   } else {

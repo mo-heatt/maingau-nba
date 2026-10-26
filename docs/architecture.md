@@ -56,6 +56,12 @@ The Permissions screen therefore shows **Recorded consent** separately from **Ac
 
  The directory's Contact channel filter uses contact checks, so this customer can match Newsletter or Portal even though campaign generation is held back. App push additionally requires an installed app. Service callback is a case-specific action, not a blanket marketing consent channel.
 
+## Recommendations versus channel restrictions
+
+For a validated **service** decision, the callback is marked **Recommended now**. Other channels that pass their consent/account and policy checks remain **Available alternatives**, including SMS and phone. Choosing another channel retains the service purpose; it does not turn the message into a sale. The writer receives this purpose explicitly. The studio shows the preferred channel and lets the operator choose an alternative. Phone is presented once as **Call**; service and sales are purposes, not two contact channels. The UI maps Call to the callback flow for a service NBA and to the sales-call flow for an offer NBA.
+
+Missing/withdrawn consent, disabled channels, stale/invalid decisions and holdout remain real restrictions. Newsletter generation keeps its separate consent/DOI and editorial checks. Product/value constraints still apply to sales proposals. This change softens the service-channel preference, not every business or consent gate.
+
 ## Flow: choose an AI next best action
 
 ```mermaid
