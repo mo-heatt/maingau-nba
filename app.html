@@ -26,6 +26,7 @@
   --accent:#FFE500; --accent-ink:#0F2C63; --offer:#8FB0F0; --offer-bg:#1A3768;
   --good:#5CCB93; --good-bg:#14301F; --warn:#F2AE4E; --warn-bg:#33240F; --bad:#F2857A; --bad-bg:#3A1A17; color-scheme:dark}
 *{box-sizing:border-box}
+[hidden]{display:none!important}
 html,body{background:var(--bg);color:var(--text)}
 body{font-family:var(--f-body);font-size:15px;line-height:1.5}
 body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--brand)}
@@ -214,7 +215,41 @@ input[type=range]{width:100%;accent-color:var(--offer)}
 .arch .lane{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
 .prose{max-width:75ch} .prose ul{margin:8px 0 0;padding-left:20px} .prose li{margin-bottom:6px}
 
-@media (max-width:1100px){.pipe{grid-template-columns:repeat(4,minmax(0,1fr))}.arch{grid-template-columns:minmax(0,1fr)}}
+/* 360 new: every source system around one customer */
+:root{--s-use:#1F4FA8;--s-pv:#B07000}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--s-use:#5E8FEE;--s-pv:#C98418}}
+:root[data-theme="dark"]{--s-use:#5E8FEE;--s-pv:#C98418}
+.x360{display:grid;grid-template-columns:300px minmax(0,1fr);gap:20px;align-items:start}
+.x360 .filters button{font-size:12px;padding:3px 8px}
+.xnba{display:flex;flex-wrap:wrap;gap:10px 20px;align-items:center;justify-content:space-between;border:1px solid var(--line);border-left:6px solid var(--offer);border-radius:10px;background:var(--panel);padding:12px 16px}
+.xnba.service{border-left-color:var(--accent)} .xnba.none,.xnba.wait{border-left-color:var(--line)} .xnba.human{border-left-color:var(--bad)}
+.xnba b{font-family:var(--f-display);font-size:19px;color:var(--ink)}
+.xnba .n{font-family:var(--f-mono);font-size:22px;color:var(--good)}
+.lines{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.ln{border:1px solid var(--line);border-radius:10px;background:var(--panel);padding:12px 14px;display:flex;flex-direction:column;gap:6px;min-width:0}
+.ln.off{background:transparent;border-style:dashed}
+.ln header{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.ln header b{font-family:var(--f-display);font-size:16px;color:var(--ink)}
+.ln .it{font-size:13px} .ln .it b{color:var(--ink);font-weight:600}
+.ln .opp{font-size:12.5px;border-top:1px solid var(--line);padding-top:6px;margin-top:auto}
+.xmain{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr);gap:16px;align-items:start}
+.tl{list-style:none;margin:10px 0 0;padding:0}
+.tl li{display:grid;grid-template-columns:118px minmax(0,1fr);gap:2px 12px;padding:8px 0 8px 10px;border-bottom:1px solid var(--line);border-left:3px solid transparent}
+.tl li.bad{border-left-color:var(--bad)} .tl li.good{border-left-color:var(--good)} .tl li.warn{border-left-color:var(--warn)} .tl li.muted .ti{color:var(--muted)}
+.tl .when{font-family:var(--f-mono);font-size:12px;color:var(--muted);grid-row:1/3}
+.tl .ti{font-size:13.5px;color:var(--ink)} .tl .de{font-size:12.5px;color:var(--muted);grid-column:2}
+.tl .tag{margin-right:6px}
+.stat{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 12px;font-size:13.5px;margin-top:8px}
+.stat span:nth-child(even){font-family:var(--f-mono);text-align:right;color:var(--ink)}
+.chart{position:relative;margin-top:8px}
+.chart svg{display:block;width:100%;height:auto;overflow:visible}
+.chart .tip{position:absolute;top:0;pointer-events:none;background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:6px 8px;font-size:12px;box-shadow:0 2px 8px rgba(0,0,0,.12);white-space:nowrap}
+.legend{display:flex;gap:14px;font-size:12.5px;color:var(--muted);margin-top:6px}
+.legend i{display:inline-block;width:14px;height:2px;vertical-align:middle;margin-right:6px}
+
+@media (max-width:1100px){.pipe{grid-template-columns:repeat(4,minmax(0,1fr))}.arch{grid-template-columns:minmax(0,1fr)}.xmain{grid-template-columns:minmax(0,1fr)}.lines{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:1000px){.x360{grid-template-columns:minmax(0,1fr)}}
+@media (max-width:700px){.lines{grid-template-columns:minmax(0,1fr)}.tl li{grid-template-columns:minmax(0,1fr)}.tl .when{grid-row:auto}.tl .de{grid-column:1}}
 @media (max-width:1000px){.c360,.mk{grid-template-columns:minmax(0,1fr)}.rail,.steer{position:static;max-height:none}.list{max-height:360px}.three,.qa{grid-template-columns:minmax(0,1fr)}}
 @media (max-width:700px){.two,.cmp,.tpl{grid-template-columns:minmax(0,1fr)}.decision .in{grid-template-columns:minmax(0,1fr)}.decision .gain{text-align:left}.bar{grid-template-columns:110px minmax(0,1fr) 90px}.ev{grid-template-columns:minmax(0,1fr)}.head h1{font-size:24px}.pipe{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}.example{grid-template-columns:minmax(0,1fr)}.arch .lane{grid-template-columns:minmax(0,1fr)}}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
@@ -226,6 +261,7 @@ input[type=range]{width:100%;accent-color:var(--offer)}
     <a href="#recommendations" data-v="recommendations">Recommendations</a>
     <a href="#marketing" data-v="marketing">Marketing</a>
     <a href="#customers" data-v="customers">Customer 360°</a>
+    <a href="#x360" data-v="x360">360 new</a>
     <a href="#method" data-v="method">How it works</a>
   </nav>
 </div></header>
@@ -268,6 +304,19 @@ input[type=range]{width:100%;accent-color:var(--offer)}
         <div class="list" id="list" role="listbox" aria-label="Customers ranked by expected value"></div>
       </div>
       <div class="stack" id="detail"></div>
+    </div>
+  </section>
+
+  <!-- 360 NEW: every source system joined around one customer -->
+  <section id="v-x360" hidden>
+    <div class="x360">
+      <div class="rail">
+        <input type="search" id="xq" placeholder="Customer ID or city" aria-label="Find customer">
+        <div class="filters" id="xsegs" role="group" aria-label="Segment"></div>
+        <div class="muted small" id="xcount"></div>
+        <div class="list" id="xlist" role="listbox" aria-label="Customers by lifetime value"></div>
+      </div>
+      <div class="stack" id="xdetail"></div>
     </div>
   </section>
 
@@ -884,8 +933,140 @@ function renderMethod() {
 }
 $("#v-method").addEventListener("click", e => { const o = e.target.closest("[data-open]"); if (o) select(o.dataset.open); });
 
+/* ---------- 360 new: every source system joined around one customer ---------- */
+const X = D.x360;
+const SRC = {live:"Live event", svc:"Service", call:"Call", agent:"Agent desk", nba:"Campaign", nl:"Newsletter", portal:"Portal & app", shop:"Shop", charge:"Charging", hems:"Smart home", contract:"Contract", consent:"Consent", crm:"CRM"};
+const LINES = [["energy","Energy"],["mobile","Mobile"],["e_mobility","Autostrom"],["smart_living","Smart home"],["shop","Shop"],["internet","Internet"]];
+const SEG = [["all","All"],["multi","Multi-product"],["risk","Churn ≥ 25%"],["case","Open case"],["ev","Drives electric"],["home","Smart home"]];
+const SHEET_HAS = {customer_master:()=>1, customer_value:()=>1, consent_status:()=>1, product_catalog:()=>1, newsletter_campaigns:x=>x.nl,
+  energy_contracts:x=>x.energy, mobile_contracts:x=>x.mobile, autostrom_contracts:x=>x.auto, charge_sessions:x=>x.charge, shop_orders:x=>x.shop,
+  hems_devices:x=>x.hems && x.hems.dev.length, hems_telemetry_daily:x=>x.hems && x.hems.days, newsletter_performance:x=>x.nl, portal_sessions:x=>x.portal,
+  service_interactions:x=>x.svc, call_transcripts:x=>x.tl.some(t=>t[1]==="call"), service_nba_feedback:x=>x.tl.some(t=>t[1]==="agent"), nba_action_history:x=>x.tl.some(t=>t[1]==="nba")};
+const NOW = "2026-10-01 23:59";
+let xSel = "MG-100068", xSeg = "all", xSrc = "all", xLimit = 25;
+const holds = (c, line) => line === "shop" ? !!X[c.id].shop : c.products.some(p => p.line === (line === "e_mobility" ? "autostrom" : line));
+const nice = s => String(s ?? "").replace(/_/g, " ");
+function segOk(c) { const x = X[c.id];
+  return xSeg === "all" || (xSeg === "multi" && c.lines >= 2) || (xSeg === "risk" && c.churn >= .25) || (xSeg === "case" && (c.case.length || c.cancel))
+    || (xSeg === "ev" && !!x.auto) || (xSeg === "home" && !!x.hems); }
+
+function renderX360List() {
+  const q = $("#xq").value.trim().toUpperCase();
+  const rows = D.customers.filter(c => segOk(c) && (!q || c.id.includes(q) || c.city.toUpperCase().includes(q))).sort((a,b) => b.clv - a.clv);
+  $("#xsegs").innerHTML = SEG.map(([k,l]) => `<button data-seg="${k}" aria-pressed="${xSeg===k}">${l}</button>`).join("");
+  $("#xcount").textContent = `${rows.length} customers${rows.length > 200 ? " · top 200 shown" : ""}`;
+  $("#xlist").innerHTML = rows.slice(0, 200).map(c => `<div class="li" role="option" tabindex="0" data-id="${c.id}" aria-selected="${c.id===xSel}"><span class="id">${c.id}</span><span class="v">${eur(c.clv,0)}</span><span class="t">${esc(c.city)} · ${LINES.filter(l => holds(c,l[0])).map(l => l[1]).join(", ") || "no active products"}</span></div>`).join("") || `<p class="muted" style="padding:12px">No customer matches.</p>`;
+}
+$("#xq").addEventListener("input", renderX360List);
+$("#xsegs").addEventListener("click", e => { const b = e.target.closest("[data-seg]"); if (b) { xSeg = b.dataset.seg; renderX360List(); } });
+const xPick = id => { if (!BY[id]) return; xSel = id; xSrc = "all"; xLimit = 25; renderX360List(); renderX360(); };
+$("#xlist").addEventListener("click", e => { const r = e.target.closest("[data-id]"); if (r) xPick(r.dataset.id); });
+$("#xlist").addEventListener("keydown", e => { if (e.key === "Enter") { const r = e.target.closest("[data-id]"); if (r) xPick(r.dataset.id); } });
+
+function lineCard(c, x, line, label) {
+  const own = holds(c, line), it = (b, rest) => `<div class="it"><b>${esc(b)}</b>${rest ? ` · ${rest}` : ""}</div>`;
+  let body = "";
+  if (line === "energy") body = (x.energy || []).map(e => it(e.tariff, [nice(e.com), e.kwh ? e.kwh.toLocaleString("en-GB") + " kWh/yr" : "", e.inst ? eur(e.inst,0) + "/month" : "",
+    e.guar ? `guarantee ${e.guar < NOW ? "ended" : "until"} ${e.guar}` : "", e.st !== "active" ? `<span class="no">${esc(nice(e.st))}</span>` : "",
+    e.dun ? `<span class="no">dunning ${e.dun}</span>` : "", e.cancel ? `<span class="no">cancellation ${e.cancel}</span>` : "", e.feed ? "feed-in meter" : ""].filter(Boolean).join(" · "))).join("");
+  if (line === "mobile") body = (x.mobile || []).map(m => it(m.plan, [`${m.gb} GB`, `uses ${m.used} GB`, m.hits ? `<span class="no">limit hit ${m.hits}× in 3 months</span>` : "", `${eur(m.fee,0)}/month`, m.sims > 1 ? `${m.sims} SIMs` : "", m.minEnd ? `term ends ${m.minEnd}` : ""].filter(Boolean).join(" · "))).join("");
+  if (line === "e_mobility") body = (x.auto || []).map(a => it(a.car || "Autostrom", [a.batt ? a.batt + " kWh battery" : "", `${a.cards} card${a.cards===1?"":"s"}`, a.app ? "app user" : "", a.st !== "active" ? `<span class="no">${esc(nice(a.st))}</span>` : ""].filter(Boolean).join(" · "))).join("")
+    + (x.charge ? it(`${x.charge.n} sessions`, `${x.charge.kwh.toLocaleString("en-GB")} kWh · ${pct(x.charge.dc,0)} DC${x.charge.fail ? ` · <span class="no">${x.charge.fail} failed</span>` : ""}`) : "");
+  if (line === "smart_living") body = x.hems ? x.hems.dev.map(([t, m, s]) => it(nice(t), `${esc(m || "")}${s !== "online" ? ` · <span class="no">${esc(nice(s))}</span>` : ""}`)).join("") : "";
+  if (line === "shop") body = x.shop ? it(`${x.shop.n} order${x.shop.n===1?"":"s"}`, `${eur(x.shop.eur,0)} · last ${x.shop.last}`) : "";
+  const opp = c.cands.filter(k => OFFER[k.o] && OFFER[k.o].line === line).sort((a,b) => b.d - a.d)[0];
+  const oppTxt = opp ? (opp.blk.length ? `<span class="muted">Opportunity on hold: ${esc(opp.n)} (${esc(opp.blk[0])})</span>` : `Opportunity: <b>${esc(opp.n)}</b> <span class="mono ${opp.d > 0 ? "ok" : "no"}">${sgn(opp.d,0)}</span>`) : "";
+  return `<div class="ln ${own ? "" : "off"}"><header><b>${label}</b><span class="pill ${own ? "k-ok" : "k-none"}">${own ? "Customer" : "Not yet"}</span></header>
+    ${body || (own ? "" : `<div class="it muted">No contract or purchase.</div>`)}${oppTxt ? `<div class="opp">${oppTxt}</div>` : ""}</div>`;
+}
+
+function hemsChart(h) {
+  const W = 320, H = 110, P = 4, n = h.days.length, max = Math.max(1, ...h.use, ...h.pv);
+  const px = i => P + i * (W - 2*P - 34) / Math.max(1, n - 1), py = v => H - 16 - (v / max) * (H - 26);
+  const line = (a, col) => `<polyline fill="none" stroke="var(${col})" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" points="${a.map((v,i) => v == null ? "" : `${px(i).toFixed(1)},${py(v).toFixed(1)}`).join(" ")}"/>`;
+  const lastLbl = (a, col, t) => `<text x="${px(n-1)+5}" y="${py(a[n-1] ?? 0)+4}" font-size="10" fill="var(--muted)">${t}</text>`;
+  return `<div class="chart" id="hchart"><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Daily household use and solar generation, September 2026">
+    <line x1="${P}" x2="${W-34}" y1="${H-16}" y2="${H-16}" stroke="var(--line)"/>
+    <text x="${P}" y="${H-3}" font-size="10" fill="var(--muted)">${h.days[0].slice(5)}</text><text x="${W-34}" y="${H-3}" font-size="10" fill="var(--muted)" text-anchor="end">${h.days[n-1].slice(5)}</text>
+    <text x="${P}" y="9" font-size="10" fill="var(--muted)">${Math.round(max)} kWh</text>
+    ${line(h.use, "--s-use")}${line(h.pv, "--s-pv")}${lastLbl(h.use, "--s-use", "Use")}${lastLbl(h.pv, "--s-pv", "Solar")}
+    <line id="hx" y1="10" y2="${H-16}" stroke="var(--muted)" stroke-dasharray="2 2" visibility="hidden"/>
+    <rect id="hhit" x="0" y="0" width="${W-30}" height="${H}" fill="transparent"/></svg><div class="tip" id="htip" hidden></div></div>
+    <div class="legend"><span><i style="background:var(--s-use)"></i>Household use</span><span><i style="background:var(--s-pv)"></i>Solar generation</span></div>`;
+}
+function wireHemsChart(h) {
+  const box = $("#hchart"); if (!box) return;
+  const svg = box.querySelector("svg"), tip = $("#htip"), hx = $("#hx"), n = h.days.length;
+  const at = e => { const r = svg.getBoundingClientRect(), vx = (e.clientX - r.left) * 320 / r.width; return Math.max(0, Math.min(n - 1, Math.round((vx - 4) / ((320 - 8 - 34) / Math.max(1, n - 1))))); };
+  svg.addEventListener("pointermove", e => { const i = at(e), x = 4 + i * (320 - 8 - 34) / Math.max(1, n - 1), r = svg.getBoundingClientRect();
+    hx.setAttribute("x1", x); hx.setAttribute("x2", x); hx.setAttribute("visibility", "visible");
+    tip.hidden = false; tip.innerHTML = `<b>${h.days[i]}</b><br>Use ${h.use[i] ?? "–"} kWh · Solar ${h.pv[i] ?? "–"} kWh${h.ev && h.ev[i] ? `<br>EV charging ${h.ev[i]} kWh` : ""}`;
+    const left = x * r.width / 320; tip.style.left = Math.min(left + 10, r.width - tip.offsetWidth) + "px"; });
+  svg.addEventListener("pointerleave", () => { tip.hidden = true; hx.setAttribute("visibility", "hidden"); });
+}
+
+function renderX360() {
+  const c = BY[xSel], x = X[xSel], d = DEC[xSel];
+  const held = LINES.filter(l => holds(c, l[0])).length;
+  const stat = rows => `<div class="stat">${rows.filter(r => r[1] != null && r[1] !== "").map(([k,v]) => `<span>${k}</span><span>${v}</span>`).join("")}</div>`;
+  const perm = k => { const v = c.consent[k] || "unknown"; return `<span class="pill ${v==="granted"?"k-ok":v==="withdrawn"?"k-human":"k-none"}">${esc(nice(v))}</span>`; };
+  const chanRows = [
+    ["Portal", perm("portal_app_personalisation"), !c.portal ? "No portal account" : x.portal ? `${x.portal.n90} session${x.portal.n90===1?"":"s"} in 90 days · last ${x.portal.last}` : "Account, no sessions"],
+    ["App", perm("portal_app_personalisation"), c.app ? `Installed${x.portal ? ` · ${pct(x.portal.app,0)} of sessions` : ""}` : "Not installed"],
+    ["Newsletter", perm("newsletter_email"), x.nl ? `${x.nl.open} of ${x.nl.sent} opened · ${x.nl.click} clicked${x.nl.unsub ? ` · <span class="no">unsubscribed</span>` : ""}` : "Not on the list"],
+    ["Marketing e-mail", perm("marketing_email"), `${c.contacts} marketing contacts in 30 days`],
+    ["SMS", perm("marketing_sms"), ""],
+    ["Phone", perm("marketing_phone"), ""],
+    ["Service desk", `<span class="pill k-ok">always</span>`, x.svc ? `${x.svc.n} tickets${x.svc.open ? ` · <span class="no">${x.svc.open} open</span>` : ""}${x.svc.csat ? ` · CSAT ${x.svc.csat}` : ""}` : "No tickets"],
+    ["Profiling", perm("profiling_analytics"), c.prof ? "Behaviour signals may be used" : "Contract data only"],
+  ].map(([n, p, a]) => `<tr><td><b style="color:var(--ink)">${n}</b></td><td>${p}</td><td>${a || `<span class="muted">–</span>`}</td></tr>`).join("");
+  const counts = {}; x.tl.forEach(t => counts[t[1]] = (counts[t[1]] || 0) + 1);
+  const tlRows = x.tl.filter(t => xSrc === "all" || t[1] === xSrc);
+  const tl = tlRows.slice(0, xLimit).map(([at, s, ti, de, f]) => `<li class="${f}"><span class="when">${esc(at)}${at > NOW ? `<br><span class="pill k-service">upcoming</span>` : ""}</span><span class="ti"><span class="tag">${SRC[s] || s}</span>${esc(ti)}</span>${de ? `<span class="de">${esc(de)}</span>` : ""}</li>`).join("");
+  const cls = {offer:"", service:"service", none:"none", wait:"wait", human:"human"}[d.a];
+  const srcRows = D.sources.map(s => { const f = SHEET_HAS[s.sheet], has = f ? !!f(x) : false;
+    return `<tr><td>${esc(s.source_system)}<div class="muted small mono">${esc(s.sheet)}</div></td><td>${esc(s.refresh || "")}</td><td>${esc(s.typical_latency || "–")}</td><td>${has ? `<span class="ok">✓ data</span>` : `<span class="muted">none</span>`}</td></tr>`; }).join("");
+  const nSrc = D.sources.filter(s => SHEET_HAS[s.sheet] && SHEET_HAS[s.sheet](x)).length;
+
+  $("#xdetail").innerHTML = `
+  <div class="head">
+    <div><div class="eyebrow">360 view · ${esc(c.city)} (${esc(x.plz)}xx) · customer since ${esc(c.since.slice(0,4))} · born ${c.by} · household of ${c.hh} · ${c.tone === "du" ? "writes informally (Du)" : "formal (Sie)"}</div><h1>${c.id}</h1>
+      <div class="chips">${c.cancel ? `<span class="pill k-human">Cancellation pending</span>` : ""}${c.case.map(z => `<span class="pill k-human">${esc(z)}</span>`).join("")}<span class="pill k-none">${nSrc} of ${D.sources.length} sources</span></div></div>
+    <div class="kpis"><div class="kpi"><div class="eyebrow">CLV now</div><div class="n">${eur(c.clv,0)}</div></div><div class="kpi"><div class="eyebrow">Churn risk</div><div class="n">${pct(c.churn,0)}</div></div>
+      <div class="kpi"><div class="eyebrow">Margin / yr</div><div class="n">${eur(c.margin,0)}</div></div><div class="kpi"><div class="eyebrow">Business lines</div><div class="n">${held} of ${LINES.length}</div></div></div>
+  </div>
+  <div class="xnba ${cls}"><div><div class="eyebrow">Next best action</div><div class="row" style="margin-top:2px"><b>${esc(d.a==="service"?"Proactive service fix":d.title)}</b><span class="pill ${KIND[d.a][0]}">${KIND[d.a][1]}</span>${d.pick?`<span class="pill k-none">${CH[d.pick.ch]}</span>`:""}</div><p class="muted small" style="margin-top:4px;max-width:80ch">${esc(d.reason)}</p></div>
+    <div class="row">${d.pick && d.a!=="wait" ? `<span class="n">${sgn(d.pick.d,0)}</span>` : ""}<button data-x="open">Open decision</button></div></div>
+  <div><h2>Relationship</h2><p class="muted small" style="margin-top:2px">What the customer has in each business line, and the best next product where they have none.</p></div>
+  <div class="lines">${LINES.map(([k,l]) => lineCard(c, x, k, l)).join("")}</div>
+  <div class="xmain">
+    <div class="card"><div class="row" style="justify-content:space-between"><h2>Timeline across every channel</h2><span class="muted small">${tlRows.length} entries</span></div>
+      <div class="filters" id="xsrc" role="group" aria-label="Filter by source" style="margin-top:10px"><button data-src="all" aria-pressed="${xSrc==="all"}">All ${x.tl.length}</button>${Object.keys(SRC).filter(k => counts[k]).map(k => `<button data-src="${k}" aria-pressed="${xSrc===k}">${SRC[k]} ${counts[k]}</button>`).join("")}</div>
+      <ul class="tl">${tl || `<li><span class="muted">Nothing from this source.</span></li>`}</ul>
+      ${tlRows.length > xLimit ? `<div class="row" style="margin-top:10px"><button class="ghost" data-x="more">Show ${Math.min(25, tlRows.length - xLimit)} more</button></div>` : ""}</div>
+    <div class="stack">
+      <div class="card"><h3>Channels and permissions</h3><div class="tscroll"><table style="margin-top:6px"><tbody>${chanRows}</tbody></table></div></div>
+      <div class="card"><h3>Value</h3>${stat([["Annual margin", eur(c.margin,0)], ["Cost to serve (12 months)", eur(c.cts,0)], ["Service effect on CLV", c.svcImpact ? sgn(c.svcImpact,0) : null], ["Churn risk", pct(c.churn,0)]])}
+        ${c.drivers && c.drivers.length ? `<div class="chips" style="margin-top:8px">${c.drivers.map(z => `<span class="pill k-service">${esc(z)}</span>`).join("")}</div>` : `<p class="muted small" style="margin-top:8px">No churn drivers.</p>`}</div>
+      ${x.hems && x.hems.days ? `<div class="card"><h3>Home energy, September</h3><p class="muted small">Self-consumption ${pct(x.hems.self || 0,0)} · solar ${Math.round(x.hems.pv.reduce((a,b)=>a+(b||0),0))} kWh · use ${Math.round(x.hems.use.reduce((a,b)=>a+(b||0),0))} kWh</p>${hemsChart(x.hems)}</div>` : ""}
+      ${x.charge ? `<div class="card"><h3>Charging</h3>${stat([["Sessions", x.charge.n], ["Energy charged", x.charge.kwh.toLocaleString("en-GB") + " kWh"], ["Spent", eur(x.charge.eur,0)], ["DC fast charging", pct(x.charge.dc,0)], ["Failed or aborted", x.charge.fail], ["Abroad", x.charge.abroad], ["Last session", x.charge.last]])}${x.charge.cities.length ? `<p class="muted small" style="margin-top:8px">Mostly in ${esc(x.charge.cities.join(", "))}</p>` : ""}</div>` : ""}
+      ${x.svc ? `<div class="card"><h3>Service</h3>${stat([["Tickets", x.svc.n], ["Open", x.svc.open], ["Average CSAT (1–5)", x.svc.csat ?? "–"], ["Solved on first contact", x.svc.fcr != null ? pct(x.svc.fcr,0) : "–"], ["Handling and goodwill cost", eur(x.svc.cost,0)]])}</div>` : ""}
+    </div>
+  </div>
+  <details class="more" data-k="x-src" ${op("x-src")}><summary>Data sources for this customer: ${nSrc} of ${D.sources.length}</summary><div class="body">
+    <p class="muted small">Joined on customer_id. Latency is how late a source can be; the profile is only as fresh as its slowest source.</p>
+    <div class="tscroll" style="margin-top:8px"><table><thead><tr><th>Source</th><th>Refresh</th><th>Latency</th><th>This customer</th></tr></thead><tbody>${srcRows}</tbody></table></div></div></details>`;
+  if (x.hems && x.hems.days) wireHemsChart(x.hems);
+}
+$("#xdetail").addEventListener("click", e => {
+  const s = e.target.closest("[data-src]"); if (s) { xSrc = s.dataset.src; xLimit = 25; renderX360(); return; }
+  const b = e.target.closest("[data-x]"); if (!b) return;
+  if (b.dataset.x === "more") { xLimit += 25; renderX360(); }
+  if (b.dataset.x === "open") select(xSel);
+});
+
 /* ---------- routing ---------- */
-const VIEWS = ["recommendations","marketing","customers","method"];
+const VIEWS = ["recommendations","marketing","customers","x360","method"];
 let view = "recommendations";
 function go(v) { if (v === "replay" || v === "learn") v = "method"; if (!VIEWS.includes(v)) v = "recommendations"; view = v;
   VIEWS.forEach(x => { $("#v-"+x).hidden = x !== v; });
@@ -895,6 +1076,7 @@ function go(v) { if (v === "replay" || v === "learn") v = "method"; if (!VIEWS.i
 function draw(full) {
   if (view === "recommendations") renderRec();
   if (view === "customers") { renderList(); renderDetail(); }
+  if (view === "x360") { renderX360List(); renderX360(); }
   if (view === "marketing") { if (full) { renderSteer(); renderTemplates(); } renderMarketing(); }
   if (view === "method") { renderMethod(); renderReplay(); renderLearn(); }
 }

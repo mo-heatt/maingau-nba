@@ -2,6 +2,7 @@
 import json
 from pathlib import Path
 from templates import TEMPLATES
+import build_360
 
 ROOT = Path(__file__).parent
 d = json.load(open(ROOT / "out" / "engine_output.json", encoding="utf-8"))
@@ -38,6 +39,7 @@ web = {
     "legacy": d["legacy"], "replay": d["replay"], "dups": d["replay_duplicates"], "selfCheck": d["self_check_violations"],
     "templates": TEMPLATES, "customers": [slim_c(c) for c in d["customers"]],
 }
+web["x360"], web["sources"] = build_360.build()
 blob = json.dumps(web, ensure_ascii=False, separators=(",", ":")).replace("</", "<\\/")
 html = (ROOT / "app.html").read_text(encoding="utf-8").replace("/*__DATA__*/null", blob)
 (ROOT / "out" / "nba_console.html").write_text(html, encoding="utf-8")
