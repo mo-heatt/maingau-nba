@@ -1,5 +1,5 @@
 import pandas as pd
-from .constants import SETTINGS, CHANNELS, SIGNAL_LIFT, INTENT_LIFT, DRIVER_LABEL
+from .constants import SETTINGS, CHANNELS, SIGNAL_LIFT, INTENT_LIFT, DRIVER_LABEL, PORTAL_REGULAR_LOGINS_90D
 from .signals import has, candidate_offers, service_case
 from .utils import clv
 
@@ -79,7 +79,9 @@ def channel_options(s, A, P):
         eng = 1.0
         if prof and why_not is None:   # engagement-based channel ranking is profiling -> only with consent
             if ch == "portal_popup":
-                eng = 1.3 if s["portal_sessions_90d"] >= 3 else (0.6 if s["portal_sessions_90d"] == 0 else 1.0)
+                # Team rule "will they see it soon?": a pop-up is only seen when the customer logs in.
+                # Regular portal users (3+ logins in 90 days) x1.3; everyone else x0.6, so e-mail usually wins.
+                eng = 1.3 if s["portal_sessions_90d"] >= PORTAL_REGULAR_LOGINS_90D else 0.6
             elif ch in ("newsletter_email", "email"):
                 e = s["email_engagement"]
                 if e["delivered"] >= 3:
