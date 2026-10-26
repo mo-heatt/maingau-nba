@@ -509,7 +509,7 @@ function renderDetail() {
   const rows = c.cands.map(k => {
     const b = best(c, k), picked = d.pick && d.pick.cand.o === k.o;
     let st = picked ? `<b class="ok">${d.overridden ? "Picked by marketing" : "Picked"}</b>` : k.blk.length ? `<span class="no">${esc(k.blk[0])}</span>` : ST.offersOff.includes(k.o) ? "Offer switched off" : !contentOk(k.o, d.tone) ? "Text not approved" : !b ? "No allowed channel" : b.d <= ST.min ? "Not worth a contact" : "Lower value";
-    return `<tr class="${picked?"picked":k.blk.length?"blocked":""}"><td><b style="color:var(--ink)">${esc(k.o==="P-SV-01"?"Proactive service fix":k.n)}</b></td><td style="min-width:200px">${esc(k.why)}</td><td>${b ? CH[b.ch] : "–"}</td><td class="r num">${pct(b ? b.p : k.p)}</td><td class="r num">${sgn(b ? b.d : k.d)}</td><td style="min-width:140px">${st}</td></tr>`;
+    return `<tr class="${picked?"picked":k.blk.length?"blocked":""}"><td><b style="color:var(--ink)">${esc(k.o==="P-SV-01"?"Proactive service fix":k.n)}</b></td><td style="min-width:200px">${esc(k.why)}${k.lift ? `<div class="muted" style="font-size:12px">chance: ${esc(k.lift)}</div>` : ""}</td><td>${b ? CH[b.ch] : "–"}</td><td class="r num">${pct(b ? b.p : k.p)}</td><td class="r num">${sgn(b ? b.d : k.d)}</td><td style="min-width:140px">${st}</td></tr>`;
   }).join("");
   const alts = c.cands.filter(k => !k.blk.length || k.o === "P-SV-01").filter(k => best(c,k));
   const sig = Object.entries(c.signals).map(([k,[v,cl,ev]]) => `<div><span class="tag">${cl==="behavioural"?"behaviour":"contract"}</span><span>${esc(ev[0] || k.replace(/_/g," "))}${cl==="behavioural" && !c.prof ? ` <span class="no">(not used: no profiling consent)</span>`:""}</span></div>`).join("") || `<span class="muted">No special signals.</span>`;
@@ -822,11 +822,11 @@ function renderMethod() {
   const drafts = Object.values(REC).filter(r => r.draft).length, appr = Object.values(REC).filter(r => r.status === "approved").length;
   const ctl = ids.filter(id => DEC[id].ctl && ["offer","service"].includes(DEC[id].a)).length;
   const steps = [
-    ["Trigger","Event or scheduled run selects a customer", `750 daily · ${D.replay.length} events`],
+    ["Trigger","When? Every night for everyone, and right away when an event comes in", `750 daily · ${D.replay.length} events`],
     ["Eligibility","Consent, products held, exclusions, frequency", `${blockedN} of ${cands} options blocked`],
     ["Scoring","Expected change in CLV, can be negative", `${negN} options ≤ €0`],
     ["Arbitration","Best gain wins, negatives dropped, limits kept", `${n("offer")} offers · ${n("service")} fixes`],
-    ["Channel & tone","Where and how to address the customer", `${topCh ? CH[topCh[0]] : "–"} most · Du ${du} / Sie ${offersN.length - du}`],
+    ["Channel & tone","Where they will see it soon; Du or Sie from their own words", `${topCh ? CH[topCh[0]] : "–"} most · Du ${du} / Sie ${offersN.length - du}`],
     ["Content","LLM, within approved templates", `${tplOn}/${tplAll} texts · ${drafts} AI drafts`],
     ["Delivery & log","Track response, back to step 1", `${appr} approved · ${ctl} held out`],
   ];
@@ -876,7 +876,8 @@ function renderMethod() {
       <li>Without profiling consent: contract data only, no behaviour data, no AI personalisation.</li>
       <li>Dunning level 1 already blocks sales content.</li>
       <li>Cancellations go to a person, never to an automated message.</li>
-      <li>Contact limit: ${D.settings.contact_cap_30d} marketing contacts in 30 days.</li></ul></div>
+      <li>Contact limit: ${D.settings.contact_cap_30d} marketing contacts in 30 days.</li>
+      <li>“Will they see it soon?” A portal pop-up only counts as a strong channel for customers with 3+ portal logins in 90 days; otherwise e-mail usually wins.</li></ul></div>
     <div class="prose"><h3>Data traps handled</h3><ul>
       <li>Apple Mail machine opens ignored.</li><li>${D.dups} duplicate events skipped.</li><li>Late events ordered by when they happened and flagged.</li><li>Consent withdrawals apply before any scoring.</li></ul>
       <h3 style="margin-top:12px">Self-checks</h3><ul><li>Violations now: <b>${violations()}</b>.</li><li>Browser ranking matches the Python engine on <b>${750 - parity} of 750</b> customers at default rules.</li><li>Snapshot ${esc(D.snapshot)}; events of 1 October 2026.</li></ul></div>
