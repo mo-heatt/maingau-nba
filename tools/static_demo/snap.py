@@ -1,8 +1,8 @@
-import json, gzip, urllib.request
+"""Snapshot every API answer the app reads, for the read-only online demo."""
+import gzip, json, os, urllib.request
 from concurrent.futures import ThreadPoolExecutor
-B = "http://127.0.0.1:8001/api"
-import os
-B = os.getenv("NBA_SNAPSHOT_API", B)
+
+B = os.getenv("NBA_SNAPSHOT_API", "http://127.0.0.1:8001/api")
 def get(p): return json.load(urllib.request.urlopen(B + p))
 S = {}
 for p in ["/health", "/radar", "/overview", "/settings", "/catalog", "/marketing", "/replay", "/ai/status", "/ai/batches/latest", "/developer/ai"]:

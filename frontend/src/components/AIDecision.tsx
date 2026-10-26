@@ -36,11 +36,12 @@ export default function AIDecision({customer,revision,onReview,busyReview,onNews
  const id=customer.id;
  const{refresh:refreshChannels}=useChannelPolicy();
  const {data:status}=useApi<Status>('/ai/status',revision),{data:catalog}=useApi<Catalog>('/catalog',revision);
- const [mode,setMode]=useState<'ai'|'rules'>('ai');
+ // Opens on AI only when AI can run or a saved AI result exists; otherwise on the engine decision.
+ const [chosen,setMode]=useState<'ai'|'rules'|null>(null);
  const {data:saved,error,refresh:refreshDecision}=useCustomerDecision();
  const [busy,setBusy]=useState(false),[failure,setFailure]=useState('');
  async function generate(){setBusy(true);setFailure('');try{await request('/customers/'+id+'/ai-nba','POST',{refresh:!!saved?.result});refreshDecision();refreshChannels()}catch(e){setFailure((e as Error).message)}finally{setBusy(false)}}
- const result=saved?.result,p=result?.proposal,isAI=mode==='ai';
+ const result=saved?.result,p=result?.proposal,mode=chosen??(status?.configured||result?.status==='validated'?'ai':'rules'),isAI=mode==='ai';
  const usable=!!result&&result.status==='validated'&&!!saved?.current;
  const productId=isAI?(usable?p?.product_id:null):customer.decision.product_id;
  const product=(isAI?result?.context.catalogue:catalog?.products)?.find(v=>v.product_id===productId);
