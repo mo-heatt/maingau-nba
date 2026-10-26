@@ -6,7 +6,7 @@ import {Metric, PageTitle, Panel, Loading} from '../components/ui';
 const steps: [string, string, string][] = [
   ['1', 'Profile', 'Everything about one customer in one row: products, value, problems, consent, behaviour, how they write. Late records are filtered at the snapshot.'],
   ['2', 'When', 'Every night for all customers, and right away for one customer when an event arrives: a complaint, a consent change, an unpaid bill, a purchase.'],
-  ['3', 'Rules', 'Complaint or unpaid bill: fix, don’t sell. Cancellation: a person decides. No consent: channel removed. Already owned or contacted too often: skip.'],
+  ['3', 'Rules', 'Complaint or unpaid bill: fix, don’t sell. Cancellation: a person decides. No consent: channel removed. Already owned or contacted too often: skip. Stuck service cases go on the Case Radar.'],
   ['4', 'Best offer', 'Every allowed offer gets a value: chance of yes × what Maingau earns − cost. The highest wins; if nothing is worth a contact, do nothing.'],
   ['5', 'Channel & tone', 'Only channels with consent, where the customer will see it soon (3+ portal logins in 90 days for a pop-up). Du or Sie from their own words.'],
   ['6', 'Message', 'Approved German template for the offer and tone. AI drafts stay inside it: no new prices, no pressure.'],

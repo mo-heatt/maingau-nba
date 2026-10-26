@@ -2,7 +2,7 @@ import json, gzip, urllib.request, sys
 B = "http://127.0.0.1:8001/api"
 def get(p): return json.load(urllib.request.urlopen(B + p))
 S = {}
-for p in ["/health", "/overview", "/settings", "/catalog", "/marketing", "/replay", "/ai/status", "/ai/batches/latest"]:
+for p in ["/health", "/radar", "/overview", "/settings", "/catalog", "/marketing", "/replay", "/ai/status", "/ai/batches/latest"]:
     S[p] = get(p)
 S["/ai/status"]["configured"] = False
 S["__list"] = get("/customers?limit=750")["items"]

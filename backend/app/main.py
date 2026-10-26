@@ -14,6 +14,7 @@ from . import ai_nba, outreach
 from .insights import customer_insights
 from .email_template import for_draft
 from .overview import overview as overview_data
+from .radar import radar as radar_data
 
 @asynccontextmanager
 async def lifespan(app):
@@ -52,6 +53,9 @@ class Override(BaseModel):
 
 @app.get('/api/health')
 def health():return {'status':'ok','customers':len(engine().state),'decision_engine':'single_python_engine','delivery':'disabled','snapshot':'2026-09-30T23:59:00'}
+
+@app.get('/api/radar')
+def radar():return radar_data(engine())
 
 @app.get('/api/overview')
 def overview():return overview_data(engine())

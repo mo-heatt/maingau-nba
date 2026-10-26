@@ -5,7 +5,7 @@ import {Metric, Panel, Loading} from '../components/ui';
 
 type Legacy = {actions: number; delivered: number; rules: number; consent_not_checked: number; unchecked_and_no_consent: number; sales_during_open_complaint: number; app_push: number; app_push_without_app: number; responses: Record<string, number>; agent_dismissed: number; agent_dismissed_upset: number; agent_suggestions: number};
 type OverviewData = {summary: {customers: number; expected_gain_eur: number; offers: number; service_fixes: number; held_out: number; approved: number; no_contact: number}; actions: Record<string, number>; violations: number; legacy: Legacy; acceptance: {treated?: number; control?: number}; cases: {service: string; sale: string}};
-type View = 'overview' | 'recommendations' | 'marketing' | 'customers' | 'method';
+type View = 'overview' | 'recommendations' | 'service' | 'marketing' | 'customers' | 'method';
 
 const pct = (v = 0, d = 0) => (v * 100).toFixed(d).replace('.', ',') + ' %';
 const signed = (v: number) => (v > 0 ? '+' : '') + eur(v);
@@ -105,6 +105,7 @@ export default function Overview({revision, onGo, onSelect}: {revision: number; 
               <li><span className="d">Best</span><span className="i good"><Check size={14} /></span><span>{svc.decision.name} worth <b>{signed(svc.decision.expected_gain_eur)}</b>{bestSale ? <>; the best sales offer would be worth {signed(bestSale.dclv)}</> : null}.</span></li>
               <li><span className="d">Channel</span><span className="i good"><Check size={14} /></span><span>{channel(svc.decision.channel)}, addressed with “{svc.decision.tone === 'du' ? 'Du' : 'Sie'}”, no offer.</span></li>
               {evFor(svc.id).length > 0 && <li><span className="d">Events</span><span className="i good"><Check size={14} /></span><span>{evFor(svc.id).length} new event{evFor(svc.id).length === 1 ? '' : 's'} today re-checked the decision: {svc.decision.name.toLowerCase()} stays the plan.</span></li>}
+              <li><span className="d">Radar</span><span className="i good"><Check size={14} /></span><span>Flagged as stuck: came back unsolved, and reminders are running during the complaint. One click pauses the reminders. <button className="link" onClick={() => onGo('service')}>Service first</button></span></li>
               <li><span className="d">Approve</span><span className="i good"><Check size={14} /></span><span>Marketing creates the service task; the decision is logged with its reason.</span></li>
             </ul>
             <div className="ov-out">Result: no more sales pressure, a person solves the problem, expected <b>{signed(svc.decision.expected_gain_eur)}</b> in customer value.</div>
@@ -117,7 +118,7 @@ export default function Overview({revision, onGo, onSelect}: {revision: number; 
     </Panel>
 
     <div className="ov-go">
-      {([['recommendations', 'Recommendations', 'Every customer: offer, channel, tone, expected gain and reason.'], ['marketing', 'Marketing dashboard', 'Set limits, priorities and channels; approve texts and actions.'], ['customers', 'Customer 360°', 'For service agents: status, value, the best action and why.'], ['method', 'How it works', 'The pipeline, event replay, learning loop and target architecture.']] as [View, string, string][]).map(([v, t, x]) => <button key={v} onClick={() => onGo(v)}><h3>{t} <ArrowRight size={14} /></h3><p>{x}</p></button>)}
+      {([['recommendations', 'Recommendations', 'Every customer: offer, channel, tone, expected gain and reason.'], ['service', 'Service first', 'Case Radar: stuck customers, why, and one click to stop the harm.'], ['marketing', 'Marketing dashboard', 'Set limits, priorities and channels; approve texts and actions.'], ['customers', 'Customer 360°', 'For service agents: status, value, the best action and why.'], ['method', 'How it works', 'The pipeline, event replay, learning loop and target architecture.']] as [View, string, string][]).map(([v, t, x]) => <button key={v} onClick={() => onGo(v)}><h3>{t} <ArrowRight size={14} /></h3><p>{x}</p></button>)}
     </div>
   </div>;
 }
