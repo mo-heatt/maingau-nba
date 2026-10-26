@@ -98,6 +98,54 @@ details.more > .body{padding:14px 16px 16px}
 .q{border-left:4px solid var(--brand-yellow);padding:2px 0 2px 12px;font-size:14px;color:var(--muted)}
 .q b{color:var(--ink)}
 
+/* Overview */
+.ov{gap:28px}
+.hero{background:var(--brand);border-radius:14px;padding:28px 28px 24px;display:flex;flex-direction:column;gap:14px}
+.hero .eyebrow{color:var(--brand-yellow)}
+.hero h1{color:#FFFFFF;font-size:36px;max-width:26ch}
+.hero p{color:var(--brand-soft);font-size:17px;max-width:70ch}
+.hero .tiles{margin-top:6px}
+.hero .tile{background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.18)}
+.hero .tile .eyebrow{color:var(--brand-soft)} .hero .tile .n{color:#FFFFFF} .hero .tile .sub{color:var(--brand-soft)}
+.hero .tile.hl .n{color:var(--brand-yellow)}
+.sec{display:flex;flex-direction:column;gap:14px}
+.sec > header{display:flex;gap:12px;align-items:baseline;flex-wrap:wrap}
+.sec > header .k{font-family:var(--f-mono);font-size:13px;color:var(--offer);font-weight:500}
+.sec > header h2{font-size:24px}
+.req{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.req .card{display:flex;flex-direction:column;gap:6px}
+.req .card h3{display:flex;justify-content:space-between;gap:8px}
+.ticks{list-style:none;padding:0;margin:0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px 16px;font-size:14px}
+.ticks li{display:grid;grid-template-columns:20px minmax(0,1fr);gap:4px}
+.finds{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px}
+.finds .card .n{font-family:var(--f-mono);font-size:26px;color:var(--bad);font-weight:500}
+.finds .card p{font-size:13.5px}
+.flow{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:8px}
+.flow .card{padding:12px;display:flex;flex-direction:column;gap:4px}
+.flow .no{display:inline-grid;place-items:center;width:24px;height:24px;border-radius:50%;background:var(--accent);color:var(--accent-ink);font-weight:700;font-size:13px}
+.flow h3{font-size:15px} .flow p{font-size:13px;color:var(--muted)}
+.vs{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px;align-items:start}
+.vs .side{border-radius:12px;border:1px solid var(--line);background:var(--panel);overflow:hidden}
+.vs .side > header{padding:14px 16px;border-bottom:1px solid var(--line)}
+.vs .old > header{background:var(--bad-bg)} .vs .old > header h3{color:var(--bad)}
+.vs .new > header{background:var(--good-bg)} .vs .new > header h3{color:var(--good)}
+.tl{list-style:none;margin:0;padding:8px 16px 16px;display:flex;flex-direction:column}
+.tl li{display:grid;grid-template-columns:78px 22px minmax(0,1fr);gap:8px;padding:9px 0;border-bottom:1px dashed var(--line);font-size:14px}
+.tl li:last-child{border-bottom:0}
+.tl .d{font-family:var(--f-mono);font-size:12.5px;color:var(--muted);padding-top:2px}
+.tl .m{font-weight:700}
+.tl .cust{color:var(--ink);font-style:italic}
+.out{margin:0 16px 16px;border-radius:8px;padding:12px 14px;font-size:14.5px}
+.old .out{background:var(--bad-bg);color:var(--bad)} .new .out{background:var(--good-bg);color:var(--good)}
+.out b{font-family:var(--f-mono)}
+.mini{display:grid;grid-template-columns:120px minmax(0,1fr) minmax(0,1fr);gap:12px;align-items:center;font-size:14px}
+.go{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.go a{display:flex;flex-direction:column;gap:4px;text-decoration:none;color:inherit}
+.go a .card{height:100%} .go a:hover .card{border-color:var(--offer)}
+.go h3{color:var(--offer)}
+@media (max-width:1100px){.flow{grid-template-columns:repeat(4,minmax(0,1fr))}.finds{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media (max-width:800px){.req,.ticks,.vs,.go{grid-template-columns:minmax(0,1fr)}.finds,.flow{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}.mini{grid-template-columns:minmax(0,1fr)}.hero h1{font-size:28px}}
+
 /* Recommendations */
 .rec td.reason{min-width:280px;max-width:520px;color:var(--text)}
 .rec tr{cursor:pointer} .rec tbody tr:hover td{background:var(--panel-2)}
@@ -223,6 +271,7 @@ input[type=range]{width:100%;accent-color:var(--offer)}
 <header class="top"><div class="wrap topin">
   <div class="brand"><img class="logo" src="data:image/png;base64,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" alt="MAINGAU" width="116" height="30"><b>NBA Console</b><span>Build Days prototype · mock data</span><span class="sync" id="sync" title="Where approvals and settings are saved"><i></i><span id="synct">Local only</span></span></div>
   <nav class="tabs" aria-label="Views">
+    <a href="#overview" data-v="overview">Overview</a>
     <a href="#recommendations" data-v="recommendations">Recommendations</a>
     <a href="#marketing" data-v="marketing">Marketing</a>
     <a href="#customers" data-v="customers">Customer 360°</a>
@@ -231,8 +280,11 @@ input[type=range]{width:100%;accent-color:var(--offer)}
 </div></header>
 
 <main class="wrap">
+  <!-- OVERVIEW: the story for the jury -->
+  <section id="v-overview" class="stack ov"></section>
+
   <!-- ENGINE: one recommendation per customer -->
-  <section id="v-recommendations" class="stack">
+  <section id="v-recommendations" class="stack" hidden>
     <div class="viewhead"><div><div class="eyebrow">Engine</div><h1>The next best action for every customer</h1>
       <p class="muted">Offer, channel and tone, ranked by the expected gain in customer value. Click a customer to see why.</p></div>
       <button id="exportLog">Download decision log</button></div>
@@ -430,6 +482,107 @@ function templText(c, o, tone) {
   return {subj, body: body.replace("{guarantee_text}", gt)};
 }
 
+
+/* ---------- Overview: the story ---------- */
+// Findings about today's engine, counted from the mock data (nba_action_history, customer_master, service_nba_feedback).
+const OLD = {appPushNoApp: 114, appPushAll: 182, agentDismissed: 55, agentUpset: 30};
+function renderOverview() {
+  const ids = Object.keys(DEC), by = a => ids.filter(id => DEC[id].a === a).length;
+  const gain = ids.filter(id => ["offer","service"].includes(DEC[id].a)).reduce((s,id) => s + DEC[id].pick.d, 0);
+  const L = D.legacy, r = L.responses, tot = Object.values(r).reduce((a,b)=>a+b,0);
+  const O = D.acc.overall, viol = violations();
+  const c4 = BY["MG-100004"], d4 = DEC["MG-100004"];
+  const sell4 = c4.cands.filter(k => k.o !== "P-SV-01").sort((a,b) => b.d - a.d)[0];
+  const c68 = BY["MG-100068"], d68 = DEC["MG-100068"];
+  const tick = (ok, t) => `<li><span class="${ok?"ok":"no"}">${ok?"✓":"✕"}</span><span>${t}</span></li>`;
+  $("#v-overview").innerHTML = `
+  <div class="hero">
+    <div class="eyebrow">MAINGAU challenge · One customer, every channel</div>
+    <h1>For every customer, the one step worth the most: sell, fix, or wait.</h1>
+    <p>Maingau already has all customer data under one customer_id. What was missing is the decision on top. Our engine checks the rules, scores every possible action by the expected gain in customer lifetime value, and proposes the best one, with the right channel and tone. Marketing approves; every decision is explained and logged.</p>
+    <div class="tiles">
+      <div class="tile hl"><div class="eyebrow">Expected gain in customer value</div><div class="n">${eur(gain,0)}</div><div class="sub">across 750 customers, this run</div></div>
+      <div class="tile hl"><div class="eyebrow">Consent or exclusion violations</div><div class="n">${viol}</div><div class="sub">today’s engine: ${L.unchecked_and_no_consent} without consent</div></div>
+      <div class="tile"><div class="eyebrow">Problems fixed before selling</div><div class="n">${by("service")}</div><div class="sub">customers with a complaint or unpaid bill</div></div>
+      <div class="tile"><div class="eyebrow">Left alone on purpose</div><div class="n">${by("none")+by("wait")+by("human")}</div><div class="sub">no offer worth a contact, or a person decides</div></div>
+    </div>
+  </div>
+
+  <section class="sec"><header><span class="k">01</span><h2>What Maingau asked for, and where to find it</h2></header>
+    <div class="req">
+      <div class="card"><h3>Decide <span class="pill k-ok">Built</span></h3><p class="muted small">Which offer, channel and tone per customer, ranked by expected CLV gain?</p><p>One action per customer with channel, Du/Sie and expected gain. <a href="#recommendations">Recommendations</a></p></div>
+      <div class="card"><h3>Explain <span class="pill k-ok">Built</span></h3><p class="muted small">Can a marketer see in one line why, and change it?</p><p>A one-line reason, every option scored, rules to steer, and a “change this decision” with a note. <a href="#customers">Customer 360°</a> · <a href="#marketing">Marketing</a></p></div>
+      <div class="card"><h3>Learn <span class="pill k-ok">Concept + demo</span></h3><p class="muted small">How do reactions improve it, and how do you prove cause?</p><p>A fixed 10% control group and uplift that feeds back into the chance of yes. <a href="#method">How it works</a></p></div>
+    </div>
+    <div class="card"><h3>Maingau’s hard rules</h3><ul class="ticks" style="margin-top:10px">
+      ${tick(true,"Consent is binding, per channel")}${tick(true,"Exclusions beat offers: complaint, dunning, cancellation")}${tick(true,"Human in the loop: nothing is sent without approval")}
+      ${tick(true,"Profiling only with consent, AI text too")}${tick(true,"No manipulation: approved texts, no personal prices or fake urgency")}${tick(true,"Payment data only as an exclusion")}
+      ${tick(true,"Explainability: every decision logged with inputs, rules, scores")}${tick(true,"Mock data only")}${tick(true,"Customer texts in German, Du or Sie")}
+    </ul></div>
+  </section>
+
+  <section class="sec"><header><span class="k">02</span><h2>What we found in Maingau’s own data</h2></header>
+    <p class="muted" style="max-width:75ch">The current rule engine made ${L.actions.toLocaleString("en-GB")} decisions from June to September with five broad rules. It looks at segments, not at the person.</p>
+    <div class="finds">
+      <div class="card"><div class="n">${L.consent_not_checked}</div><p>actions skipped the consent check; <b>${L.unchecked_and_no_consent}</b> reached a channel the customer had not agreed to.</p></div>
+      <div class="card"><div class="n">${OLD.appPushNoApp}/${OLD.appPushAll}</div><p>app pushes went to customers who don’t have the app.</p></div>
+      <div class="card"><div class="n">${pct(((r.ignored||0)+(r.dismissed||0))/tot,0)}</div><p>of contacts were ignored or dismissed.</p></div>
+      <div class="card"><div class="n">${pct(O.treated,1)} vs ${pct(O.control,1)}</div><p>bought after a contact vs. without any contact. Most sales would have happened anyway.</p></div>
+      <div class="card"><div class="n">${OLD.agentUpset}/${OLD.agentDismissed}</div><p>sales tips that service agents dismissed were dismissed because the customer was upset.</p></div>
+    </div>
+  </section>
+
+  <section class="sec"><header><span class="k">03</span><h2>Our engine in seven steps</h2></header>
+    <div class="flow">
+      ${[["Profile","Everything about one customer in one row"],["When","Every night, and right away when something happens"],["Rules","Angry or unpaid? Fix, don’t sell. No consent? Don’t use the channel"],["Best offer","Chance of yes × what Maingau earns − cost. Biggest wins, or nothing"],["Channel & tone","Where they said yes and will see it soon; Du or Sie as they write"],["Message","Approved German text, AI only inside it"],["Approve & send","Marketing says yes; 1 in 10 held back to measure"]].map(([t,x],i) => `<div class="card"><span class="no">${i+1}</span><h3>${t}</h3><p>${x}</p></div>`).join("")}
+    </div>
+    <p class="muted small">Step 8, learn: after two weeks we compare customers we contacted with the 1 in 10 we held back. What really works gets offered more often.</p>
+  </section>
+
+  <section class="sec"><header><span class="k">04</span><h2>One real customer: their engine vs. ours</h2></header>
+    <p class="muted" style="max-width:75ch">Customer <button class="linkbtn" data-open="MG-100004">MG-100004</button>, Darmstadt, StromKomfort since 2019. Every line below is from Maingau’s mock data.</p>
+    <div class="vs">
+      <div class="side old"><header><div class="eyebrow">Today’s rule engine</div><h3>Five offers, no help</h3></header>
+        <ul class="tl">
+          <li><span class="d">10 Jun</span><span class="m no">✕</span><span>Price-guarantee offer by <b>app push</b>, seasonal rule. The customer has no app. Ignored.</span></li>
+          <li><span class="d">30 Jul</span><span class="m no">✕</span><span>Price-guarantee newsletter from the solar/smart-home rule; no solar on file, consent not checked. Ignored.</span></li>
+          <li><span class="d">28 Aug</span><span class="m">✉</span><span class="cust">Customer asks why the monthly payment went up.</span></li>
+          <li><span class="d">4 Sep</span><span class="m no">✕</span><span>Autostrom <b>sales call</b> from the shop rule; no electric car on file, consent not checked. Ignored.</span></li>
+          <li><span class="d">9 Sep</span><span class="m no">✕</span><span>Dynamic-tariff newsletter. Ignored.</span></li>
+          <li><span class="d">22 Sep</span><span class="m">✉</span><span class="cust">“Ich habe bereits zweimal geschrieben und keine Antwort erhalten.”</span></li>
+          <li><span class="d">1 Oct</span><span class="m no">!</span><span>Third payment reminder. The customer asks for a callback.</span></li>
+        </ul>
+        <div class="out">Result: 0 sales, an angry customer, <b>${pct(c4.churn,0)}</b> likely to leave. Service problems have cut their value by <b>${eur(-c4.svcImpact,0)}</b>.</div>
+      </div>
+      <div class="side new"><header><div class="eyebrow">Our engine, 1 October</div><h3>${esc(d4.a==="service"?"Stop selling, fix the problem":d4.title)}</h3></header>
+        <ul class="tl">
+          <li><span class="d">Profile</span><span class="m">1</span><span>Open complaint, second payment reminder, writes formally, CLV ${eur(c4.clv,0)}.</span></li>
+          <li><span class="d">Rules</span><span class="m no">✕</span><span>Open complaint and unpaid bill: <b>all sales blocked.</b></span></li>
+          <li><span class="d">Best</span><span class="m ok">✓</span><span>Service fix worth <b>${sgn(d4.pick ? d4.pick.d : 0,0)}</b>. The best sales offer would be worth ${sgn(sell4.d)}: an annoyed customer is more likely to leave.</span></li>
+          <li><span class="d">Channel</span><span class="m ok">✓</span><span>A service agent calls, addressed with “Sie”, with no offer.</span></li>
+          <li><span class="d">Events</span><span class="m ok">✓</span><span>The callback request arrives at 09:40 and confirms the plan. The third reminder arrives 25 hours late and is flagged.</span></li>
+          <li><span class="d">Approve</span><span class="m ok">✓</span><span>Marketing creates the service task. Logged with the reason.</span></li>
+        </ul>
+        <div class="out">Result: no more sales pressure, a person solves the problem, expected <b>${sgn(d4.pick ? d4.pick.d : 0,0)}</b> in customer value.</div>
+      </div>
+    </div>
+    <div class="card mini"><div class="eyebrow">And a sale done right</div>
+      <div><button class="linkbtn" data-open="MG-100068">MG-100068</button> · today: a dynamic-tariff <b>app push</b> in June, to a customer without the app. Ignored.</div>
+      <div>Ours: the gas meter was removed, so <b>${esc(d68.title)}</b> by ${d68.pick ? CH[d68.pick.ch].toLowerCase() : "–"}, “${d68.tone==="du"?"Du":"Sie"}”, expected ${d68.pick ? sgn(d68.pick.d) : "–"}.</div>
+    </div>
+  </section>
+
+  <section class="sec"><header><span class="k">05</span><h2>See it work</h2></header>
+    <div class="go">
+      <a href="#recommendations"><div class="card"><h3>Recommendations →</h3><p class="small">All 750 customers: offer, channel, tone, expected gain, reason. Download the decision log.</p></div></a>
+      <a href="#marketing"><div class="card"><h3>Marketing dashboard →</h3><p class="small">Set limits, priorities and channels, approve texts and actions.</p></div></a>
+      <a href="#customers"><div class="card"><h3>Customer 360° →</h3><p class="small">For service agents: status, value, the best action and why.</p></div></a>
+      <a href="#method"><div class="card"><h3>How it works →</h3><p class="small">The pipeline, live events, the learning loop and the Databricks + MCP architecture.</p></div></a>
+    </div>
+  </section>`;
+}
+$("#v-overview").addEventListener("click", e => { const o = e.target.closest("[data-open]"); if (o) select(o.dataset.open); });
+
 /* ---------- Recommendations (engine) ---------- */
 let rfilter = "all", rlimit = 50;
 const OPEN = new Set();
@@ -509,7 +662,7 @@ function renderDetail() {
   const rows = c.cands.map(k => {
     const b = best(c, k), picked = d.pick && d.pick.cand.o === k.o;
     let st = picked ? `<b class="ok">${d.overridden ? "Picked by marketing" : "Picked"}</b>` : k.blk.length ? `<span class="no">${esc(k.blk[0])}</span>` : ST.offersOff.includes(k.o) ? "Offer switched off" : !contentOk(k.o, d.tone) ? "Text not approved" : !b ? "No allowed channel" : b.d <= ST.min ? "Not worth a contact" : "Lower value";
-    return `<tr class="${picked?"picked":k.blk.length?"blocked":""}"><td><b style="color:var(--ink)">${esc(k.o==="P-SV-01"?"Proactive service fix":k.n)}</b></td><td style="min-width:200px">${esc(k.why)}</td><td>${b ? CH[b.ch] : "–"}</td><td class="r num">${pct(b ? b.p : k.p)}</td><td class="r num">${sgn(b ? b.d : k.d)}</td><td style="min-width:140px">${st}</td></tr>`;
+    return `<tr class="${picked?"picked":k.blk.length?"blocked":""}"><td><b style="color:var(--ink)">${esc(k.o==="P-SV-01"?"Proactive service fix":k.n)}</b></td><td style="min-width:200px">${esc(k.why)}${k.lift ? `<div class="muted" style="font-size:12px">chance: ${esc(k.lift)}</div>` : ""}</td><td>${b ? CH[b.ch] : "–"}</td><td class="r num">${pct(b ? b.p : k.p)}</td><td class="r num">${sgn(b ? b.d : k.d)}</td><td style="min-width:140px">${st}</td></tr>`;
   }).join("");
   const alts = c.cands.filter(k => !k.blk.length || k.o === "P-SV-01").filter(k => best(c,k));
   const sig = Object.entries(c.signals).map(([k,[v,cl,ev]]) => `<div><span class="tag">${cl==="behavioural"?"behaviour":"contract"}</span><span>${esc(ev[0] || k.replace(/_/g," "))}${cl==="behavioural" && !c.prof ? ` <span class="no">(not used: no profiling consent)</span>`:""}</span></div>`).join("") || `<span class="muted">No special signals.</span>`;
@@ -822,11 +975,11 @@ function renderMethod() {
   const drafts = Object.values(REC).filter(r => r.draft).length, appr = Object.values(REC).filter(r => r.status === "approved").length;
   const ctl = ids.filter(id => DEC[id].ctl && ["offer","service"].includes(DEC[id].a)).length;
   const steps = [
-    ["Trigger","Event or scheduled run selects a customer", `750 daily · ${D.replay.length} events`],
+    ["Trigger","When? Every night for everyone, and right away when an event comes in", `750 daily · ${D.replay.length} events`],
     ["Eligibility","Consent, products held, exclusions, frequency", `${blockedN} of ${cands} options blocked`],
     ["Scoring","Expected change in CLV, can be negative", `${negN} options ≤ €0`],
     ["Arbitration","Best gain wins, negatives dropped, limits kept", `${n("offer")} offers · ${n("service")} fixes`],
-    ["Channel & tone","Where and how to address the customer", `${topCh ? CH[topCh[0]] : "–"} most · Du ${du} / Sie ${offersN.length - du}`],
+    ["Channel & tone","Where they will see it soon; Du or Sie from their own words", `${topCh ? CH[topCh[0]] : "–"} most · Du ${du} / Sie ${offersN.length - du}`],
     ["Content","LLM, within approved templates", `${tplOn}/${tplAll} texts · ${drafts} AI drafts`],
     ["Delivery & log","Track response, back to step 1", `${appr} approved · ${ctl} held out`],
   ];
@@ -876,7 +1029,8 @@ function renderMethod() {
       <li>Without profiling consent: contract data only, no behaviour data, no AI personalisation.</li>
       <li>Dunning level 1 already blocks sales content.</li>
       <li>Cancellations go to a person, never to an automated message.</li>
-      <li>Contact limit: ${D.settings.contact_cap_30d} marketing contacts in 30 days.</li></ul></div>
+      <li>Contact limit: ${D.settings.contact_cap_30d} marketing contacts in 30 days.</li>
+      <li>“Will they see it soon?” A portal pop-up only counts as a strong channel for customers with 3+ portal logins in 90 days; otherwise e-mail usually wins.</li></ul></div>
     <div class="prose"><h3>Data traps handled</h3><ul>
       <li>Apple Mail machine opens ignored.</li><li>${D.dups} duplicate events skipped.</li><li>Late events ordered by when they happened and flagged.</li><li>Consent withdrawals apply before any scoring.</li></ul>
       <h3 style="margin-top:12px">Self-checks</h3><ul><li>Violations now: <b>${violations()}</b>.</li><li>Browser ranking matches the Python engine on <b>${750 - parity} of 750</b> customers at default rules.</li><li>Snapshot ${esc(D.snapshot)}; events of 1 October 2026.</li></ul></div>
@@ -885,14 +1039,15 @@ function renderMethod() {
 $("#v-method").addEventListener("click", e => { const o = e.target.closest("[data-open]"); if (o) select(o.dataset.open); });
 
 /* ---------- routing ---------- */
-const VIEWS = ["recommendations","marketing","customers","method"];
-let view = "recommendations";
-function go(v) { if (v === "replay" || v === "learn") v = "method"; if (!VIEWS.includes(v)) v = "recommendations"; view = v;
+const VIEWS = ["overview","recommendations","marketing","customers","method"];
+let view = "overview";
+function go(v) { if (v === "replay" || v === "learn") v = "method"; if (!VIEWS.includes(v)) v = "overview"; view = v;
   VIEWS.forEach(x => { $("#v-"+x).hidden = x !== v; });
   document.querySelectorAll("nav.tabs a").forEach(a => a.setAttribute("aria-current", a.dataset.v===v ? "page" : "false"));
   if (location.hash !== "#"+v) history.replaceState(null, "", "#"+v);
   draw(true); }
 function draw(full) {
+  if (view === "overview") renderOverview();
   if (view === "recommendations") renderRec();
   if (view === "customers") { renderList(); renderDetail(); }
   if (view === "marketing") { if (full) { renderSteer(); renderTemplates(); } renderMarketing(); }
@@ -901,6 +1056,6 @@ function draw(full) {
 function refresh(full) { recompute(); draw(full); }
 window.addEventListener("hashchange", () => go(location.hash.slice(1)));
 recompute(); renderDemos();
-go(location.hash.slice(1) || "recommendations");
+go(location.hash.slice(1) || "overview");
 Store.init();
 </script>

@@ -14,6 +14,8 @@ from .replay import preview
 from . import ai_nba, outreach, portfolio, newsletter
 from .insights import customer_insights
 from .email_template import for_draft
+from .overview import overview as overview_data
+from .radar import radar as radar_data
 
 @asynccontextmanager
 async def lifespan(app):
@@ -52,6 +54,12 @@ class Override(BaseModel):
 
 @app.get('/api/health')
 def health():return {'status':'ok','customers':len(engine().state),'decision_engine':'single_python_engine','delivery':'disabled','snapshot':'2026-09-30T23:59:00'}
+
+@app.get('/api/radar')
+def radar():return radar_data(engine())
+
+@app.get('/api/overview')
+def overview():return overview_data(engine())
 
 @app.get('/api/settings')
 def settings():return engine().settings()
@@ -214,6 +222,7 @@ def offer_response(cid:str,mid:int,body:OfferResponse):
 
 DIST=db.ROOT/'frontend/dist'
 if (DIST/'assets').exists():app.mount('/assets',StaticFiles(directory=DIST/'assets'),name='assets')
+if (DIST/'fonts').exists():app.mount('/fonts',StaticFiles(directory=DIST/'fonts'),name='fonts')
 @app.get('/',include_in_schema=False)
 def home():
     if not (DIST/'index.html').exists():raise HTTPException(503,'Run npm run build in frontend, or use the Vite dev server on port 5173.')

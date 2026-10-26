@@ -1,7 +1,8 @@
 import {useLayoutEffect,useRef,useState} from 'react';
+import {STATIC_MODE} from '../staticApi';
 import type {CSSProperties,PointerEvent} from 'react';
-import {ChevronLeft,ChevronRight,LayoutDashboard,SlidersHorizontal,UsersRound,Workflow,Database,ShieldCheck} from 'lucide-react';
-const items=[['recommendations','Recommendations',LayoutDashboard],['marketing','Marketing',SlidersHorizontal],['customers','Customer 360°',UsersRound],['method','How it works',Workflow]] as const;
+import {Compass,Radar,ChevronLeft,ChevronRight,LayoutDashboard,SlidersHorizontal,UsersRound,Workflow,Database,ShieldCheck} from 'lucide-react';
+const items=[['overview','Overview',Compass],['recommendations','Recommendations',LayoutDashboard],['service','Service first',Radar],['marketing','Marketing',SlidersHorizontal],['customers','Customer 360°',UsersRound],['method','How it works',Workflow]] as const;
 type View=typeof items[number][0];
 function initialCollapsed(){try{const saved=localStorage.getItem('maingau-navigation-collapsed');if(saved!==null)return saved==='true'}catch{/* Keep navigation usable without storage. */}return window.matchMedia('(max-width: 950px)').matches}
 export default function Sidebar({view,onNavigate}:{view:View;onNavigate:(view:View)=>void}){
@@ -32,7 +33,7 @@ export default function Sidebar({view,onNavigate}:{view:View;onNavigate:(view:Vi
   <a className="brand" href="#recommendations" aria-label="MAINGAU · Recommendations"><b className="brand-word">MAINGAU</b><span className="brand-mark">+</span></a>
   <div className="brand-sub">NEXT BEST ACTION</div><div className="nav-label">WORKSPACE</div>
   <nav id="workspace-navigation" aria-label="Main navigation">{items.map(([key,label,Icon])=><button key={key} className={'nav-item'+(view===key?' active':'')} aria-label={label} aria-current={view===key?'page':undefined} title={collapsed?label:undefined} onClick={()=>onNavigate(key)}><Icon size={19}/><span className="nav-copy">{label}</span>{view===key&&<span className="nav-indicator" aria-hidden="true"/>}</button>)}<div className="navigation-track" aria-hidden="true"/><span className="navigation-current-dot" aria-hidden="true"/><span className="navigation-cursor-dot" aria-hidden="true"/></nav>
-  <div className="sidebar-bottom"><div><Database size={16}/><span>SQLite · persistent state</span></div><div><ShieldCheck size={16}/><span>One server-side engine</span></div><p>Synthetic data · Build Days MVP<br/>No external sending</p></div>
+  <div className="sidebar-bottom"><div><Database size={16}/><span>{STATIC_MODE?'Online demo · snapshot':'SQLite · persistent state'}</span></div><div><ShieldCheck size={16}/><span>One server-side engine</span></div><p>Synthetic data · Build Days MVP<br/>No external sending</p></div>
   <button className="sidebar-toggle" aria-label={collapsed?'Expand navigation':'Collapse navigation'} aria-expanded={!collapsed} aria-controls="workspace-navigation" onClick={toggle}>{collapsed?<ChevronRight size={18}/>:<ChevronLeft size={18}/>}</button>
  </aside>
 }

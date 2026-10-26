@@ -146,3 +146,19 @@ def test_unapproved_template_blocks_the_offer(make_state, P, A, catalog, setting
     sc = score_customer(make_state(holds={"electricity"}, tone="du"), {}, P, A, catalog, 0.43, settings)
     c = next(c for c in sc["candidates"] if c["offer"] == "P-MO-01")
     assert any("not approved" in b for b in c["blocked"])
+
+
+def test_portal_popup_needs_regular_logins():
+    """Team rule: a portal pop-up only counts as strong for customers with 3+ logins in 90 days."""
+    from app.engine.scoring import channel_options
+    from app.engine.constants import PORTAL_REGULAR_LOGINS_90D
+    def factor(sessions):
+        s = {"consent": {k: {"status": "granted", "doi": "2026-01-01"} for k in
+                         ["profiling_analytics", "portal_app_personalisation", "newsletter_email", "marketing_email", "marketing_sms", "marketing_phone"]},
+             "portal_account": True, "app_installed": True, "portal_sessions_90d": sessions,
+             "email_engagement": {"delivered": 0, "human_opens": 0}}
+        P = {"contact_cost_popup_eur": 0, "contact_cost_email_eur": 0.01, "contact_cost_sms_eur": 0.08, "contact_cost_call_eur": 6}
+        A = {"channel_factor": {}}
+        return next(c["factor"] for c in channel_options(s, A, P) if c["channel"] == "portal_popup")
+    assert factor(PORTAL_REGULAR_LOGINS_90D) == 1.3
+    assert factor(1) == 0.6 and factor(0) == 0.6

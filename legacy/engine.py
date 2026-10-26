@@ -28,6 +28,7 @@ SETTINGS = {
 }
 # Assumption (to validate): how much a strong target signal lifts acceptance vs. the legacy engine's broad targeting
 SIGNAL_LIFT = {"strong": 2.0, "medium": 1.3, "weak": 1.0}
+PORTAL_REGULAR_LOGINS_90D = 3       # team rule: below this, a portal pop-up probably won't be seen soon
 INTENT_LIFT = 1.5                   # human newsletter click / cart abandon on the same topic (needs profiling consent)
 
 CHANNELS = {
@@ -400,7 +401,9 @@ def channel_options(s, A, P):
         eng = 1.0
         if prof and why_not is None:   # engagement-based channel ranking is profiling -> only with consent
             if ch == "portal_popup":
-                eng = 1.3 if s["portal_sessions_90d"] >= 3 else (0.6 if s["portal_sessions_90d"] == 0 else 1.0)
+                # Team rule "will they see it soon?": a pop-up only reaches people who log in regularly.
+                # 3+ logins in 90 days = regular (x1.3); fewer = they may not see it for weeks (x0.6).
+                eng = 1.3 if s["portal_sessions_90d"] >= PORTAL_REGULAR_LOGINS_90D else 0.6
             elif ch in ("newsletter_email", "email"):
                 e = s["email_engagement"]
                 if e["delivered"] >= 3:

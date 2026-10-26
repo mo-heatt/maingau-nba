@@ -39,3 +39,6 @@ DRIVER_LABEL = {"open_complaint": "open complaint", "tickets_12m_ge2": "2+ ticke
 
 SERVICE_DRIVERS = [("open complaint", "open_complaint"), ("tickets in 12m", "tickets_12m_ge2"), ("low CSAT", "csat_le2"),
                    ("dunning level", "dunning_ge2"), ("failed charges", "failed_charges_30d_ge3")]
+
+# Team rule: below this many portal logins in 90 days, a portal pop-up probably won't be seen soon.
+PORTAL_REGULAR_LOGINS_90D = 3
