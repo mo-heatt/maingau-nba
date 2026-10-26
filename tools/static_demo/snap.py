@@ -1,15 +1,19 @@
-import json, gzip, urllib.request, sys
+import json, gzip, urllib.request
+from concurrent.futures import ThreadPoolExecutor
 B = "http://127.0.0.1:8001/api"
+import os
+B = os.getenv("NBA_SNAPSHOT_API", B)
 def get(p): return json.load(urllib.request.urlopen(B + p))
 S = {}
-for p in ["/health", "/radar", "/overview", "/settings", "/catalog", "/marketing", "/replay", "/ai/status", "/ai/batches/latest"]:
+for p in ["/health", "/radar", "/overview", "/settings", "/catalog", "/marketing", "/replay", "/ai/status", "/ai/batches/latest", "/developer/ai"]:
     S[p] = get(p)
 S["/ai/status"]["configured"] = False
 S["__list"] = get("/customers?limit=750")["items"]
-for c in S["__list"]:
-    i = c["id"]
-    for suf in ["", "/insights", "/ai-nba", "/products", "/outreach-context", "/outreach", "/newsletter-context", "/newsletters"]:
-        S[f"/customers/{i}{suf}"] = get(f"/customers/{i}{suf}")
+paths = [f"/customers/{c['id']}{suf}" for c in S["__list"]
+         for suf in ["", "/insights", "/ai-nba", "/products", "/outreach-context", "/outreach", "/newsletter-context", "/newsletters"]]
+with ThreadPoolExecutor(8) as pool:
+    for p, body in zip(paths, pool.map(get, paths)):
+        S[p] = body
 raw = json.dumps(S, ensure_ascii=False, separators=(",", ":")).encode()
 gz = gzip.compress(raw, 9)
 open("snapshot.json.gz", "wb").write(gz)
