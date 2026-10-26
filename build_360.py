@@ -8,6 +8,7 @@ DATA = ROOT / "data"
 SNAPSHOT = pd.Timestamp("2026-09-30 23:59")
 TL_MAX = 50        # timeline entries per customer (newest first)
 TXT = 160          # characters of free text per entry
+MILESTONE = {"crm", "contract"}
 
 
 def nn(x):
@@ -133,7 +134,8 @@ def build():
     for cid, g in so.dropna(subset=["customer_id"]).groupby("customer_id"):
         if cid not in P:
             continue
-        P[cid]["shop"] = {"n": int(g.order_id.nunique()), "eur": rnd(g.line_value_eur.sum(), 0), "last": d10(g.order_created_at.max())}
+        P[cid]["shop"] = {"n": int(g.order_id.nunique()), "eur": rnd(g.line_value_eur.sum(), 0), "last": d10(g.order_created_at.max()),
+                          "items": list(dict.fromkeys(g.sort_values("order_created_at", ascending=False).product_name.dropna()))[:5]}
         for r in g.itertuples():
             tl(cid, t16(r.order_created_at), "shop", f"Ordered {r.product_name}", f"€{nn(r.line_value_eur) or 0:,.0f} · {r.order_channel} · {r.order_status}", "bad" if r.order_status in ("cancelled", "returned") else "")
 
@@ -202,7 +204,9 @@ def build():
 
     for p in P.values():
         p["tl"].sort(key=lambda x: x[0], reverse=True)
-        p["tl"] = p["tl"][:TL_MAX]
+        # milestones (becoming a customer, contracts) always stay, so the history runs from the start
+        keep = {id(t) for t in p["tl"] if t[1] in MILESTONE} | {id(t) for t in p["tl"][:TL_MAX]}
+        p["tl"] = [t for t in p["tl"] if id(t) in keep]
 
     src = [{k: nn(v) for k, v in r.items()} for r in X["sources"].to_dict("records")]
     return P, src

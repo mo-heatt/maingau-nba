@@ -215,41 +215,107 @@ input[type=range]{width:100%;accent-color:var(--offer)}
 .arch .lane{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
 .prose{max-width:75ch} .prose ul{margin:8px 0 0;padding-left:20px} .prose li{margin-bottom:6px}
 
-/* 360 new: every source system around one customer */
-:root{--s-use:#1F4FA8;--s-pv:#B07000}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--s-use:#5E8FEE;--s-pv:#C98418}}
-:root[data-theme="dark"]{--s-use:#5E8FEE;--s-pv:#C98418}
-.x360{display:grid;grid-template-columns:300px minmax(0,1fr);gap:20px;align-items:start}
-.x360 .filters button{font-size:12px;padding:3px 8px}
-.xnba{display:flex;flex-wrap:wrap;gap:10px 20px;align-items:center;justify-content:space-between;border:1px solid var(--line);border-left:6px solid var(--offer);border-radius:10px;background:var(--panel);padding:12px 16px}
-.xnba.service{border-left-color:var(--accent)} .xnba.none,.xnba.wait{border-left-color:var(--line)} .xnba.human{border-left-color:var(--bad)}
-.xnba b{font-family:var(--f-display);font-size:19px;color:var(--ink)}
-.xnba .n{font-family:var(--f-mono);font-size:22px;color:var(--good)}
-.lines{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
-.ln{border:1px solid var(--line);border-radius:10px;background:var(--panel);padding:12px 14px;display:flex;flex-direction:column;gap:6px;min-width:0}
-.ln.off{background:transparent;border-style:dashed}
-.ln header{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
-.ln header b{font-family:var(--f-display);font-size:16px;color:var(--ink)}
-.ln .it{font-size:13px} .ln .it b{color:var(--ink);font-weight:600}
-.ln .opp{font-size:12.5px;border-top:1px solid var(--line);padding-top:6px;margin-top:auto}
-.xmain{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr);gap:16px;align-items:start}
-.tl{list-style:none;margin:10px 0 0;padding:0}
-.tl li{display:grid;grid-template-columns:118px minmax(0,1fr);gap:2px 12px;padding:8px 0 8px 10px;border-bottom:1px solid var(--line);border-left:3px solid transparent}
+/* 360 new: one customer, top to bottom like the wireframe */
+.xpick{display:flex;flex-wrap:wrap;gap:8px 12px;align-items:center}
+.xpick label{font-weight:600;color:var(--ink)} .xpick input{max-width:200px}
+.xpick .filters button[aria-pressed="true"]{background:var(--ink);color:var(--panel);border-color:var(--ink)}
+.sechead{display:flex;flex-wrap:wrap;gap:4px 12px;align-items:baseline;justify-content:space-between;margin-bottom:12px}
+.xprof{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:16px 28px;align-items:center;padding:20px}
+.ava{width:92px;height:92px;border-radius:50%;background:var(--brand);color:var(--brand-soft);display:grid;place-items:center;box-shadow:0 0 0 3px var(--brand-yellow)}
+.ava svg{width:60px;height:60px}
+.xprof h1{font-family:var(--f-mono);letter-spacing:-.5px}
+.xprof .who p{margin-top:2px;color:var(--muted)}
+.track{position:relative;height:118px;margin:4px 6px 0}
+.track .axis{position:absolute;left:0;right:0;top:58px;height:2px;background:var(--line)}
+.track .tick{position:absolute;top:70px;transform:translateX(-50%);font:11px var(--f-mono);color:var(--muted)}
+.track .tick::before{content:"";position:absolute;left:50%;top:-9px;width:1px;height:7px;background:var(--muted)}
+.track .end{position:absolute;top:96px;font-size:12px;font-weight:600;color:var(--ink)}
+.track .dot{position:absolute;top:59px;width:10px;height:10px;padding:0;border-radius:50%;transform:translate(-50%,-50%);background:var(--muted);border:2px solid var(--panel);cursor:default}
+.track .dot.ms{width:14px;height:14px;border-radius:3px;background:var(--offer);z-index:1}
+.track .dot.bad{background:var(--bad)} .track .dot.good{background:var(--good)} .track .dot.warn{background:var(--warn)}
+.track .dot:hover,.track .dot:focus-visible{transform:translate(-50%,-50%) scale(1.5);z-index:2}
+.track .lbl{position:absolute;top:34px;font-size:12px;white-space:nowrap;color:var(--ink);visibility:hidden}
+.track .lbl.on{visibility:visible}
+.track .tip{position:absolute;top:-6px;z-index:3;pointer-events:none;background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:6px 9px;font-size:12px;box-shadow:0 2px 8px rgba(0,0,0,.15);max-width:340px}
+.legend{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:12.5px;color:var(--muted);margin-top:4px}
+.legend .lg{display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--muted);vertical-align:-1px;margin-right:6px}
+.legend .lg.ms{border-radius:2px;background:var(--offer)} .legend .lg.bad{background:var(--bad)} .legend .lg.good{background:var(--good)} .legend .lg.warn{background:var(--warn)}
+.tl{list-style:none;margin:8px 0 0;padding:0}
+.tl li{display:grid;grid-template-columns:96px minmax(0,1fr);gap:2px 12px;padding:8px 0 8px 10px;border-bottom:1px solid var(--line);border-left:3px solid transparent}
 .tl li.bad{border-left-color:var(--bad)} .tl li.good{border-left-color:var(--good)} .tl li.warn{border-left-color:var(--warn)} .tl li.muted .ti{color:var(--muted)}
-.tl .when{font-family:var(--f-mono);font-size:12px;color:var(--muted);grid-row:1/3}
+.tl .when{font:12px var(--f-mono);color:var(--muted);grid-row:1/3}
 .tl .ti{font-size:13.5px;color:var(--ink)} .tl .de{font-size:12.5px;color:var(--muted);grid-column:2}
 .tl .tag{margin-right:6px}
-.stat{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 12px;font-size:13.5px;margin-top:8px}
-.stat span:nth-child(even){font-family:var(--f-mono);text-align:right;color:var(--ink)}
-.chart{position:relative;margin-top:8px}
-.chart svg{display:block;width:100%;height:auto;overflow:visible}
-.chart .tip{position:absolute;top:0;pointer-events:none;background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:6px 8px;font-size:12px;box-shadow:0 2px 8px rgba(0,0,0,.12);white-space:nowrap}
-.legend{display:flex;gap:14px;font-size:12.5px;color:var(--muted);margin-top:6px}
-.legend i{display:inline-block;width:14px;height:2px;vertical-align:middle;margin-right:6px}
+.prods{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px;align-items:start}
+.prod{position:relative;border:1px solid var(--line);border-radius:10px;background:var(--panel);padding:14px;min-width:0}
+.prod.off{filter:grayscale(1);opacity:.5;border-style:dashed;background:transparent}
+.prodh{display:grid;grid-template-columns:44px minmax(0,1fr);gap:10px;align-items:center;margin-bottom:8px}
+.prodh b{font-family:var(--f-display);font-size:16px;color:var(--ink)}
+.prod .ic{width:44px;height:44px;color:var(--offer)}
+.prod .ck{position:absolute;top:10px;right:10px;width:22px;height:22px;border-radius:50%;background:var(--good);color:var(--panel);display:grid;place-items:center;font-size:13px;font-weight:700}
+.ctr{border-top:1px solid var(--line);padding-top:8px;margin-top:8px}
+.ctrh{display:flex;justify-content:space-between;gap:8px;align-items:center;margin-bottom:4px}
+.ctrh b{color:var(--ink)}
+.kv{display:grid;grid-template-columns:auto minmax(0,1fr);gap:3px 10px;font-size:13px;margin:0}
+.kv dt{color:var(--muted)} .kv dd{margin:0;text-align:right;color:var(--ink)}
+.wcard{border-top:4px solid var(--bad)} .gcard{border-top:4px solid var(--good)}
+.sigl{list-style:none;margin:10px 0 0;padding:0;display:flex;flex-direction:column;gap:10px}
+.sigl li{display:grid;grid-template-columns:22px minmax(0,1fr);gap:8px;font-size:14px}
+.sigl li b{display:block;color:var(--ink);font-weight:600}
+.sigl .ic{width:22px;height:22px;border-radius:50%;display:grid;place-items:center;font-weight:700;font-size:12px}
+.sigl .ic.no{background:var(--bad-bg)} .sigl .ic.ok{background:var(--good-bg)}
+.sol{list-style:none;margin:8px 0 0;padding:0}
+.sol li{display:grid;grid-template-columns:40px minmax(0,1fr) auto;gap:4px 14px;align-items:start;padding:12px 8px;border-bottom:1px solid var(--line)}
+.sol li:last-child{border-bottom:0}
+.sol li.picked{background:var(--good-bg);border-radius:8px}
+.sol li.blocked{opacity:.6}
+.sol .rk{font-family:var(--f-display);font-size:28px;font-weight:700;color:var(--offer);line-height:1}
+.sol b{color:var(--ink)} .sol p{margin-top:2px}
+.sol .gain{font-size:18px;font-weight:500}
+.clvc svg{display:block;width:100%;max-width:760px;height:auto}
+.clvc .bar{fill:var(--offer)} .clvc .bar.now{fill:var(--muted)} .clvc .bar.blk{fill:var(--line)}
+.clvc .base{stroke:var(--line)} .clvc .ref{stroke:var(--muted);stroke-dasharray:4 3}
+.clvc .bv{font:12px var(--f-mono);fill:var(--ink)} .clvc .bl{font-size:11px;fill:var(--muted)}
 
-@media (max-width:1100px){.pipe{grid-template-columns:repeat(4,minmax(0,1fr))}.arch{grid-template-columns:minmax(0,1fr)}.xmain{grid-template-columns:minmax(0,1fr)}.lines{grid-template-columns:repeat(2,minmax(0,1fr))}}
-@media (max-width:1000px){.x360{grid-template-columns:minmax(0,1fr)}}
-@media (max-width:700px){.lines{grid-template-columns:minmax(0,1fr)}.tl li{grid-template-columns:minmax(0,1fr)}.tl .when{grid-row:auto}.tl .de{grid-column:1}}
+/* 360 new readability: calmer, less saturated surfaces; type scale page title > section > item > detail */
+body[data-view="x360"]{min-height:100vh;--bg:#EEF1F5;--panel:#FFFFFF;--panel-2:#F3F5F8;--line:#E1E6ED;--ink:#0F1A2E;--text:#2B3447;--muted:#5E6878;--offer:#1F4FA8;--offer-bg:#E8EEF9}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) body[data-view="x360"]{--bg:#0D121C;--panel:#151C29;--panel-2:#1C2434;--line:#2A3446;--ink:#F1F4F9;--text:#D5DBE5;--muted:#99A3B5;--offer:#8FB0F0;--offer-bg:#1B2A47}}
+:root[data-theme="dark"] body[data-view="x360"]{--bg:#0D121C;--panel:#151C29;--panel-2:#1C2434;--line:#2A3446;--ink:#F1F4F9;--text:#D5DBE5;--muted:#99A3B5;--offer:#8FB0F0;--offer-bg:#1B2A47}
+#v-x360{gap:28px}
+#v-x360 .card{padding:20px 22px;border-radius:12px;box-shadow:0 1px 2px rgba(15,26,46,.06)}
+#v-x360 .prod:not(.off){box-shadow:0 1px 2px rgba(15,26,46,.06)}
+#v-x360 h2{font-size:22px;font-weight:700;letter-spacing:.1px}
+#v-x360 .sechead{flex-direction:column;align-items:flex-start;gap:2px;margin-bottom:16px}
+#v-x360 .sechead .muted{font-size:13.5px}
+#v-x360 .tag{background:transparent;border:1px solid var(--line);font-weight:500}
+.xprof h1{font-size:36px}
+.xprof .who p{font-size:15px;color:var(--text);margin-top:4px}
+.xk{display:flex;gap:16px 32px;flex-wrap:wrap;align-items:flex-end}
+.xk .n{font:500 24px var(--f-mono);color:var(--ink);margin-top:2px}
+.xk .hero .n{font-size:40px;line-height:1.05}
+.xk .sub{font-size:12.5px;color:var(--muted)}
+.xk .n.no{color:var(--bad)}
+.tl .ti{font-size:14.5px;font-weight:500}
+.tl .de{font-size:13px;margin-top:1px}
+.prodh b{font-size:18px}
+.ctrh b{font-size:15px}
+.kv dt{font-size:12.5px} .kv dd{font-size:13.5px;font-weight:500}
+.kv dd .no{font-weight:600}
+.sigl{gap:14px}
+.sigl li b{font-size:15px}
+.sigl li .small{display:block;margin-top:1px}
+.cnt{font:500 13px var(--f-mono);color:var(--muted);margin-left:8px}
+.sol li{padding:14px 10px}
+.sol b{font-size:17px}
+.sol .why{font-size:14px;color:var(--text)}
+.sol .gain{font-size:22px;font-weight:600}
+.sol .rk{color:var(--muted);font-size:24px}
+.sol li.picked{background:var(--good-bg);box-shadow:inset 4px 0 0 var(--good)}
+.sol li.picked .rk{color:var(--good)}
+.sol .acts{margin-top:8px}
+
+@media (max-width:1100px){.pipe{grid-template-columns:repeat(4,minmax(0,1fr))}.arch{grid-template-columns:minmax(0,1fr)}.prods{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media (max-width:700px){.prods{grid-template-columns:minmax(0,1fr)}.xprof{grid-template-columns:minmax(0,1fr)}.tl li{grid-template-columns:minmax(0,1fr)}.tl .when{grid-row:auto}.tl .de{grid-column:1}.sol li{grid-template-columns:32px minmax(0,1fr)}.sol .gain{grid-column:2}}
 @media (max-width:1000px){.c360,.mk{grid-template-columns:minmax(0,1fr)}.rail,.steer{position:static;max-height:none}.list{max-height:360px}.three,.qa{grid-template-columns:minmax(0,1fr)}}
 @media (max-width:700px){.two,.cmp,.tpl{grid-template-columns:minmax(0,1fr)}.decision .in{grid-template-columns:minmax(0,1fr)}.decision .gain{text-align:left}.bar{grid-template-columns:110px minmax(0,1fr) 90px}.ev{grid-template-columns:minmax(0,1fr)}.head h1{font-size:24px}.pipe{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}.example{grid-template-columns:minmax(0,1fr)}.arch .lane{grid-template-columns:minmax(0,1fr)}}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
@@ -307,17 +373,11 @@ input[type=range]{width:100%;accent-color:var(--offer)}
     </div>
   </section>
 
-  <!-- 360 NEW: every source system joined around one customer -->
-  <section id="v-x360" hidden>
-    <div class="x360">
-      <div class="rail">
-        <input type="search" id="xq" placeholder="Customer ID or city" aria-label="Find customer">
-        <div class="filters" id="xsegs" role="group" aria-label="Segment"></div>
-        <div class="muted small" id="xcount"></div>
-        <div class="list" id="xlist" role="listbox" aria-label="Customers by lifetime value"></div>
-      </div>
-      <div class="stack" id="xdetail"></div>
-    </div>
+  <!-- 360 NEW: one customer on one page, in the order of the wireframe -->
+  <section id="v-x360" class="stack" hidden>
+    <div class="xpick"><label for="xq">Customer</label><input type="search" id="xq" list="xids" placeholder="e.g. MG-100074" aria-label="Find customer"><datalist id="xids"></datalist>
+      <div class="filters" id="xdemo" role="group" aria-label="Demo customers"></div></div>
+    <div class="stack" id="xdetail"></div>
   </section>
 
   <!-- HOW IT WORKS: questions, pipeline, architecture, then the deep dives -->
@@ -933,142 +993,195 @@ function renderMethod() {
 }
 $("#v-method").addEventListener("click", e => { const o = e.target.closest("[data-open]"); if (o) select(o.dataset.open); });
 
-/* ---------- 360 new: every source system joined around one customer ---------- */
+/* ---------- 360 new: one customer, top to bottom: profile · history · products · warnings · solutions · CLV ---------- */
 const X = D.x360;
 const SRC = {live:"Live event", svc:"Service", call:"Call", agent:"Agent desk", nba:"Campaign", nl:"Newsletter", portal:"Portal & app", shop:"Shop", charge:"Charging", hems:"Smart home", contract:"Contract", consent:"Consent", crm:"CRM"};
-const LINES = [["energy","Energy"],["mobile","Mobile"],["e_mobility","Autostrom"],["smart_living","Smart home"],["shop","Shop"],["internet","Internet"]];
-const SEG = [["all","All"],["multi","Multi-product"],["risk","Churn ≥ 25%"],["case","Open case"],["ev","Drives electric"],["home","Smart home"]];
+const ICON = {"energy":"<g><path d=\"m51.42999,52.88228h-6.86035c-1.15967,0-2.1001.94043-2.1001,2.1001s.94043,2.1001,2.1001,2.1001h6.86035c1.15967,0,2.1001-.94043,2.1001-2.1001s-.94043-2.1001-2.1001-2.1001Z\"></path><path d=\"m47.99981,60.3857c-1.15967,0-2.1001.94043-2.1001,2.1001v21.51416c0,1.15967.94043,2.1001,2.1001,2.1001s2.1001-.94043,2.1001-2.1001v-21.51416c0-1.15967-.94043-2.1001-2.1001-2.1001Z\"></path><path d=\"m56.73956,33.44527c0-1.15967-.94043-2.1001-2.1001-2.1001h-1.21973v-4.68262c0-1.15967-.94043-2.1001-2.1001-2.1001s-2.1001.94043-2.1001,2.1001v4.68262h-2.43896v-4.68262c0-1.15967-.94043-2.1001-2.1001-2.1001s-2.1001.94043-2.1001,2.1001v4.68262h-1.21973c-1.15967,0-2.1001.94043-2.1001,2.1001v11.03711c0,2.81201,2.28809,5.1001,5.1001,5.1001h7.27881c2.81201,0,5.1001-2.28809,5.1001-5.1001v-11.03711Zm-4.2002,11.03711c0,.49609-.40381.8999-.8999.8999h-7.27881c-.49609,0-.8999-.40381-.8999-.8999v-8.93701h9.07861v8.93701Z\"></path><path d=\"m71.23858,39.26118c-1.15967,0-2.1001.94043-2.1001,2.1001v31.92578c0,.49609-.40381.8999-.8999.8999h-10.23877c-1.15967,0-2.1001.94043-2.1001,2.1001s.94043,2.1001,2.1001,2.1001h10.23877c2.81201,0,5.1001-2.28809,5.1001-5.1001v-31.92578c0-1.15967-.94043-2.1001-2.1001-2.1001Z\"></path><path d=\"m37.88995,74.18697h-10.12842c-.49609,0-.8999-.40381-.8999-.8999v-32.06885c0-1.15967-.94043-2.1001-2.1001-2.1001s-2.1001.94043-2.1001,2.1001v32.06885c0,2.81201,2.28809,5.1001,5.1001,5.1001h10.12842c1.15967,0,2.1001-.94043,2.1001-2.1001s-.94043-2.1001-2.1001-2.1001Z\"></path><path d=\"m79.59942,35.52632l-28.14209-24.38135c-1.91748-1.66113-4.7998-1.65088-6.70459.02344l-28.36279,24.91309c-.4541.39844-.71436.97363-.71436,1.57764v3.71826c0,1.15967.94043,2.1001,2.1001,2.1001s2.1001-.94043,2.1001-2.1001v-2.76758l27.64844-24.28613c.33643-.29541.84521-.29688,1.18359-.00391l27.4165,23.75293v3.30469c0,1.15967.94043,2.1001,2.1001,2.1001s2.1001-.94043,2.1001-2.1001v-4.26367c0-.60938-.26465-1.18848-.7251-1.5874Z\"></path></g>","e_mobility":"<path d=\"m86.03399,39.52583l-1.67285-6.52832c-.46191-1.80029-2.26172-2.9668-4.08838-2.65527l-4.9917.8457-7.38281-9.59229c-.81592-1.06006-1.99072-1.74805-3.30859-1.93652-2.38135-.34131-8.76416-1.13428-16.58887-1.13428s-14.20898.79297-16.59082,1.13428c-1.31738.18896-2.49219.87646-3.30811,1.93652l-7.38281,9.59229-4.99121-.8457c-1.8335-.31201-3.62695.85498-4.08887,2.65527l-1.67334,6.52832c-.2124.82861.09912,1.70361.7876,2.21143l4.90479,3.61768c.93408.68848,2.24854.49023,2.93652-.44336.68848-.93359.48975-2.24805-.44336-2.93652l-3.76562-2.77734,1.18457-4.62256,5.69238.96436c.76807.13281,1.54102-.17383,2.01465-.78955l8.15283-10.59277c.14404-.18701.34863-.30811.5752-.34082,2.29297-.32812,8.44043-1.09131,15.99414-1.09131,7.55566,0,13.70264.76318,15.99463,1.09131.22754.03271.43213.15381.57617.34082l8.15283,10.59277c.47363.61572,1.24561.91992,2.01465.78955l5.69238-.96436,1.18408,4.62256-3.19385,2.35596c-.76221.56201-1.05371,1.56494-.71191,2.44824.53271,1.37598.81445,2.87598.81445,4.3374v24.03564c0,.49609-.40381.8999-.8999.8999h-7.33984c-.49609,0-.8999-.40381-.8999-.8999v-4.64648c0-1.15967-.94043-2.1001-2.1001-2.1001H28.72247c-1.15967,0-2.1001.94043-2.1001,2.1001v4.64648c0,.49609-.40381.8999-.8999.8999h-7.3457c-.49609,0-.8999-.40381-.8999-.8999v-18.24902c0-.49609.40381-.8999.8999-.8999h16.60986v1.53955c0,2.81201,2.28809,5.1001,5.1001,5.1001h11.0376c1.15967,0,2.1001-.94043,2.1001-2.1001v-1.21973h4.68262c1.15967,0,2.1001-.94043,2.1001-2.1001s-.94043-2.1001-2.1001-2.1001h-4.68262v-2.43945h4.68262c1.15967,0,2.1001-.94043,2.1001-2.1001s-.94043-2.1001-2.1001-2.1001h-4.68262v-1.21973c0-1.15967-.94043-2.1001-2.1001-2.1001h-11.0376c-2.81201,0-5.1001,2.28809-5.1001,5.1001v1.53955h-16.60986c-2.81201,0-5.1001,2.28809-5.1001,5.1001v18.24902c0,2.81201,2.28809,5.1001,5.1001,5.1001h7.3457c2.81201,0,5.1001-2.28809,5.1001-5.1001v-2.54639h34.36035v2.54639c0,2.81201,2.28809,5.1001,5.1001,5.1001h7.33984c2.81201,0,5.1001-2.28809,5.1001-5.1001v-24.03564c0-1.46094-.19678-2.9043-.58545-4.30859l3.10889-2.29346c.68848-.50781,1-1.38232.7876-2.21143Zm-46.84717,7.96045c0-.49609.40381-.8999.8999-.8999h8.9375v9.0791h-8.9375c-.49609,0-.8999-.40381-.8999-.8999v-7.2793Z\"></path>","mobile":"<g><path d=\"m41.99981,74.39986h-3c-1.15967,0-2.1001.94043-2.1001,2.1001s.94043,2.1001,2.1001,2.1001h3c1.15967,0,2.1001-.94043,2.1001-2.1001s-.94043-2.1001-2.1001-2.1001Z\"></path><path d=\"m56.79718,9.89986H24.20245c-2.81201,0-5.1001,2.28809-5.1001,5.1001v66c0,2.81201,2.28809,5.1001,5.1001,5.1001h32.57129c2.81201,0,5.1001-2.28809,5.1001-5.1001v-7c0-1.15967-.94043-2.1001-2.1001-2.1001s-2.1001.94043-2.1001,2.1001v7c0,.49609-.40381.8999-.8999.8999H24.20245c-.49609,0-.8999-.40381-.8999-.8999V14.99995c0-.49609.40381-.8999.8999-.8999h6.69727v3.8999c0,1.98486,1.61523,3.6001,3.6001,3.6001h12c1.98486,0,3.6001-1.61523,3.6001-3.6001v-3.8999h6.69727c.3252,0,.53857.16553.63721.26465.09863.09863.26367.31299.2627.63867l-.02344,6.98975c-.00391,1.15967.93311,2.10303,2.09326,2.10693h.00684c1.15674,0,2.09619-.93555,2.1001-2.09326l.02344-6.98975c.00439-1.36572-.52393-2.65039-1.48828-3.61768-.96387-.9668-2.24658-1.49951-3.61182-1.49951Zm-10.89746,7.5h-10.7998v-3.2998h10.7998v3.2998Z\"></path><path d=\"m47.30206,60.99995l.00049-9.14307c0-1.15967-.94043-2.1001-2.1001-2.1001s-2.1001.94043-2.1001,2.1001l-.00049,9.14307c0,1.15967.94043,2.1001,2.1001,2.1001s2.1001-.94043,2.1001-2.1001Z\"></path><path d=\"m55.20245,41.94771c-1.15967,0-2.1001.94043-2.1001,2.1001v16.95215c0,1.15967.94043,2.1001,2.1001,2.1001s2.1001-.94043,2.1001-2.1001v-16.95215c0-1.15967-.94043-2.1001-2.1001-2.1001Z\"></path><path d=\"m65.20245,34.519c-1.15967,0-2.1001.94043-2.1001,2.1001v24.38086c0,1.15967.94043,2.1001,2.1001,2.1001s2.1001-.94043,2.1001-2.1001v-24.38086c0-1.15967-.94043-2.1001-2.1001-2.1001Z\"></path><path d=\"m75.20245,26.89986c-1.15967,0-2.1001.94043-2.1001,2.1001v32c0,1.15967.94043,2.1001,2.1001,2.1001s2.1001-.94043,2.1001-2.1001V28.99995c0-1.15967-.94043-2.1001-2.1001-2.1001Z\"></path></g>","shop":"<g><path d=\"m71.29157,67.18599c-4.71143,0-8.54492,3.83496-8.54492,8.5498s3.8335,8.5498,8.54492,8.5498,8.54443-3.83496,8.54443-8.5498-3.83301-8.5498-8.54443-8.5498Zm0,12.90039c-2.39551,0-4.34473-1.95215-4.34473-4.35059s1.94922-4.35059,4.34473-4.35059,4.34424,1.95215,4.34424,4.35059-1.94873,4.35059-4.34424,4.35059Z\"></path><path d=\"m85.00202,29.13423c-.97314-1.23242-2.43262-1.93945-4.00342-1.93945h-47.31494c-.65137,0-1.26562.30176-1.66309.81738s-.53369,1.18652-.36768,1.81641l4.66455,17.73926c.29492,1.12109,1.44141,1.79297,2.56494,1.49707,1.12158-.29492,1.7915-1.44336,1.49658-2.56543l-3.97168-15.10547h44.59131c.37939,0,.60547.21484.70654.34277s.25732.39844.16895.76758l-6.2749,26.25c-.09717.40723-.45703.69141-.875.69141h-40.51562c-.41016,0-.76855-.27832-.87158-.6748L22.13288,15.5356c-.58252-2.25-2.61279-3.82031-4.93652-3.82031h-5.19629c-1.15967,0-2.1001.93945-2.1001,2.09961s.94043,2.09961,2.1001,2.09961h5.19629c.41016,0,.76807.27734.87109.67383l11.2041,43.23633c.58301,2.24902,2.61328,3.82031,4.93701,3.82031h40.51562c2.36963,0,4.40918-1.60938,4.95996-3.91406l6.2749-26.25c.36523-1.5293.01611-3.11328-.95703-4.34668Z\"></path><path d=\"m54.85505,73.63618h-8.85986c-.93896-3.70087-4.28711-6.4502-8.27344-6.4502-4.71143,0-8.54492,3.83496-8.54492,8.5498s3.8335,8.5498,8.54492,8.5498c3.98633,0,7.33447-2.74933,8.27344-6.4502h8.85986c1.15967,0,2.1001-.93945,2.1001-2.09961s-.94043-2.09961-2.1001-2.09961Zm-17.1333,6.4502c-2.39551,0-4.34473-1.95215-4.34473-4.35059s1.94922-4.35059,4.34473-4.35059,4.34473,1.95215,4.34473,4.35059-1.94922,4.35059-4.34473,4.35059Z\"></path></g>","smart_living":"<g><path d=\"m70.98468,86.10005H25.01544c-2.81201,0-5.1001-2.28809-5.1001-5.1001v-36.21289c0-1.15967.94043-2.1001,2.1001-2.1001s2.1001.94043,2.1001,2.1001v36.21289c0,.49609.40381.8999.8999.8999h45.96924c.49609,0,.8999-.40381.8999-.8999v-36.05273c0-1.15967.94043-2.1001,2.1001-2.1001s2.1001.94043,2.1001,2.1001v36.05273c0,2.81201-2.28809,5.1001-5.1001,5.1001Z\"></path><path d=\"m81.7962,47.06489c-1.15967,0-2.1001-.94043-2.1001-2.1001v-3.80811l-30.97607-26.83691c-.33789-.29297-.84668-.29102-1.18262.00391l-31.2334,27.43408v3.20703c0,1.15967-.94043,2.1001-2.1001,2.1001s-2.1001-.94043-2.1001-2.1001v-4.15771c0-.604.26025-1.1792.71436-1.57764l31.94727-28.06104c1.90479-1.67334,4.78711-1.68408,6.7041-.02344l31.70166,27.46533c.46045.39893.7251.97803.7251,1.5874v4.76709c0,1.15967-.94043,2.1001-2.1001,2.1001Z\"></path><path d=\"m47.99981,69.64204c-8.12256,0-14.73047-6.60791-14.73047-14.73047,0-4.21094,1.80811-8.229,4.96045-11.0249.86865-.76953,2.19531-.68945,2.96484.17773.76953.86816.68994,2.19531-.17773,2.96484-2.25439,1.99902-3.54736,4.87207-3.54736,7.88232,0,5.80664,4.72363,10.53027,10.53027,10.53027s10.53076-4.72363,10.53076-10.53027c0-2.8125-1.09521-5.45703-3.08447-7.44629-.82031-.81982-.82031-2.1499,0-2.96973.82031-.82031,2.14941-.82031,2.96973,0,2.78271,2.78223,4.31494,6.48145,4.31494,10.41602,0,8.12256-6.6084,14.73047-14.73096,14.73047Z\"></path><path d=\"m47.99981,58.16011c-1.15967,0-2.1001-.94043-2.1001-2.1001v-17.80176c0-1.15967.94043-2.1001,2.1001-2.1001s2.1001.94043,2.1001,2.1001v17.80176c0,1.15967-.94043,2.1001-2.1001,2.1001Z\"></path></g>"};   // product-line icons from the MAINGAU portfolio slide
+const PERSON = `<path d="M48 50c9.4 0 17-7.6 17-17s-7.6-17-17-17-17 7.6-17 17 7.6 17 17 17zm0 6c-14.6 0-30 7.3-30 17v5h60v-5c0-9.7-15.4-17-30-17z"/>`;
+const LINES = [["energy","Energy supply","Electricity, gas, heat-pump electricity"],["e_mobility","Autostrom","Charging via app, card or chip"],["mobile","Mobile","Phone contracts"],["shop","Online shop","Smart home, wallboxes, brand products"],["smart_living","Smart Living","Smart meter, smart home, HEMS"]];
 const SHEET_HAS = {customer_master:()=>1, customer_value:()=>1, consent_status:()=>1, product_catalog:()=>1, newsletter_campaigns:x=>x.nl,
   energy_contracts:x=>x.energy, mobile_contracts:x=>x.mobile, autostrom_contracts:x=>x.auto, charge_sessions:x=>x.charge, shop_orders:x=>x.shop,
   hems_devices:x=>x.hems && x.hems.dev.length, hems_telemetry_daily:x=>x.hems && x.hems.days, newsletter_performance:x=>x.nl, portal_sessions:x=>x.portal,
   service_interactions:x=>x.svc, call_transcripts:x=>x.tl.some(t=>t[1]==="call"), service_nba_feedback:x=>x.tl.some(t=>t[1]==="agent"), nba_action_history:x=>x.tl.some(t=>t[1]==="nba")};
 const NOW = "2026-10-01 23:59";
-let xSel = "MG-100068", xSeg = "all", xSrc = "all", xLimit = 25;
+let xSel = "MG-100068", xSrc = "all", xAll = false;
 const holds = (c, line) => line === "shop" ? !!X[c.id].shop : c.products.some(p => p.line === (line === "e_mobility" ? "autostrom" : line));
 const nice = s => String(s ?? "").replace(/_/g, " ");
-function segOk(c) { const x = X[c.id];
-  return xSeg === "all" || (xSeg === "multi" && c.lines >= 2) || (xSeg === "risk" && c.churn >= .25) || (xSeg === "case" && (c.case.length || c.cancel))
-    || (xSeg === "ev" && !!x.auto) || (xSeg === "home" && !!x.hems); }
+const icon = (k, cls) => `<svg class="${cls}" viewBox="0 0 96 96" fill="currentColor" aria-hidden="true">${k === "person" ? PERSON : ICON[k]}</svg>`;
+const ms = s => new Date(s.slice(0,16).replace(" ", "T")).getTime();
+const isMilestone = t => t[1] === "crm" || (t[1] === "contract" && /started|cancel|deregistered/i.test(t[2]));
 
-function renderX360List() {
-  const q = $("#xq").value.trim().toUpperCase();
-  const rows = D.customers.filter(c => segOk(c) && (!q || c.id.includes(q) || c.city.toUpperCase().includes(q))).sort((a,b) => b.clv - a.clv);
-  $("#xsegs").innerHTML = SEG.map(([k,l]) => `<button data-seg="${k}" aria-pressed="${xSeg===k}">${l}</button>`).join("");
-  $("#xcount").textContent = `${rows.length} customers${rows.length > 200 ? " · top 200 shown" : ""}`;
-  $("#xlist").innerHTML = rows.slice(0, 200).map(c => `<div class="li" role="option" tabindex="0" data-id="${c.id}" aria-selected="${c.id===xSel}"><span class="id">${c.id}</span><span class="v">${eur(c.clv,0)}</span><span class="t">${esc(c.city)} · ${LINES.filter(l => holds(c,l[0])).map(l => l[1]).join(", ") || "no active products"}</span></div>`).join("") || `<p class="muted" style="padding:12px">No customer matches.</p>`;
+function renderX360Pick() {
+  $("#xids").innerHTML = D.customers.map(c => `<option value="${c.id}">${esc(c.city)}</option>`).join("");
+  $("#xdemo").innerHTML = DEMO.map(([id, k]) => `<button data-id="${id}" aria-pressed="${id===xSel}">${k}</button>`).join("");
 }
-$("#xq").addEventListener("input", renderX360List);
-$("#xsegs").addEventListener("click", e => { const b = e.target.closest("[data-seg]"); if (b) { xSeg = b.dataset.seg; renderX360List(); } });
-const xPick = id => { if (!BY[id]) return; xSel = id; xSrc = "all"; xLimit = 25; renderX360List(); renderX360(); };
-$("#xlist").addEventListener("click", e => { const r = e.target.closest("[data-id]"); if (r) xPick(r.dataset.id); });
-$("#xlist").addEventListener("keydown", e => { if (e.key === "Enter") { const r = e.target.closest("[data-id]"); if (r) xPick(r.dataset.id); } });
+const xPick = id => { if (!BY[id]) return; xSel = id; xSrc = "all"; xAll = false; renderX360Pick(); renderX360(); };
+$("#xq").addEventListener("change", e => xPick(e.target.value.trim().toUpperCase()));
+$("#xq").addEventListener("keydown", e => { if (e.key === "Enter") xPick(e.target.value.trim().toUpperCase()); });
+$("#xdemo").addEventListener("click", e => { const b = e.target.closest("[data-id]"); if (b) xPick(b.dataset.id); });
 
-function lineCard(c, x, line, label) {
-  const own = holds(c, line), it = (b, rest) => `<div class="it"><b>${esc(b)}</b>${rest ? ` · ${rest}` : ""}</div>`;
-  let body = "";
-  if (line === "energy") body = (x.energy || []).map(e => it(e.tariff, [nice(e.com), e.kwh ? e.kwh.toLocaleString("en-GB") + " kWh/yr" : "", e.inst ? eur(e.inst,0) + "/month" : "",
-    e.guar ? `guarantee ${e.guar < NOW ? "ended" : "until"} ${e.guar}` : "", e.st !== "active" ? `<span class="no">${esc(nice(e.st))}</span>` : "",
-    e.dun ? `<span class="no">dunning ${e.dun}</span>` : "", e.cancel ? `<span class="no">cancellation ${e.cancel}</span>` : "", e.feed ? "feed-in meter" : ""].filter(Boolean).join(" · "))).join("");
-  if (line === "mobile") body = (x.mobile || []).map(m => it(m.plan, [`${m.gb} GB`, `uses ${m.used} GB`, m.hits ? `<span class="no">limit hit ${m.hits}× in 3 months</span>` : "", `${eur(m.fee,0)}/month`, m.sims > 1 ? `${m.sims} SIMs` : "", m.minEnd ? `term ends ${m.minEnd}` : ""].filter(Boolean).join(" · "))).join("");
-  if (line === "e_mobility") body = (x.auto || []).map(a => it(a.car || "Autostrom", [a.batt ? a.batt + " kWh battery" : "", `${a.cards} card${a.cards===1?"":"s"}`, a.app ? "app user" : "", a.st !== "active" ? `<span class="no">${esc(nice(a.st))}</span>` : ""].filter(Boolean).join(" · "))).join("")
-    + (x.charge ? it(`${x.charge.n} sessions`, `${x.charge.kwh.toLocaleString("en-GB")} kWh · ${pct(x.charge.dc,0)} DC${x.charge.fail ? ` · <span class="no">${x.charge.fail} failed</span>` : ""}`) : "");
-  if (line === "smart_living") body = x.hems ? x.hems.dev.map(([t, m, s]) => it(nice(t), `${esc(m || "")}${s !== "online" ? ` · <span class="no">${esc(nice(s))}</span>` : ""}`)).join("") : "";
-  if (line === "shop") body = x.shop ? it(`${x.shop.n} order${x.shop.n===1?"":"s"}`, `${eur(x.shop.eur,0)} · last ${x.shop.last}`) : "";
-  const opp = c.cands.filter(k => OFFER[k.o] && OFFER[k.o].line === line).sort((a,b) => b.d - a.d)[0];
-  const oppTxt = opp ? (opp.blk.length ? `<span class="muted">Opportunity on hold: ${esc(opp.n)} (${esc(opp.blk[0])})</span>` : `Opportunity: <b>${esc(opp.n)}</b> <span class="mono ${opp.d > 0 ? "ok" : "no"}">${sgn(opp.d,0)}</span>`) : "";
-  return `<div class="ln ${own ? "" : "off"}"><header><b>${label}</b><span class="pill ${own ? "k-ok" : "k-none"}">${own ? "Customer" : "Not yet"}</span></header>
-    ${body || (own ? "" : `<div class="it muted">No contract or purchase.</div>`)}${oppTxt ? `<div class="opp">${oppTxt}</div>` : ""}</div>`;
+/* 1. profile */
+function xProfile(c, x, d) {
+  const age = 2026 - c.by, yrs = 2026 - +c.since.slice(0,4), inUse = LINES.filter(l => holds(c, l[0])).length;
+  const chans = c.chans.filter(z => z.ok).map(z => CH[z.ch]);
+  return `<section class="card xprof">
+    <div class="ava">${icon("person","")}</div>
+    <div class="who"><div class="eyebrow">Customer 360°</div><h1>${c.id}</h1>
+      <p>${age} years old · household of ${c.hh} · ${esc(c.city)} (${esc(x.plz)}xx) · customer for ${yrs} year${yrs===1?"":"s"}</p>
+      <div class="chips"><span class="pill k-none">Address with “${c.tone==="du"?"Du":"Sie"}”</span>${chans.length ? `<span class="pill k-none">Reachable via ${esc(chans.join(", "))}</span>` : `<span class="pill k-human">No marketing channel allowed</span>`}${c.cancel?`<span class="pill k-human">Cancellation pending</span>`:""}${c.case.map(z=>`<span class="pill k-human">${esc(z)}</span>`).join("")}</div></div>
+    <div class="xk"><div class="kpi hero"><div class="eyebrow">Customer lifetime value</div><div class="n">${eur(c.clv,0)}</div></div>
+      <div class="kpi"><div class="eyebrow">Churn risk</div><div class="n ${c.churn >= .25 ? "no" : ""}">${pct(c.churn,0)}</div><div class="sub">${c.churn >= .25 ? "High" : c.churn < .1 ? "Low" : "Medium"}</div></div>
+      <div class="kpi"><div class="eyebrow">Products in use</div><div class="n">${inUse}<span class="sub"> of ${LINES.length}</span></div><div class="sub">&nbsp;</div></div></div>
+  </section>`;
 }
 
-function hemsChart(h) {
-  const W = 320, H = 110, P = 4, n = h.days.length, max = Math.max(1, ...h.use, ...h.pv);
-  const px = i => P + i * (W - 2*P - 34) / Math.max(1, n - 1), py = v => H - 16 - (v / max) * (H - 26);
-  const line = (a, col) => `<polyline fill="none" stroke="var(${col})" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" points="${a.map((v,i) => v == null ? "" : `${px(i).toFixed(1)},${py(v).toFixed(1)}`).join(" ")}"/>`;
-  const lastLbl = (a, col, t) => `<text x="${px(n-1)+5}" y="${py(a[n-1] ?? 0)+4}" font-size="10" fill="var(--muted)">${t}</text>`;
-  return `<div class="chart" id="hchart"><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Daily household use and solar generation, September 2026">
-    <line x1="${P}" x2="${W-34}" y1="${H-16}" y2="${H-16}" stroke="var(--line)"/>
-    <text x="${P}" y="${H-3}" font-size="10" fill="var(--muted)">${h.days[0].slice(5)}</text><text x="${W-34}" y="${H-3}" font-size="10" fill="var(--muted)" text-anchor="end">${h.days[n-1].slice(5)}</text>
-    <text x="${P}" y="9" font-size="10" fill="var(--muted)">${Math.round(max)} kWh</text>
-    ${line(h.use, "--s-use")}${line(h.pv, "--s-pv")}${lastLbl(h.use, "--s-use", "Use")}${lastLbl(h.pv, "--s-pv", "Solar")}
-    <line id="hx" y1="10" y2="${H-16}" stroke="var(--muted)" stroke-dasharray="2 2" visibility="hidden"/>
-    <rect id="hhit" x="0" y="0" width="${W-30}" height="${H}" fill="transparent"/></svg><div class="tip" id="htip" hidden></div></div>
-    <div class="legend"><span><i style="background:var(--s-use)"></i>Household use</span><span><i style="background:var(--s-pv)"></i>Solar generation</span></div>`;
+/* 2. history: horizontal track from start to today, latest entries below */
+function xHistory(c, x) {
+  const items = x.tl.slice().reverse(), t0 = Math.min(ms(c.since), ...items.map(t => ms(t[0]))), t1 = Math.max(ms(NOW), ...items.map(t => ms(t[0])));
+  const pos = s => ((ms(s) - t0) / Math.max(1, t1 - t0) * 100).toFixed(2);
+  const y0 = new Date(t0).getFullYear(), y1 = new Date(t1).getFullYear(), step = y1 - y0 > 8 ? 2 : 1, ticks = [];
+  for (let y = y0 + 1; y <= y1; y += step) ticks.push(`<span class="tick" style="left:${pos(y + "-01-01 00:00")}%">${y}</span>`);
+  const dots = items.map((t, i) => `<button class="dot ${isMilestone(t) ? "ms" : ""} ${t[4]}" style="left:${pos(t[0])}%" data-i="${i}" aria-label="${esc(t[0].slice(0,10) + " · " + t[2])}"></button>`).join("");
+  const lbls = items.map((t, i) => isMilestone(t) ? `<span class="lbl" data-i="${i}" style="left:${pos(t[0])}%">${esc(t[2].replace(/ started$/, "").replace(/^Became a MAINGAU customer$/, "Customer"))}</span>` : "").join("");
+  const counts = {}; x.tl.forEach(t => counts[t[1]] = (counts[t[1]] || 0) + 1);
+  const rows = x.tl.filter(t => !xAll || xSrc === "all" || t[1] === xSrc).filter(t => t[1] !== "consent" || xAll).slice(0, xAll ? 999 : 6);
+  const li = ([at, s, ti, de, f]) => `<li class="${f}"><span class="when">${esc(at.slice(0,10))}${at > NOW ? `<br><span class="pill k-service">upcoming</span>` : ""}</span><span class="ti"><span class="tag">${SRC[s] || s}</span>${esc(ti)}</span>${de ? `<span class="de">${esc(de)}</span>` : ""}</li>`;
+  return `<section class="card">
+    <div class="sechead"><h2>History</h2><span class="muted small">${x.tl.length} interactions across ${Object.keys(counts).length} channels</span></div>
+    <div class="track" id="xtrack"><div class="axis"></div>${ticks.join("")}${dots}${lbls}
+      <span class="end" style="left:0">Start · ${y0}</span><span class="end" style="right:0">Today</span><div class="tip" hidden></div></div>
+    <div class="legend"><span><i class="lg ms"></i>Contract</span><span><i class="lg bad"></i>Problem</span><span><i class="lg good"></i>Positive response</span><span><i class="lg warn"></i>Deadline</span><span><i class="lg"></i>Other interaction</span></div>
+    <div class="eyebrow" style="margin-top:20px">${xAll ? "Full history" : "Latest interactions"}</div>
+    ${xAll ? `<div class="filters" role="group" aria-label="Filter by channel" style="margin-top:8px"><button data-src="all" aria-pressed="${xSrc==="all"}">All ${x.tl.length}</button>${Object.keys(SRC).filter(k => counts[k]).map(k => `<button data-src="${k}" aria-pressed="${xSrc===k}">${SRC[k]} ${counts[k]}</button>`).join("")}</div>` : ""}
+    <ul class="tl">${rows.map(li).join("") || `<li><span class="muted">Nothing from this channel.</span></li>`}</ul>
+    <button class="ghost" data-x="all" style="margin-top:10px">${xAll ? "Show latest only" : `Show full history (${x.tl.length})`}</button>
+  </section>`;
 }
-function wireHemsChart(h) {
-  const box = $("#hchart"); if (!box) return;
-  const svg = box.querySelector("svg"), tip = $("#htip"), hx = $("#hx"), n = h.days.length;
-  const at = e => { const r = svg.getBoundingClientRect(), vx = (e.clientX - r.left) * 320 / r.width; return Math.max(0, Math.min(n - 1, Math.round((vx - 4) / ((320 - 8 - 34) / Math.max(1, n - 1))))); };
-  svg.addEventListener("pointermove", e => { const i = at(e), x = 4 + i * (320 - 8 - 34) / Math.max(1, n - 1), r = svg.getBoundingClientRect();
-    hx.setAttribute("x1", x); hx.setAttribute("x2", x); hx.setAttribute("visibility", "visible");
-    tip.hidden = false; tip.innerHTML = `<b>${h.days[i]}</b><br>Use ${h.use[i] ?? "–"} kWh · Solar ${h.pv[i] ?? "–"} kWh${h.ev && h.ev[i] ? `<br>EV charging ${h.ev[i]} kWh` : ""}`;
-    const left = x * r.width / 320; tip.style.left = Math.min(left + 10, r.width - tip.offsetWidth) + "px"; });
-  svg.addEventListener("pointerleave", () => { tip.hidden = true; hx.setAttribute("visibility", "hidden"); });
+function wireTrack(x) {
+  const box = $("#xtrack"); if (!box) return;
+  const items = x.tl.slice().reverse(), tip = box.querySelector(".tip");
+  // milestone labels: three rows above the line; a label that fits nowhere is dropped (its dot stays)
+  const placed = [[], [], []], W = box.clientWidth;
+  box.querySelectorAll(".lbl").forEach(l => {
+    const x0 = parseFloat(l.style.left) / 100 * W, w = l.offsetWidth, left = Math.min(Math.max(0, x0 - w / 2), W - w);
+    const row = placed.findIndex(r => r.every(([a, b]) => left > b + 8 || left + w < a - 8));
+    if (row < 0) { l.remove(); return; }
+    placed[row].push([left, left + w]); l.style.left = left + "px"; l.style.top = (34 - row * 17) + "px"; l.classList.add("on");
+  });
+  const show = e => { const b = e.target.closest(".dot"); if (!b) return; const t = items[+b.dataset.i];
+    tip.hidden = false; tip.innerHTML = `<b>${esc(t[0].slice(0,10))}</b> · ${SRC[t[1]] || t[1]}<br>${esc(t[2])}${t[3] ? `<br><span class="muted">${esc(t[3].slice(0,90))}</span>` : ""}`;
+    const x0 = b.offsetLeft; tip.style.left = Math.min(Math.max(0, x0 - tip.offsetWidth / 2), W - tip.offsetWidth) + "px"; };
+  box.addEventListener("pointerover", show); box.addEventListener("focusin", show);
+  box.addEventListener("pointerleave", () => tip.hidden = true); box.addEventListener("focusout", () => tip.hidden = true);
+}
+
+/* 3. products and contracts, greyed out when not in use */
+function xProducts(c, x) {
+  const kv = rows => `<dl class="kv">${rows.filter(r => r[1] != null && r[1] !== "").map(([k,v]) => `<dt>${k}</dt><dd>${v}</dd>`).join("")}</dl>`;
+  const bad = s => `<span class="no">${s}</span>`;
+  const body = {
+    energy: () => (x.energy || []).map(e => `<div class="ctr"><div class="ctrh"><b>${esc(e.tariff)}</b><span class="pill ${e.st==="active"?"k-ok":"k-human"}">${esc(nice(e.st))}</span></div>${kv([
+      ["Type", nice(e.com)], ["Since", e.start], ["Price guarantee", e.guar ? (e.guar < NOW ? bad("ended " + e.guar) : "until " + e.guar) : "none"],
+      ["Consumption", e.kwh ? e.kwh.toLocaleString("en-GB") + " kWh/yr" : null], ["Instalment", e.inst ? eur(e.inst,0) + "/month" : null],
+      ["Meter", nice(e.meter) + (e.feed ? ", feed-in" : "")], ["Notice period", e.notice ? e.notice + " weeks" : null],
+      ["Dunning", e.dun ? bad("level " + e.dun) : null], ["Cancellation", e.cancel ? bad("received " + e.cancel) : null]])}</div>`).join(""),
+    e_mobility: () => (x.auto || []).map(a => `<div class="ctr"><div class="ctrh"><b>${esc(a.car || "Autostrom")}</b><span class="pill ${a.st==="active"?"k-ok":"k-human"}">${esc(nice(a.st))}</span></div>${kv([
+      ["Since", a.start], ["Battery", a.batt ? a.batt + " kWh" : null], ["Charge cards", a.cards], ["App", a.app ? "yes" : "no"],
+      ["Price AC / DC", a.ac != null ? `€${a.ac} / €${a.dc} per kWh` : null],
+      ["Sessions", x.charge ? `${x.charge.n} · ${x.charge.kwh.toLocaleString("en-GB")} kWh` : null], ["Failed sessions", x.charge && x.charge.fail ? bad(x.charge.fail) : null]])}</div>`).join(""),
+    mobile: () => (x.mobile || []).map(m => `<div class="ctr"><div class="ctrh"><b>${esc(m.plan)}</b><span class="pill ${m.st==="active"?"k-ok":"k-human"}">${esc(nice(m.st))}</span></div>${kv([
+      ["Since", m.start], ["Data", `${m.used} of ${m.gb} GB used`], ["Limit reached", m.hits ? bad(m.hits + "× in 3 months") : null],
+      ["Monthly fee", eur(m.fee,0)], ["SIMs", m.sims], ["Minimum term", m.minEnd ? "until " + m.minEnd : null]])}</div>`).join(""),
+    shop: () => x.shop ? `<div class="ctr">${kv([["Orders", x.shop.n], ["Total spent", eur(x.shop.eur,0)], ["Last order", x.shop.last]])}<p class="small muted" style="margin-top:6px">${esc(x.shop.items.join(" · "))}</p></div>` : "",
+    smart_living: () => x.hems ? `<div class="ctr">${kv(x.hems.dev.map(([t, m, s]) => [esc(nice(t)), s === "online" ? "online" : bad(nice(s))]).concat(x.hems.self != null ? [["Own solar used", pct(x.hems.self,0)]] : []))}</div>` : "",
+  };
+  return `<section><div class="sechead"><h2>Products and contracts</h2><span class="muted small">Grey: not in use</span></div>
+    <div class="prods">${LINES.map(([k, name, sub]) => { const on = holds(c, k);
+      return `<div class="prod ${on ? "" : "off"}"><div class="prodh">${icon(k, "ic")}<div><b>${name}</b><div class="small muted">${sub}</div></div>${on ? `<span class="ck" aria-label="in use">✓</span>` : ""}</div>${on ? body[k]() : `<p class="small muted">Not in use</p>`}</div>`; }).join("")}</div></section>`;
+}
+
+/* 4. warnings and good signs */
+function xSignals(c, x) {
+  const W = [], G = [], soon = ms(NOW) + 90 * 864e5;
+  c.open.forEach(t => W.push(["Open case: " + nice(t.cat), `${t.at.slice(0,10)} via ${nice(t.ch)}${t.txt ? " · " + t.txt.slice(0,110) : ""}`]));
+  if (c.cancel) W.push(["Cancellation received", "A person decides; no automated contact"]);
+  (x.energy || []).forEach(e => { if (e.dun) W.push([`Dunning level ${e.dun}`, e.tariff]);
+    if (e.guar && e.guar > NOW && ms(e.guar) < soon && e.st === "active") W.push(["Price guarantee ends " + e.guar, e.tariff + " · risk of switching"]); });
+  if (x.charge && x.charge.fail) W.push([`${x.charge.fail} failed charging session${x.charge.fail===1?"":"s"}`, "Autostrom"]);
+  if (x.hems) x.hems.dev.filter(z => z[2] !== "online").forEach(z => W.push([`${nice(z[0])} ${nice(z[2])}`, "Last seen " + (z[3] || "–")]));
+  (x.mobile || []).forEach(m => { if (m.hits) W.push([`Data limit reached ${m.hits}× in 3 months`, m.plan]); });
+  if (c.churn >= .25) W.push([`High churn risk (${pct(c.churn,0)})`, (c.drivers || []).join(", ")]);
+  if (x.svc && x.svc.csat != null && x.svc.csat < 3) W.push([`Low service satisfaction (CSAT ${x.svc.csat})`, `${x.svc.n} tickets`]);
+  if (x.nl && x.nl.unsub) W.push(["Unsubscribed from the newsletter", ""]);
+  const yrs = 2026 - +c.since.slice(0,4), conv = x.tl.filter(t => t[1] === "nba" && t[4] === "good").length;
+  if (c.lines >= 2) G.push([`Uses ${c.lines} business lines`, "Bundled customers churn less"]);
+  if (yrs >= 5) G.push([`Loyal for ${yrs} years`, "Customer since " + c.since.slice(0,4)]);
+  if (c.churn < .1) G.push([`Low churn risk (${pct(c.churn,0)})`, ""]);
+  if (x.svc && x.svc.csat >= 4) G.push([`Happy with service (CSAT ${x.svc.csat})`, `${x.svc.n} tickets`]);
+  if (conv) G.push([`Bought after ${conv} campaign${conv===1?"":"s"}`, ""]);
+  if (x.nl && x.nl.click) G.push([`Clicked ${x.nl.click} newsletter${x.nl.click===1?"":"s"}`, `${x.nl.open} of ${x.nl.sent} opened`]);
+  if (x.portal && x.portal.n90 >= 5) G.push([`Active in the portal`, `${x.portal.n90} sessions in 90 days`]);
+  if (x.hems && x.hems.self >= .5) G.push([`Uses ${pct(x.hems.self,0)} of own solar power`, ""]);
+  const list = (a, cls, ic, none) => a.length ? `<ul class="sigl">${a.map(([t, d]) => `<li><span class="ic ${cls}">${ic}</span><span><b>${esc(t)}</b>${d ? `<span class="small muted">${esc(d)}</span>` : ""}</span></li>`).join("")}</ul>` : `<p class="muted small" style="margin-top:8px">${none}</p>`;
+  return `<section class="two">
+    <div class="card wcard"><h2>Warnings<span class="cnt">${W.length}</span></h2>${list(W, "no", "!", "No open cases or risks.")}</div>
+    <div class="card gcard"><h2>Good<span class="cnt">${G.length}</span></h2>${list(G, "ok", "✓", "No positive signals yet.")}</div></section>`;
+}
+
+/* 5. top solutions with reason, and 6. CLV if accepted */
+function xOptions(c, d) {
+  const all = c.cands.map(k => ({k, b: best(c, k)})).map(o => ({...o, v: o.b ? o.b.d : o.k.d, ok: !o.k.blk.length && !!o.b}));
+  return all.filter(o => o.ok).sort((a,b) => b.v - a.v).concat(all.filter(o => !o.ok).sort((a,b) => b.v - a.v)).slice(0, 5);
+}
+function xSolutions(c, d, top) {
+  const pick = d.pick && d.pick.cand.o;
+  return `<section class="card"><div class="sechead"><h2>Best solutions</h2><span class="muted small">Ranked by expected gain in customer lifetime value</span></div>
+    ${!pick ? `<p class="muted small">Engine’s choice: <b>${esc(d.title)}</b>. ${esc(d.reason)}</p>` : ""}
+    <ol class="sol">${top.map((o, i) => `<li class="${o.k.o === pick ? "picked" : ""} ${o.ok ? "" : "blocked"}"><span class="rk">${i+1}</span>
+      <div><b>${esc(o.k.o==="P-SV-01"?"Proactive service fix":o.k.n)}</b>${o.k.o === pick ? ` <span class="pill k-ok">Engine’s choice</span>` : ""}
+        <p class="why">${esc(o.k.why)}</p>
+        <p class="small muted">${o.ok ? `${CH[o.b.ch]} · p(accept) ${pct(o.b.p)}` : `Not allowed: ${esc(o.k.blk[0] || "no channel with consent")}`}</p>
+        ${o.k.o === pick ? `<div class="acts"><button class="primary" data-x="open">Approve or change</button></div>` : ""}</div>
+      <span class="gain num ${o.v > 0 ? "ok" : "no"}">${sgn(o.v,0)}</span></li>`).join("") || `<li class="muted">No options for this customer.</li>`}</ol></section>`;
+}
+function xClvChart(c, top) {
+  const bars = [["Today", c.clv, "now"]].concat(top.map((o, i) => [`${i+1}. ${o.k.o==="P-SV-01"?"Service fix":o.k.n}`, o.k.acc, o.ok ? "" : "blk"]));
+  const W = 640, H = 220, L = 8, B = 44, T = 22, lo = Math.min(0, ...bars.map(b => b[1])), hi = Math.max(1, ...bars.map(b => b[1]));
+  const y = v => T + (hi - v) / (hi - lo) * (H - T - B), bw = Math.min(64, (W - 2*L) / bars.length - 18), cx = i => L + (i + .5) * (W - 2*L) / bars.length;
+  const g = bars.map(([n, v, k], i) => { const top_ = Math.min(y(v), y(0)), h = Math.max(2, Math.abs(y(v) - y(0)));
+    return `<g><title>${esc(n)}: ${eur(v,0)}${k==="now"?"":` if accepted (${sgn(v - c.clv,0)} vs today)`}</title>
+      <rect x="${cx(i) - bw/2}" y="${top_}" width="${bw}" height="${h}" rx="4" class="bar ${k}"/>
+      <text x="${cx(i)}" y="${(v >= 0 ? top_ : top_ + h) + (v >= 0 ? -6 : 14)}" text-anchor="middle" class="bv">${eur(v,0)}</text>
+      <text x="${cx(i)}" y="${H - B + 18}" text-anchor="middle" class="bl">${esc(n.length > 18 ? n.slice(0,17) + "…" : n)}</text></g>`; }).join("");
+  return `<section class="card"><div class="sechead"><h2>Customer lifetime value</h2><span class="muted small">Today, and if the customer accepts each solution</span></div>
+    <div class="clvc"><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="CLV today and if each solution is accepted">
+      <line x1="0" x2="${W}" y1="${y(0)}" y2="${y(0)}" class="base"/><line x1="0" x2="${W}" y1="${y(c.clv)}" y2="${y(c.clv)}" class="ref"/>${g}</svg></div>
+    <p class="muted small">Dashed line: CLV today. A solution only adds value if the customer accepts it; the ranking above weighs this by p(accept).</p></section>`;
 }
 
 function renderX360() {
-  const c = BY[xSel], x = X[xSel], d = DEC[xSel];
-  const held = LINES.filter(l => holds(c, l[0])).length;
-  const stat = rows => `<div class="stat">${rows.filter(r => r[1] != null && r[1] !== "").map(([k,v]) => `<span>${k}</span><span>${v}</span>`).join("")}</div>`;
-  const perm = k => { const v = c.consent[k] || "unknown"; return `<span class="pill ${v==="granted"?"k-ok":v==="withdrawn"?"k-human":"k-none"}">${esc(nice(v))}</span>`; };
-  const chanRows = [
-    ["Portal", perm("portal_app_personalisation"), !c.portal ? "No portal account" : x.portal ? `${x.portal.n90} session${x.portal.n90===1?"":"s"} in 90 days · last ${x.portal.last}` : "Account, no sessions"],
-    ["App", perm("portal_app_personalisation"), c.app ? `Installed${x.portal ? ` · ${pct(x.portal.app,0)} of sessions` : ""}` : "Not installed"],
-    ["Newsletter", perm("newsletter_email"), x.nl ? `${x.nl.open} of ${x.nl.sent} opened · ${x.nl.click} clicked${x.nl.unsub ? ` · <span class="no">unsubscribed</span>` : ""}` : "Not on the list"],
-    ["Marketing e-mail", perm("marketing_email"), `${c.contacts} marketing contacts in 30 days`],
-    ["SMS", perm("marketing_sms"), ""],
-    ["Phone", perm("marketing_phone"), ""],
-    ["Service desk", `<span class="pill k-ok">always</span>`, x.svc ? `${x.svc.n} tickets${x.svc.open ? ` · <span class="no">${x.svc.open} open</span>` : ""}${x.svc.csat ? ` · CSAT ${x.svc.csat}` : ""}` : "No tickets"],
-    ["Profiling", perm("profiling_analytics"), c.prof ? "Behaviour signals may be used" : "Contract data only"],
-  ].map(([n, p, a]) => `<tr><td><b style="color:var(--ink)">${n}</b></td><td>${p}</td><td>${a || `<span class="muted">–</span>`}</td></tr>`).join("");
-  const counts = {}; x.tl.forEach(t => counts[t[1]] = (counts[t[1]] || 0) + 1);
-  const tlRows = x.tl.filter(t => xSrc === "all" || t[1] === xSrc);
-  const tl = tlRows.slice(0, xLimit).map(([at, s, ti, de, f]) => `<li class="${f}"><span class="when">${esc(at)}${at > NOW ? `<br><span class="pill k-service">upcoming</span>` : ""}</span><span class="ti"><span class="tag">${SRC[s] || s}</span>${esc(ti)}</span>${de ? `<span class="de">${esc(de)}</span>` : ""}</li>`).join("");
-  const cls = {offer:"", service:"service", none:"none", wait:"wait", human:"human"}[d.a];
+  const c = BY[xSel], x = X[xSel], d = DEC[xSel], top = xOptions(c, d);
+  const nSrc = D.sources.filter(s => SHEET_HAS[s.sheet] && SHEET_HAS[s.sheet](x)).length;
   const srcRows = D.sources.map(s => { const f = SHEET_HAS[s.sheet], has = f ? !!f(x) : false;
     return `<tr><td>${esc(s.source_system)}<div class="muted small mono">${esc(s.sheet)}</div></td><td>${esc(s.refresh || "")}</td><td>${esc(s.typical_latency || "–")}</td><td>${has ? `<span class="ok">✓ data</span>` : `<span class="muted">none</span>`}</td></tr>`; }).join("");
-  const nSrc = D.sources.filter(s => SHEET_HAS[s.sheet] && SHEET_HAS[s.sheet](x)).length;
-
-  $("#xdetail").innerHTML = `
-  <div class="head">
-    <div><div class="eyebrow">360 view · ${esc(c.city)} (${esc(x.plz)}xx) · customer since ${esc(c.since.slice(0,4))} · born ${c.by} · household of ${c.hh} · ${c.tone === "du" ? "writes informally (Du)" : "formal (Sie)"}</div><h1>${c.id}</h1>
-      <div class="chips">${c.cancel ? `<span class="pill k-human">Cancellation pending</span>` : ""}${c.case.map(z => `<span class="pill k-human">${esc(z)}</span>`).join("")}<span class="pill k-none">${nSrc} of ${D.sources.length} sources</span></div></div>
-    <div class="kpis"><div class="kpi"><div class="eyebrow">CLV now</div><div class="n">${eur(c.clv,0)}</div></div><div class="kpi"><div class="eyebrow">Churn risk</div><div class="n">${pct(c.churn,0)}</div></div>
-      <div class="kpi"><div class="eyebrow">Margin / yr</div><div class="n">${eur(c.margin,0)}</div></div><div class="kpi"><div class="eyebrow">Business lines</div><div class="n">${held} of ${LINES.length}</div></div></div>
-  </div>
-  <div class="xnba ${cls}"><div><div class="eyebrow">Next best action</div><div class="row" style="margin-top:2px"><b>${esc(d.a==="service"?"Proactive service fix":d.title)}</b><span class="pill ${KIND[d.a][0]}">${KIND[d.a][1]}</span>${d.pick?`<span class="pill k-none">${CH[d.pick.ch]}</span>`:""}</div><p class="muted small" style="margin-top:4px;max-width:80ch">${esc(d.reason)}</p></div>
-    <div class="row">${d.pick && d.a!=="wait" ? `<span class="n">${sgn(d.pick.d,0)}</span>` : ""}<button data-x="open">Open decision</button></div></div>
-  <div><h2>Relationship</h2><p class="muted small" style="margin-top:2px">What the customer has in each business line, and the best next product where they have none.</p></div>
-  <div class="lines">${LINES.map(([k,l]) => lineCard(c, x, k, l)).join("")}</div>
-  <div class="xmain">
-    <div class="card"><div class="row" style="justify-content:space-between"><h2>Timeline across every channel</h2><span class="muted small">${tlRows.length} entries</span></div>
-      <div class="filters" id="xsrc" role="group" aria-label="Filter by source" style="margin-top:10px"><button data-src="all" aria-pressed="${xSrc==="all"}">All ${x.tl.length}</button>${Object.keys(SRC).filter(k => counts[k]).map(k => `<button data-src="${k}" aria-pressed="${xSrc===k}">${SRC[k]} ${counts[k]}</button>`).join("")}</div>
-      <ul class="tl">${tl || `<li><span class="muted">Nothing from this source.</span></li>`}</ul>
-      ${tlRows.length > xLimit ? `<div class="row" style="margin-top:10px"><button class="ghost" data-x="more">Show ${Math.min(25, tlRows.length - xLimit)} more</button></div>` : ""}</div>
-    <div class="stack">
-      <div class="card"><h3>Channels and permissions</h3><div class="tscroll"><table style="margin-top:6px"><tbody>${chanRows}</tbody></table></div></div>
-      <div class="card"><h3>Value</h3>${stat([["Annual margin", eur(c.margin,0)], ["Cost to serve (12 months)", eur(c.cts,0)], ["Service effect on CLV", c.svcImpact ? sgn(c.svcImpact,0) : null], ["Churn risk", pct(c.churn,0)]])}
-        ${c.drivers && c.drivers.length ? `<div class="chips" style="margin-top:8px">${c.drivers.map(z => `<span class="pill k-service">${esc(z)}</span>`).join("")}</div>` : `<p class="muted small" style="margin-top:8px">No churn drivers.</p>`}</div>
-      ${x.hems && x.hems.days ? `<div class="card"><h3>Home energy, September</h3><p class="muted small">Self-consumption ${pct(x.hems.self || 0,0)} · solar ${Math.round(x.hems.pv.reduce((a,b)=>a+(b||0),0))} kWh · use ${Math.round(x.hems.use.reduce((a,b)=>a+(b||0),0))} kWh</p>${hemsChart(x.hems)}</div>` : ""}
-      ${x.charge ? `<div class="card"><h3>Charging</h3>${stat([["Sessions", x.charge.n], ["Energy charged", x.charge.kwh.toLocaleString("en-GB") + " kWh"], ["Spent", eur(x.charge.eur,0)], ["DC fast charging", pct(x.charge.dc,0)], ["Failed or aborted", x.charge.fail], ["Abroad", x.charge.abroad], ["Last session", x.charge.last]])}${x.charge.cities.length ? `<p class="muted small" style="margin-top:8px">Mostly in ${esc(x.charge.cities.join(", "))}</p>` : ""}</div>` : ""}
-      ${x.svc ? `<div class="card"><h3>Service</h3>${stat([["Tickets", x.svc.n], ["Open", x.svc.open], ["Average CSAT (1–5)", x.svc.csat ?? "–"], ["Solved on first contact", x.svc.fcr != null ? pct(x.svc.fcr,0) : "–"], ["Handling and goodwill cost", eur(x.svc.cost,0)]])}</div>` : ""}
-    </div>
-  </div>
+  $("#xq").value = xSel;
+  $("#xdetail").innerHTML = xProfile(c, x, d) + xHistory(c, x) + xProducts(c, x) + xSignals(c, x) + xSolutions(c, d, top) + xClvChart(c, top) + `
   <details class="more" data-k="x-src" ${op("x-src")}><summary>Data sources for this customer: ${nSrc} of ${D.sources.length}</summary><div class="body">
-    <p class="muted small">Joined on customer_id. Latency is how late a source can be; the profile is only as fresh as its slowest source.</p>
+    <p class="muted small">Joined on customer_id. The profile is only as fresh as its slowest source.</p>
     <div class="tscroll" style="margin-top:8px"><table><thead><tr><th>Source</th><th>Refresh</th><th>Latency</th><th>This customer</th></tr></thead><tbody>${srcRows}</tbody></table></div></div></details>`;
-  if (x.hems && x.hems.days) wireHemsChart(x.hems);
+  wireTrack(x);
 }
 $("#xdetail").addEventListener("click", e => {
-  const s = e.target.closest("[data-src]"); if (s) { xSrc = s.dataset.src; xLimit = 25; renderX360(); return; }
+  const s = e.target.closest("[data-src]"); if (s) { xSrc = s.dataset.src; renderX360(); return; }
   const b = e.target.closest("[data-x]"); if (!b) return;
-  if (b.dataset.x === "more") { xLimit += 25; renderX360(); }
+  if (b.dataset.x === "all") { xAll = !xAll; xSrc = "all"; renderX360(); }
   if (b.dataset.x === "open") select(xSel);
 });
 
 /* ---------- routing ---------- */
 const VIEWS = ["recommendations","marketing","customers","x360","method"];
 let view = "recommendations";
-function go(v) { if (v === "replay" || v === "learn") v = "method"; if (!VIEWS.includes(v)) v = "recommendations"; view = v;
+function go(v) { if (v === "replay" || v === "learn") v = "method"; if (!VIEWS.includes(v)) v = "recommendations"; view = v; document.body.dataset.view = v;
   VIEWS.forEach(x => { $("#v-"+x).hidden = x !== v; });
   document.querySelectorAll("nav.tabs a").forEach(a => a.setAttribute("aria-current", a.dataset.v===v ? "page" : "false"));
   if (location.hash !== "#"+v) history.replaceState(null, "", "#"+v);
@@ -1076,7 +1189,7 @@ function go(v) { if (v === "replay" || v === "learn") v = "method"; if (!VIEWS.i
 function draw(full) {
   if (view === "recommendations") renderRec();
   if (view === "customers") { renderList(); renderDetail(); }
-  if (view === "x360") { renderX360List(); renderX360(); }
+  if (view === "x360") { renderX360Pick(); renderX360(); }
   if (view === "marketing") { if (full) { renderSteer(); renderTemplates(); } renderMarketing(); }
   if (view === "method") { renderMethod(); renderReplay(); renderLearn(); }
 }
