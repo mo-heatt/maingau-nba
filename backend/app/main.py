@@ -4,14 +4,16 @@ from typing import Dict, List, Literal, Optional
 from pathlib import Path
 from datetime import date
 from fastapi import FastAPI, HTTPException, Query, BackgroundTasks
-from fastapi.responses import FileResponse, Response
+from fastapi.responses import FileResponse, Response, JSONResponse
+from fastapi.exceptions import RequestValidationError
+from fastapi.exception_handlers import request_validation_exception_handler
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 from . import database as db
 from .ingestion import import_sources
 from .service import EngineService, safe
 from .replay import preview
-from . import ai_nba, outreach, portfolio, newsletter
+from . import ai_nba, outreach, portfolio, newsletter, developer
 from .insights import customer_insights
 from .email_template import for_draft
 from .overview import overview as overview_data
@@ -25,6 +27,20 @@ async def lifespan(app):
     yield
 
 app=FastAPI(title='MAINGAU NBA',version='1.0.0',lifespan=lifespan,docs_url='/api/docs',openapi_url='/api/openapi.json',redoc_url=None)
+
+app.include_router(developer.router)
+
+@app.exception_handler(RequestValidationError)
+async def safe_developer_validation(request,exc):
+    if request.url.path=='/api/developer/ai':return JSONResponse(status_code=422,content={'detail':'Submit an API key in the api_key field.'})
+    return await request_validation_exception_handler(request,exc)
+
+@app.middleware('http')
+async def browser_ai_context(request,call_next):
+    token=developer._active_key.set(developer.session_key(request.cookies.get(developer.COOKIE)))
+    try:return await call_next(request)
+    finally:developer._active_key.reset(token)
+
 
 def engine():return app.state.engine
 
@@ -78,7 +94,7 @@ def catalog():
 def customers(q:str='',action:Optional[str]=None,offset:int=Query(0,ge=0),limit:int=Query(50,ge=1,le=750)):
     rows=list(engine().all().values());rows=[r for r in rows if q.lower() in (r['id']+' '+r['city']).lower() and (not action or r['decision']['action']==action)]
     rows.sort(key=lambda r:(-r['decision']['expected_gain_eur'],r['id']))
-    return {'total':len(rows),'offset':offset,'limit':limit,'items':[{k:r[k] for k in ['id','city','since','value','decision']} for r in rows[offset:offset+limit]]}
+    return {'total':len(rows),'offset':offset,'limit':limit,'items':[{**{k:r[k] for k in ['id','city','since','value','decision']},'preview':{'language':r['language'],'tone':r['tone'],'profiling':r['profiling'],'products':r['products'],'open_cases':len(r['open_tickets']),'contacts_30d':r['contacts_30d']}} for r in rows[offset:offset+limit]]}
 
 @app.get('/api/customers/{cid}')
 def customer(cid:str):return call(engine().customer,cid)

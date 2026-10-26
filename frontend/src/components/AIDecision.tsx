@@ -1,3 +1,4 @@
+import {useCustomerDecision} from './CustomerDecisionContext';
 import {useChannelPolicy} from './ChannelPolicy';
 import {useEffect, useState} from 'react';
 import {Sparkles, RefreshCw, ArrowUpRight, Check, ChevronDown, ShieldCheck} from 'lucide-react';
@@ -10,7 +11,7 @@ import {Panel} from './ui';
 type Evidence={fact_id:string;quote:string};
 type Proposal={action:string;product_id:string|null;channel:string|null;need:string;rationale:string;customer_benefit:string;why_now:string;evidence:Evidence[];alternatives:string[];missing_data:string[]};
 type Result={id:number;status:string;model:string;proposal:Proposal|null;baseline:{name:string;product_id:string|null;action:string};validation_errors:string[];error:string|null;email_error:string|null;email:{subject:string;body:string}|null;draft_id?:number;control_group:boolean;context:{facts:{id:string;source:string;quote:string}[];catalogue:Product[]}};
-type Latest={result:Result|null;current:boolean};
+export type Latest={result:Result|null;current:boolean};
 type Status={configured:boolean;model:string;provider:string};
 function ProductCard({product,tone}:{product:Product;tone:string}){
  const target=destination(product.product_id),Icon=target.Icon;
@@ -35,10 +36,10 @@ export default function AIDecision({customer,revision,onReview,busyReview,onNews
  const id=customer.id;
  const{refresh:refreshChannels}=useChannelPolicy();
  const {data:status}=useApi<Status>('/ai/status',revision),{data:catalog}=useApi<Catalog>('/catalog',revision);
- const [tick,setTick]=useState(0),[mode,setMode]=useState<'ai'|'rules'>('rules');
- const {data:saved,error}=useApi<Latest>('/customers/'+id+'/ai-nba',revision+tick);
+ const [mode,setMode]=useState<'ai'|'rules'>('ai');
+ const {data:saved,error,refresh:refreshDecision}=useCustomerDecision();
  const [busy,setBusy]=useState(false),[failure,setFailure]=useState('');
- async function generate(){setBusy(true);setFailure('');try{await request('/customers/'+id+'/ai-nba','POST',{refresh:!!saved?.result});setTick(t=>t+1);refreshChannels()}catch(e){setFailure((e as Error).message)}finally{setBusy(false)}}
+ async function generate(){setBusy(true);setFailure('');try{await request('/customers/'+id+'/ai-nba','POST',{refresh:!!saved?.result});refreshDecision();refreshChannels()}catch(e){setFailure((e as Error).message)}finally{setBusy(false)}}
  const result=saved?.result,p=result?.proposal,isAI=mode==='ai';
  const usable=!!result&&result.status==='validated'&&!!saved?.current;
  const productId=isAI?(usable?p?.product_id:null):customer.decision.product_id;

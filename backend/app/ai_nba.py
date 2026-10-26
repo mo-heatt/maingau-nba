@@ -12,6 +12,8 @@ from dotenv import load_dotenv
 from pydantic import BaseModel, ConfigDict, Field, ValidationError
 
 from . import database as db
+from .developer import get_key
+from contextvars import copy_context
 from .engine.scoring import score_customer
 from .engine.signals import service_case
 from .ingestion import SNAPSHOT
@@ -56,13 +58,13 @@ class ProviderError(RuntimeError):
 
 
 def provider_status():
-    return {'configured': bool(os.getenv('HAI_API_KEY')), 'provider': 'Hessian AI',
+    return {'configured': bool(get_key()), 'provider': 'Hessian AI',
             'model': os.getenv('NBA_AI_MODEL', 'vllm/Kolibri-1'),
             'mode': 'comparison', 'delivery': 'disabled', 'prompt_version': PROMPT_VERSION}
 
 
 def complete(schema, instructions, packet):
-    key = os.getenv('HAI_API_KEY')
+    key = get_key()
     if not key:
         raise ProviderError('Set HAI_API_KEY in the local .env file and restart the backend.')
     model = os.getenv('NBA_AI_MODEL', 'vllm/Kolibri-1')
@@ -362,7 +364,7 @@ def run_batch(engine, bid):
     save('running')
     try:
         with ThreadPoolExecutor(max_workers=3) as pool:
-            pending = {pool.submit(generate, engine, cid): cid for cid in job['customer_ids']}
+            pending = {pool.submit(copy_context().run, generate, engine, cid): cid for cid in job['customer_ids']}
             for future in as_completed(pending):
                 cid = pending[future]
                 r = future.result()

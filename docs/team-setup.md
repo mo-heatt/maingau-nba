@@ -2,6 +2,14 @@
 
 The app already calls Hessian from FastAPI (`backend/app/ai_nba.py`), never from React. A Git checkout does not include the credential or local data. The integration branch combines `main` with the offer studio; source branches remain unchanged.
 
+## Connect through the app
+
+Run the full local app, then double-click the MAINGAU logo or choose **Developer area** at the bottom of the navigation. In **Hessian AI connection**, paste the issued API key and choose **Save key & check access**. The backend checks `/models` for the configured model. A successful check means the key can list the model; individual generations still undergo independent provider/content validation.
+
+The key is stored only in backend memory for a browser session (up to 8 hours), selected by an HttpOnly SameSite cookie. It is not returned, logged, saved to SQLite/.env or written to browser storage. Other browser sessions keep their own credentials. Rejected replacements preserve the previous session. **Use server default** deletes the session key. Backend restarts clear these session keys. Batch workers inherit the caller's connection. Static snapshot mode cannot connect a key.
+
+**System & API** holds backend status and API documentation. **How it works** holds the engine explanation. The logo shortcut is a convenience, not an authentication boundary; public hosting still needs team authentication and rate limits.
+
 ## Each developer runs locally
 
 1. Install dependencies and add the supplied source dataset as described in README.
