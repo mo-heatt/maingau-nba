@@ -254,7 +254,9 @@ input[type=range]{width:100%;accent-color:var(--offer)}
 .prod .ic{width:44px;height:44px;color:var(--offer)}
 .prod .ck{position:absolute;top:10px;right:10px;width:22px;height:22px;border-radius:50%;background:var(--good);color:var(--panel);display:grid;place-items:center;font-size:13px;font-weight:700}
 .ctr{border-top:1px solid var(--line);padding-top:8px;margin-top:8px}
-.ctrh{display:flex;justify-content:space-between;gap:8px;align-items:center;margin-bottom:4px}
+.ctrh{display:flex;justify-content:space-between;gap:8px;align-items:flex-start;margin-bottom:4px}
+.ctrh b{flex:none}
+.ctrh .pill{text-align:left;border-radius:10px;line-height:1.35;padding:3px 8px}
 .ctrh b{color:var(--ink)}
 .kv{display:grid;grid-template-columns:auto minmax(0,1fr);gap:3px 10px;font-size:13px;margin:0}
 .kv dt{color:var(--muted)} .kv dd{margin:0;text-align:right;color:var(--ink)}
@@ -1019,6 +1021,11 @@ const NOW = "2026-10-01 23:59";
 let xSel = "MG-100068", xSrc = "all", xAll = false;
 const holds = (c, line) => line === "shop" ? !!X[c.id].shop : c.products.some(p => p.line === (line === "e_mobility" ? "autostrom" : line));
 const nice = s => String(s ?? "").replace(/_/g, " ");
+// long status labels break at the space nearest the middle, so the pill hugs its text
+const twoLines = t => { if (t.length <= 16) return esc(t);
+  const sp = [...t.matchAll(/ /g)].map(m => m.index); if (!sp.length) return esc(t);
+  const at = sp.reduce((a, b) => Math.abs(b - t.length / 2) < Math.abs(a - t.length / 2) ? b : a);
+  return esc(t.slice(0, at)) + "<br>" + esc(t.slice(at + 1)); };
 const icon = (k, cls) => `<svg class="${cls}" viewBox="0 0 96 96" fill="currentColor" aria-hidden="true">${k === "person" ? PERSON : ICON[k]}</svg>`;
 const ms = s => new Date(s.slice(0,16).replace(" ", "T")).getTime();
 const isMilestone = t => t[1] === "crm" || (t[1] === "contract" && /started|cancel|deregistered/i.test(t[2]));
@@ -1092,16 +1099,16 @@ function xProducts(c, x) {
   const kv = rows => `<dl class="kv">${rows.filter(r => r[1] != null && r[1] !== "").map(([k,v]) => `<dt>${k}</dt><dd>${v}</dd>`).join("")}</dl>`;
   const bad = s => `<span class="no">${s}</span>`;
   const body = {
-    energy: () => (x.energy || []).map(e => `<div class="ctr"><div class="ctrh"><b>${esc(e.tariff)}</b><span class="pill ${e.st==="active"?"k-ok":"k-human"}">${esc(nice(e.st))}</span></div>${kv([
+    energy: () => (x.energy || []).map(e => `<div class="ctr"><div class="ctrh"><b>${esc(e.tariff)}</b><span class="pill ${e.st==="active"?"k-ok":"k-human"}">${twoLines(nice(e.st))}</span></div>${kv([
       ["Type", nice(e.com)], ["Since", e.start], ["Price guarantee", e.guar ? (e.guar < NOW ? bad("ended " + e.guar) : "until " + e.guar) : "none"],
       ["Consumption", e.kwh ? e.kwh.toLocaleString("en-GB") + " kWh/yr" : null], ["Instalment", e.inst ? eur(e.inst,0) + "/month" : null],
       ["Meter", nice(e.meter) + (e.feed ? ", feed-in" : "")], ["Notice period", e.notice ? e.notice + " weeks" : null],
       ["Dunning", e.dun ? bad("level " + e.dun) : null], ["Cancellation", e.cancel ? bad("received " + e.cancel) : null]])}</div>`).join(""),
-    e_mobility: () => (x.auto || []).map(a => `<div class="ctr"><div class="ctrh"><b>${esc(a.car || "Autostrom")}</b><span class="pill ${a.st==="active"?"k-ok":"k-human"}">${esc(nice(a.st))}</span></div>${kv([
+    e_mobility: () => (x.auto || []).map(a => `<div class="ctr"><div class="ctrh"><b>${esc(a.car || "Autostrom")}</b><span class="pill ${a.st==="active"?"k-ok":"k-human"}">${twoLines(nice(a.st))}</span></div>${kv([
       ["Since", a.start], ["Battery", a.batt ? a.batt + " kWh" : null], ["Charge cards", a.cards], ["App", a.app ? "yes" : "no"],
       ["Price AC / DC", a.ac != null ? `€${a.ac} / €${a.dc} per kWh` : null],
       ["Sessions", x.charge ? `${x.charge.n} · ${x.charge.kwh.toLocaleString("en-GB")} kWh` : null], ["Failed sessions", x.charge && x.charge.fail ? bad(x.charge.fail) : null]])}</div>`).join(""),
-    mobile: () => (x.mobile || []).map(m => `<div class="ctr"><div class="ctrh"><b>${esc(m.plan)}</b><span class="pill ${m.st==="active"?"k-ok":"k-human"}">${esc(nice(m.st))}</span></div>${kv([
+    mobile: () => (x.mobile || []).map(m => `<div class="ctr"><div class="ctrh"><b>${esc(m.plan)}</b><span class="pill ${m.st==="active"?"k-ok":"k-human"}">${twoLines(nice(m.st))}</span></div>${kv([
       ["Since", m.start], ["Data", `${m.used} of ${m.gb} GB used`], ["Limit reached", m.hits ? bad(m.hits + "× in 3 months") : null],
       ["Monthly fee", eur(m.fee,0)], ["SIMs", m.sims], ["Minimum term", m.minEnd ? "until " + m.minEnd : null]])}</div>`).join(""),
     shop: () => x.shop ? `<div class="ctr">${kv([["Orders", x.shop.n], ["Total spent", eur(x.shop.eur,0)], ["Last order", x.shop.last]])}<p class="small muted" style="margin-top:6px">${esc(x.shop.items.join(" · "))}</p></div>` : "",
