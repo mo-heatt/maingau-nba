@@ -1,47 +1,53 @@
-# MAINGAU Next Best Action engine
+# MAINGAU Next Best Action
 
-Futury Build Days #3 (26–27 Oct 2026), MAINGAU Energie challenge "One customer, every channel".
+Futury Build Days #3, MAINGAU Energie challenge: “One customer, every channel”.
 
-For each customer, the engine picks the one action with the highest expected gain in customer lifetime value (CLV): an offer, a proactive service fix, or no contact. It also picks the channel the customer agreed to and the tone (Du/Sie) they write in. Consent and exclusions are applied before ranking, so the engine never sells to someone with an open complaint, dunning or a cancellation.
+React workspace backed by a FastAPI API and SQLite. A single Python engine builds Customer 360 profiles, applies consent and exclusions, scores candidates by expected customer lifetime value gain, and chooses an action, channel and German Du/Sie message.
 
-## Run it
+## Run locally
 
-The mock data is not in this repository. Put `maingau_nba_mockdata.xlsx` and `event_stream_2026-10-01.jsonl` in `data/`, then:
+Use Python 3.9+ and Node.js 22.12+. The event data is intentionally excluded from Git. Place `maingau_nba_mockdata.xlsx` and `event_stream_2026-10-01.jsonl` in `data/`.
 
-    pip install pandas openpyxl
-    python export.py      # engine + event replay + legacy audit -> out/engine_output.json
-    python build_web.py   # web app -> out/nba_console.html (open in a browser)
+Install dependencies from the repository root:
 
-`export.py` prints a self-check; it must report 0 consent or exclusion violations.
+```sh
+python3 -m venv .venv
+.venv/bin/pip install -r backend/requirements.txt
+npm ci --prefix frontend
+```
 
-## Scoring
+Start the backend:
 
-From the `clv_method` sheet:
+```sh
+PYTHONPATH=backend .venv/bin/python -m uvicorn app.main:app --host 127.0.0.1 --port 8001 --reload
+```
 
-    dCLV = p(accept) × (CLV after accept − CLV now) + (1 − p) × (CLV after reject − CLV now) − contact cost
+In another terminal, start the frontend:
 
-- CLV: 10 years at 6%, from `customer_value` and `value_assumptions`.
-- p(accept): conversion rate per offer × channel × tone in `nba_action_history`, smoothed toward the offer and global rate.
-- A sales contact during an open complaint or dunning raises churn, so it scores negative.
+```sh
+npm run dev --prefix frontend
+```
 
-## Files
+Open http://127.0.0.1:5173/. The development server proxies `/api` to port 8001. API documentation is at http://127.0.0.1:8001/api/docs.
 
-| File | What it does |
-|---|---|
-| `engine.py` | Customer state, candidate offers, rules, dCLV scoring, arbitration, message |
-| `export.py` | Event replay, legacy audit, self-check, JSON export |
-| `templates.py` | Approved German message templates, Du and Sie |
-| `app.html` | Web app template: Recommendations, Marketing, Customer 360°, How it works |
-| `build_web.py` | Puts the engine output into `app.html` → `out/nba_console.html` |
-| `nba/`, `run.py` | Second, independent engine used as a cross-check (`python run.py`) |
+The backend imports the workbook on first startup into `data/nba.sqlite`. Settings, reviews, overrides, drafts and audit records persist there. Set `NBA_DB_PATH` to use a different database file.
 
-Tunable assumptions are at the top of `engine.py` (`SETTINGS`, `SIGNAL_LIFT`, `INTENT_LIFT`).
+Build the frontend with `npm run build --prefix frontend`. Starting the backend after that build also serves the compiled frontend at port 8001.
 
-## Web app
+## Structure
 
-- **Recommendations:** one next best action per customer, with the one-line reason and a downloadable decision log.
-- **Marketing:** contact limit, minimum gain, tone, offers and priorities, channels; approval queue; text approval.
-- **Customer 360°:** status, CLV, every option scored, change a decision, AI personalisation inside the approved template.
-- **How it works:** Decide / Explain / Learn, the 7-step pipeline, live events, control group and uplift, target architecture on Databricks with MCP.
+- `frontend/src/`: React and TypeScript pages for Recommendations, Marketing, Customer 360 and How it works.
+- `backend/app/engine/`: customer state, signals, scoring, arbitration, event application and approved German templates.
+- `backend/app/service.py`: shared decision service, settings, reviews and overrides.
+- `backend/app/database.py`, `ingestion.py`: SQLite persistence and source import.
+- `backend/app/main.py`: HTTP API and optional compiled frontend hosting.
+- `backend/app/replay.py`: event replay preview, ordered by arrival time and deduplicated by event ID.
+- `legacy/`: original static console and both historical engine implementations, retained for reference. The new application does not import these files.
 
-When published as a claude.ai artifact, approvals and settings are shared with the team and the AI writing uses the viewer's Claude account. Opened as a plain file, the app saves them in the browser only.
+## Behavior and limits
+
+Consent, profiling, complaints, dunning, cancellation, contact limits, allowed channels and text approvals constrain recommendations. Reviews refer to a specific decision version; changed decisions require a new review. Stable control assignments hold customers out of the approval queue.
+
+Expected gain uses the workbook's CLV assumptions and historical acceptance estimates. These are model estimates on synthetic event data, not guaranteed outcomes. Event replay is a dry run and reports unsupported event types; it does not persist live customer updates.
+
+Messages currently use approved templates. Drafts can be stored and downloaded as unsent `.eml` files with demo addresses. External email delivery and live AI personalisation are not connected.

@@ -7,3 +7,13 @@ out/
 __pycache__/
 *.pyc
 .DS_Store
+
+# Local dependencies and builds
+.venv/
+node_modules/
+frontend/dist/
+*.tsbuildinfo
+.pytest_cache/
+.env
+.env.*
+!.env.example
