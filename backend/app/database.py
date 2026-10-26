@@ -34,7 +34,11 @@ def initialize():
         CREATE TABLE IF NOT EXISTS ai_batches(id INTEGER PRIMARY KEY,status TEXT NOT NULL,payload TEXT NOT NULL,created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP);
         CREATE TABLE IF NOT EXISTS outreach_materials(id INTEGER PRIMARY KEY,customer_id TEXT NOT NULL,decision_id INTEGER NOT NULL,identity TEXT NOT NULL,channel TEXT NOT NULL,status TEXT NOT NULL,payload TEXT NOT NULL,created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP);
         CREATE INDEX IF NOT EXISTS outreach_identity ON outreach_materials(identity,id);
-        PRAGMA user_version=3;
+        CREATE TABLE IF NOT EXISTS external_products(id INTEGER PRIMARY KEY,customer_id TEXT NOT NULL,payload TEXT NOT NULL,created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP);
+        CREATE INDEX IF NOT EXISTS external_customer ON external_products(customer_id);
+        CREATE TABLE IF NOT EXISTS news_items(id TEXT PRIMARY KEY,payload TEXT NOT NULL,created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP);
+        CREATE TABLE IF NOT EXISTS newsletter_materials(id INTEGER PRIMARY KEY,customer_id TEXT NOT NULL,input_hash TEXT NOT NULL,status TEXT NOT NULL,payload TEXT NOT NULL,created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP);
+        PRAGMA user_version=5;
         ''')
         c.execute('INSERT OR IGNORE INTO settings VALUES (1,1,?)',(json.dumps({'contact_cap_30d':3,'min_dclv_eur':0,'offers_off':[],'channels_off':[],'priorities':{},'tone_mode':'mirror','content_approvals':{}}),))
 

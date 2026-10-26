@@ -72,12 +72,15 @@ def test_dossier_does_not_invent_availability(engine):
 def test_channel_material_is_saved_and_never_sent(engine,provider):
     d=ai_nba.generate(engine,'MG-100005',True)
     assert d['status']=='validated'
-    for ch in ['email','outbound_call','sms']:
+    allowed=[p['channel'] for p in outreach.channel_plans(engine,'MG-100005',d) if p['allowed']]
+    assert 'email' not in allowed and 'outbound_call' not in allowed
+    with pytest.raises(ValueError,match='not permitted'):
+        outreach.generate(engine,'MG-100005',d['id'],'email')
+    for ch in allowed[:3]:
         r=outreach.generate(engine,'MG-100005',d['id'],ch)
         assert r['status']=='validated',r
-        assert not r['dispatch_allowed']
-        if ch=='email':assert r['draft_id']
-        if ch=='outbound_call':assert r['material']['opening'] and not r['channel_eligible']
+        assert r['channel_eligible'] and not r['dispatch_allowed']
+        if ch in ['email','newsletter_email']:assert r['draft_id']
         assert outreach.generate(engine,'MG-100005',d['id'],ch)['id']==r['id']
     result=outreach.demo_response(engine,'MG-100005',r['id'],'interested')
     assert result['demo'] and not result['contract_created']
@@ -90,6 +93,49 @@ def test_fabricated_price_is_blocked(engine,provider,monkeypatch):
     from unittest.mock import patch
     original=ai_nba.provider_status
     with patch.object(ai_nba,'provider_status',side_effect=lambda:{**original(),'model':'fixture'}):
-        r=outreach.generate(engine,'MG-100005',d['id'],'email',True)
+        r=outreach.generate(engine,'MG-100005',d['id'],'portal_popup',True)
     assert r['status']=='blocked' and not r['draft_id']
     assert any('Unsupported numeric' in e for e in r['errors'])
+
+
+def test_workspace_and_generation_share_policy_and_explain_consent(engine,provider,monkeypatch):
+    decision=ai_nba.generate(engine,'MG-100005',True)
+    workspace=outreach.workspace(engine,'MG-100005')
+    allowed={p['channel'] for p in workspace['channels'] if p['allowed']}
+    assert allowed==set(workspace['allowed_channels'])
+    email=next(p for p in workspace['channels'] if p['channel']=='email')
+    assert not email['contact_allowed'] and not email['allowed']
+    assert 'marketing_email' in email['contact_reason']
+    def unexpected_provider(*args,**kwargs):raise AssertionError('Forbidden channel called the model')
+    monkeypatch.setattr(ai_nba,'complete',unexpected_provider)
+    for plan in workspace['channels']:
+        if not plan['allowed']:
+            with pytest.raises(ValueError):outreach.generate(engine,'MG-100005',decision['id'],plan['channel'])
+
+
+def test_settings_change_invalidates_every_offer_channel(engine,provider,monkeypatch):
+    decision=ai_nba.generate(engine,'MG-100005',True)
+    settings=engine.settings()
+    monkeypatch.setattr(engine,'settings',lambda:{**settings,'version':settings['version']+1,'channels_off':['newsletter_email']})
+    workspace=outreach.workspace(engine,'MG-100005')
+    assert not workspace['current']
+    assert workspace['allowed_channels']==[]
+    assert all(not p['allowed'] for p in outreach.channel_plans(engine,'MG-100005',decision))
+    assert not workspace['editorial_newsletter_allowed']
+    with pytest.raises(ValueError,match='current validated'):
+        outreach.generate(engine,'MG-100005',decision['id'],'portal_popup')
+
+
+def test_consented_channel_can_be_blocked_by_product_value(engine,provider,monkeypatch):
+    decision=copy.deepcopy(ai_nba.generate(engine,'MG-100005',True))
+    product=next(p for p in decision['context']['catalogue'] if p['product_id']==decision['proposal']['product_id'])
+    estimate=next(p for p in product['economics']['per_channel'] if p['channel']=='sms')
+    estimate['dclv']=-1
+    monkeypatch.setattr(ai_nba,'latest',lambda *args:{'result':decision,'current':True})
+    plan=next(p for p in outreach.workspace(engine,'MG-100005')['channels'] if p['channel']=='sms')
+    assert plan['contact_allowed'] and not plan['allowed']
+    assert plan['reasons']==['Below the channel value threshold']
+    def unexpected_provider(*args,**kwargs):raise AssertionError('Blocked channel called the model')
+    monkeypatch.setattr(ai_nba,'complete',unexpected_provider)
+    with pytest.raises(ValueError,match='value threshold'):
+        outreach.generate(engine,'MG-100005',decision['id'],'sms')

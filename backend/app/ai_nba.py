@@ -169,6 +169,10 @@ def context(engine, cid):
             if not scored['profiling']:
                 clean = {k: v for k, v in clean.items() if k not in ['message_text', 'call_note', 'csat_1to5', 'avg_data_used_gb_3m', 'data_limit_reached_3m', 'roaming_days_3m']}
             add(source, clean)
+    from .portfolio import external_records, products as known_products
+    for record in external_records(cid):add('external_product_records', record)
+    for record in known_products(engine,cid)['items']:
+        if record['relationship']=='competing_offer':add('external_offer_evidence',record)
     products = []
     estimates = {r['offer']: r for r in scored['candidates']}
     for p in catalogue:

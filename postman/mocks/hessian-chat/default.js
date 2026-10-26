@@ -13,9 +13,12 @@ http.createServer(async (req, res) => {
   const evidence=facts.slice(0,2).map(f=>({fact_id:f.id,quote:f.quote}));
   if(body.model==='bad-evidence')evidence[0]={fact_id:'F999999',quote:'invented'};
   let result;
-  if(body.messages[0].content.includes('Create MAINGAU outreach material')){
+  if(body.messages[0].content.includes('Write a finished German MAINGAU newsletter')){
+    const quote=source.quote; const quoted=quote?.target?.name?(' Vorschlag: '+quote.target.name+(quote.target.monthly_eur!==undefined?(' für '+quote.target.monthly_eur+' EUR im Monat.') :'.')):'';
+    result={headline:'Ein nützlicher Hinweis',subject:'Ein Update von MAINGAU',body:'Hallo! Hier ist ein hilfreicher Hinweis aus unserem Ratgeber.'+quoted,benefit_points:['Mehr im Originalbeitrag lesen'],evidence:facts.filter(f=>f.id==='N1').map(f=>({fact_id:f.id,quote:f.quote}))};
+  } else if(body.messages[0].content.includes('Create MAINGAU outreach material')){
     const call=['outbound_call','agent_callback'].includes(source.channel);
-    result={headline:'Ein passender nächster Schritt',subject:source.channel==='email'?'Ein konkretes Angebot':null,
+    result={headline:'Ein passender nächster Schritt',subject:['email','newsletter_email'].includes(source.channel)?'Ein konkretes Angebot':null,
       body:body.model==='bad-price'?'Das kostet 99,99 €.':'Ein passendes Angebot auf Basis der vorhandenen Daten.',benefit_points:['Passendes Datenvolumen'],
       opening:call?'Passt es gerade?':null,discovery_questions:call?['Wie passt der aktuelle Tarif?']:[],offer_pitch:call?'Der vorgeschlagene Tarif passt zum Bedarf.':null,
       objections:call?[{concern:'Ich möchte überlegen.',response:'Natürlich, gerne in Ruhe prüfen.'}]:[],closing:call?'Wie möchten wir weiter vorgehen?':null,evidence};

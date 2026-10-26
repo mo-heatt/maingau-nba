@@ -6,7 +6,7 @@ export type Insights={customer_id:string;profiling:boolean;mobile:{plan:string;d
 const fmt=(n:number)=>new Intl.NumberFormat('de-DE',{maximumFractionDigits:1}).format(n);
 export function UsageRing({used,limit}:{used:number;limit:number}){
  const ratio=limit>0?used/limit:0;
- return <div className="usage-ring"><svg viewBox="0 0 150 150" role="img" aria-label={`${fmt(used)} GB average used of ${fmt(limit)} GB included`}><circle cx="75" cy="75" r="59" fill="none" stroke="#eef2f8" strokeWidth="12"/><circle cx="75" cy="75" r="59" fill="none" stroke={ratio>=.9?'#e4a315':'#2056a2'} strokeWidth="12" strokeLinecap="round" strokeDasharray={`${Math.min(ratio,1)*370.7} 370.7`} transform="rotate(-90 75 75)"/><text x="75" y="74" textAnchor="middle" className="ring-value">{Math.round(ratio*100)}%</text><text x="75" y="96" textAnchor="middle" className="ring-caption">of included data</text></svg></div>
+ return <div className="usage-ring"><svg viewBox="0 0 150 150" role="img" aria-label={`${fmt(used)} GB average used of ${fmt(limit)} GB included`}><circle cx="75" cy="75" r="59" fill="none" stroke="var(--line)" strokeWidth="12"/><circle cx="75" cy="75" r="59" fill="none" stroke={ratio>=.9?'#e4a315':'#2056a2'} strokeWidth="12" strokeLinecap="round" strokeDasharray={`${Math.min(ratio,1)*370.7} 370.7`} transform="rotate(-90 75 75)"/><text x="75" y="74" textAnchor="middle" className="ring-value">{Math.round(ratio*100)}%</text><text x="75" y="96" textAnchor="middle" className="ring-caption">of included data</text></svg></div>
 }
 export function MiniLine({data,second=false}:{data:{date:string;value:number;other?:number}[];second?:boolean}){
  const valid=data.filter(d=>Number.isFinite(d.value));if(!valid.length)return <p className="muted">No measured readings.</p>;
@@ -16,9 +16,9 @@ export function MiniLine({data,second=false}:{data:{date:string;value:number;oth
  const y=(v:number)=>136-v/max*108;
  function path(other=false){return valid.map((d,i)=>`${i===0||Date.parse(d.date)-Date.parse(valid[i-1].date)>86400000?'M':'L'}${x(d)},${y(other?d.other||0:d.value)}`).join(' ')}
  return <><svg viewBox="0 0 390 165" className="mini-line" role="img" aria-label="Observed daily energy readings in kilowatt hours">
- {[0,.5,1].map(n=><g key={n}><line x1="30" x2="365" y1={y(n*max)} y2={y(n*max)} stroke="#e8edf5" strokeDasharray="3 4"/><text x="23" y={y(n*max)+3} textAnchor="end">{Math.round(n*max)}</text></g>)}
- <path d={path()} stroke="#2258aa" fill="none" strokeWidth="2.5"/>{second&&<path d={path(true)} stroke="#e1b20c" fill="none" strokeWidth="2.5"/>}
- {valid.map(d=><circle key={d.date} cx={x(d)} cy={y(d.value)} r="3" fill="#2258aa" tabIndex={0} aria-label={`${d.date}: ${fmt(d.value)} kWh`}><title>{d.date}: {fmt(d.value)} kWh{second?` · solar ${fmt(d.other||0)} kWh`:''}</title></circle>)}
+ {[0,.5,1].map(n=><g key={n}><line x1="30" x2="365" y1={y(n*max)} y2={y(n*max)} stroke="var(--line)" strokeDasharray="3 4"/><text x="23" y={y(n*max)+3} textAnchor="end">{Math.round(n*max)}</text></g>)}
+ <path d={path()} stroke="var(--chart-blue)" fill="none" strokeWidth="2.5"/>{second&&<path d={path(true)} stroke="#e1b20c" fill="none" strokeWidth="2.5"/>}
+ {valid.map(d=><circle key={d.date} cx={x(d)} cy={y(d.value)} r="3" fill="var(--chart-blue)" tabIndex={0} aria-label={`${d.date}: ${fmt(d.value)} kWh`}><title>{d.date}: {fmt(d.value)} kWh{second?` · solar ${fmt(d.other||0)} kWh`:''}</title></circle>)}
  <text x="30" y="160">{valid[0].date.slice(5)}</text><text x="365" y="160" textAnchor="end">{valid[valid.length-1].date.slice(5)}</text></svg>{second&&<div className="chart-legend"><span><i/>Household</span><span><i className="yellow"/>Solar generation</span></div>}</>
 }
 export default function CustomerInsights({customer,revision}:{customer:Customer;revision:number}){
@@ -37,7 +37,7 @@ export default function CustomerInsights({customer,revision}:{customer:Customer;
 }
 
 export function PortfolioCharts({stats}:{stats:Marketing}){
- const parts=[{label:'Offers',value:stats.offers,color:'#2258aa'},{label:'Service',value:stats.service_fixes,color:'#efc22e'},{label:'Wait / no contact / review',value:stats.no_contact,color:'#dbe4f1'}];
+ const parts=[{label:'Offers',value:stats.offers,color:'var(--chart-blue)'},{label:'Service',value:stats.service_fixes,color:'#efc22e'},{label:'Wait / no contact / review',value:stats.no_contact,color:'var(--surface-raised)'}];
  let offset=0;const total=stats.customers||1;
  return <div className="portfolio-charts"><section className="insight-card"><div className="insight-title"><Activity size={16}/><h3>Customer action mix</h3><span className="micro-tag">Rules baseline</span></div><div className="portfolio-mix"><svg viewBox="0 0 130 130" role="img" aria-label={parts.map(p=>`${p.label}: ${p.value}`).join(', ')}>{parts.map(p=>{const start=offset;offset+=p.value/total*314.16;return <circle key={p.label} cx="65" cy="65" r="50" fill="none" stroke={p.color} strokeWidth="15" strokeDasharray={`${p.value/total*314.16} 314.16`} strokeDashoffset={-start} transform="rotate(-90 65 65)"/>})}<text x="65" y="66" textAnchor="middle" className="ring-value">{stats.customers}</text><text x="65" y="83" textAnchor="middle" className="ring-caption">customers</text></svg><div>{parts.map(p=><div className="mix-legend" key={p.label}><i style={{background:p.color}}/><span>{p.label}</span><b>{p.value}</b></div>)}</div></div></section><section className="insight-card"><div className="insight-title"><ArrowUpRight size={16}/><h3>Where the opportunities are</h3><span className="micro-tag">Customers</span></div><div className="score-chart">{stats.top_actions.slice(0,4).map(a=><div key={a.product_id}><div><span>{a.name}</span><b>{a.customers}</b></div><div className="score-track"><i style={{width:a.customers/Math.max(...stats.top_actions.map(x=>x.customers),1)*100+'%'}}/></div></div>)}</div></section></div>
 }

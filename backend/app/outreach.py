@@ -1,4 +1,5 @@
 """Concrete demo quotes and channel-specific, unsent AI materials."""
+from . import material_generation
 import hashlib
 import json
 import re
@@ -129,7 +130,7 @@ WRITE='''Create MAINGAU outreach material for the selected channel and the concr
 For email/newsletter: write an actual finished email with subject, personal opening, problem-aware body, exact offer and a low-pressure next step. Headline should be a short web-friendly offer heading. Set call-only opening, offer_pitch and closing null; discovery_questions and objections empty.
 For outbound_call/agent_callback: body is a concise INTERNAL customer brief based on facts, NOT an email. Give an opening that first asks if this is a convenient moment, 2-3 discovery questions, a concrete offer_pitch, up to 3 realistic objections with respectful responses, and a closing that accepts refusal. Do not claim the customer will be free at an inferred time. A service callback must resolve the issue without sales content. Subject null.
 For sms/app_push: concise channel copy (SMS max 160 characters, push max 200), subject null, no call fields. For portal_popup: a concise web offer, no email greeting, short headline and clear concrete benefit, no call fields.
-Cite exact F-prefixed customer fact IDs and quotes (nonempty JSON subsets with unchanged values allowed) in evidence. You may additionally cite fact_id 'quote' for the supplied server quote, using an exact JSON subset of its fields; retain at least one customer fact citation. These citations are internal and must not appear in customer-facing prose. Return all schema fields. A minimum-term end is not a contract termination date. Never claim a contract ends or a switch is permitted from min_term_end alone. Only quote dates explicitly present in the concrete quote. Never invent or refer to a link, login or portal journey: the available demo CTA is 'Dieses Angebot vormerken', which records interest without a contract. Do not pretend a human personally examined records ('Ich habe gesehen'). Customer-facing copy should discuss the product need, not household size, city, tracking or private dossier attributes. Household size does not mean a single SIM's data is shared. ONLY the body field is an INTERNAL third-person brief. Every other call field (opening, discovery_questions, offer_pitch, objection responses, closing) is a VERBATIM spoken script addressing the customer directly as du/Sie. Never say 'der Kunde' or 'dem Kunden' in those spoken fields. The closing must offer an optional next step if interested and respectfully accept refusal; do not end every call as a refusal. The INTERNAL call body must be a factual third-person summary without Hallo or Ich. The field avg_data_used_gb_3m is an average MONTHLY usage calculated across three months, never a three-month total. data_limit_reached_3m is a count over three months, not proof of consecutive months. No chain of thought.'''
+Cite exact F-prefixed customer fact IDs and quotes (nonempty JSON subsets with unchanged values allowed) in evidence. You may additionally cite fact_id 'quote' for the supplied server quote, using an exact JSON subset of its fields; retain at least one customer fact citation. These citations are internal and must not appear in customer-facing prose. Return all schema fields. A minimum-term end is not a contract termination date. Never claim a contract ends or a switch is permitted from min_term_end alone. Only quote dates explicitly present in the concrete quote. Never invent or refer to a link, login or portal journey: the available demo CTA is 'Dieses Angebot vormerken', which records interest without a contract. Do not pretend a human personally examined records ('Ich habe gesehen'). Customer-facing copy should discuss the product need, not household size, city, tracking or private dossier attributes. Household size does not mean a single SIM's data is shared. ONLY the body field is an INTERNAL third-person brief. Every other call field (opening, discovery_questions, offer_pitch, objection responses, closing) is a VERBATIM spoken script addressing the customer directly as du/Sie. Never say 'der Kunde' or 'dem Kunden' in those spoken fields. The closing must offer an optional next step if interested and respectfully accept refusal; do not end every call as a refusal. The INTERNAL call body must be a factual third-person summary without Hallo or Ich. The field avg_data_used_gb_3m is an average MONTHLY usage calculated across three months, never a three-month total. data_limit_reached_3m is a count over three months, not proof of consecutive months. TONE CONTRACT: The input tone is authoritative, even if source records or a previous draft use another tone. For tone='du', ALL advisor-spoken fields must use du/dir/dich/dein forms: opening 'Hallo, passt es gerade kurz für dich?', question 'Kannst du mir kurz sagen, was passiert ist?', response 'Wenn es dir passt, schauen wir gemeinsam nach einer Lösung.', closing 'Möchtest du, dass wir das jetzt gemeinsam klären?'. Never use formal Sie/Ihnen/Ihr/Ihre/Ihrer in these fields. For tone='sie', consistently use Sie/Ihnen/Ihr forms and never du/dir/dich/dein. Check opening, EVERY discovery question, offer_pitch, EVERY objection response and closing individually before returning. A customer's quoted objection is their own speech; the advisor response must obey the tone. For calls, keep body as a neutral INTERNAL third-person brief; do not reuse it as a spoken greeting. For agent_callback, offer_pitch means the concrete service resolution, not a product sale; headline and benefits should describe the help naturally, never copy internal labels such as 'Service-Only / No offer' or policy text. During a repair, fix all supplied errors throughout the full response, not just the first sentence. No chain of thought.'''
 
 
 def numeric_errors(material,q,channel,tone):
@@ -170,8 +171,10 @@ def numeric_errors(material,q,channel,tone):
     if re.search(r'GB.{0,30}\bin\s+(?:3|drei)\s+Monaten',joined,re.I) and not re.search(r'durchschnitt|pro Monat|monatlich',joined,re.I):errors.append('Three-month average must not be described as a three-month total')
     if channel=='sms' and len(material.body)>160:errors.append('SMS exceeds 160 characters')
     if channel=='app_push' and len(material.body)>200:errors.append('Push exceeds 200 characters')
-    if tone=='sie' and re.search(r'\b(?:du|dir|dich|dein\w*)\b',joined,re.I):errors.append('Copy does not respect Sie tone')
-    if tone=='du' and re.search(r'\b(?:Sie|Ihnen)\b',joined):errors.append('Copy does not respect Du tone')
+    call=channel in ['outbound_call','agent_callback']
+    tone_text=' '.join([material.headline,material.subject or '',*material.benefit_points,material.opening or '',*material.discovery_questions,material.offer_pitch or '',material.closing or '',*[o.response for o in material.objections],*([material.body] if not call else [])])
+    if tone=='sie' and re.search(r'\b(?:du|dir|dich|dein\w*)\b',tone_text,re.I):errors.append('Copy does not respect Sie tone')
+    if tone=='du' and re.search(r'\b(?:Sie|Ihnen|Ihr|Ihre|Ihren|Ihrem|Ihrer|Ihres)\b',tone_text):errors.append('Copy does not respect Du tone')
     spoken=' '.join([material.opening or '',material.offer_pitch or '',material.closing or '',*material.discovery_questions,*[o.response for o in material.objections]])
     if channel in ['outbound_call','agent_callback'] and re.search(r'\b(?:der|dem|den)\s+Kund(?:e|en)\b',spoken,re.I):errors.append('Call script must directly address the customer; only the internal brief may be third-person')
     if channel in ['outbound_call','agent_callback'] and not all([material.opening,material.offer_pitch,material.closing]):errors.append('Call script is incomplete')
@@ -189,12 +192,50 @@ def prepare(engine,cid,decision_id):
     return r,quote(engine,cid,p['product_id'])
 
 
+def channel_plans(engine,cid,decision=None):
+    latest=ai_nba.latest(engine,cid)
+    decision=decision or latest['result']
+    current=bool(latest['current'] and decision and latest['result'] and decision['id']==latest['result']['id'])
+    permissions={p['channel']:p for p in engine.customer(cid)['channels']}
+    plans=[]
+    for channel,label in CHANNELS.items():
+        reasons=[]
+        permission=permissions.get(channel)
+        if permission and not permission['allowed']:reasons.append(permission['why_not'] or 'Channel not available')
+        if decision and not current:reasons.append('AI decision is stale; regenerate the recommendation')
+        if not decision or decision['status']!='validated' or (decision['proposal'] or {}).get('action') not in ['offer','service']:
+            reasons.append('No validated actionable AI decision')
+        else:
+            packet=decision['context'];p=decision['proposal'];service=p['action']=='service'
+            if channel not in packet['policy']['allowed_channels'] and not permission:reasons.append('Channel unavailable for this decision')
+            if service and channel!='agent_callback':reasons.append('Only the supported service callback is available for this service case')
+            if not service and channel=='agent_callback':reasons.append('Service callback cannot be used for sales')
+            product=next((x for x in packet['catalogue'] if x['product_id']==p['product_id']),None)
+            if not service and channel in packet['policy']['allowed_channels']:
+                estimate=next((x for x in ((product or {}).get('economics') or {}).get('per_channel',[]) if x['channel']==channel),None)
+                if not estimate or estimate['dclv']<=packet['policy']['min_expected_gain_eur']:reasons.append('Below the channel value threshold')
+            if product and product.get('blocked'):reasons.extend(product['blocked'])
+            if channel=='newsletter_email':
+                from .newsletter import eligibility
+                reasons.extend(eligibility(engine,cid)['reasons'])
+            if decision['control_group']:reasons.append('Control-group holdout')
+        reasons=list(dict.fromkeys(reasons))
+        plans.append({'channel':channel,'label':label,'allowed':not reasons,'reasons':reasons,
+                      'contact_allowed':permission['allowed'] if permission else None,
+                      'contact_reason':permission['why_not'] if permission else 'Service callback follows service policy'})
+    return plans
+
+
 def workspace(engine,cid):
     r=ai_nba.latest(engine,cid)
     result=r['result'];q=None
-    if result and result['proposal'] and result['proposal']['product_id']:
+    if result and result['status']=='validated' and result['proposal'] and result['proposal']['product_id']:
         q=quote(engine,cid,result['proposal']['product_id'])
-    return {'decision_id':result['id'] if result else None,'current':r['current'],'quote':q,'dossier':dossier(engine,cid)}
+    plans=channel_plans(engine,cid,result)
+    from .newsletter import eligibility as newsletter_eligibility
+    editorial=newsletter_eligibility(engine,cid)
+    return {'decision_id':result['id'] if result else None,'current':r['current'],'quote':q,'dossier':dossier(engine,cid),
+            'editorial_newsletter_allowed':editorial['allowed'],'editorial_newsletter':editorial,'channels':plans,'allowed_channels':[p['channel'] for p in plans if p['allowed']]}
 
 
 def _generate(engine,cid,decision_id,channel,refresh=False):
@@ -206,34 +247,26 @@ def _generate(engine,cid,decision_id,channel,refresh=False):
     is_service=p['action']=='service'
     if is_service and channel not in ['agent_callback','email','portal_popup']:raise ValueError('Service materials cannot become a sales campaign')
     if not is_service and channel=='agent_callback':raise ValueError('A service callback cannot bypass marketing consent')
-    reasons=[]
-    if channel not in packet['policy']['allowed_channels']:reasons.append('No permission for this channel in the current policy')
-    product=next(x for x in packet['catalogue'] if x['product_id']==p['product_id'])
-    estimate=next((x for x in (product.get('economics') or {}).get('per_channel',[]) if x['channel']==channel),None)
-    if not is_service and (not estimate or estimate['dclv']<=packet['policy']['min_expected_gain_eur']):reasons.append('Channel economics do not meet the configured threshold')
-    if decision['control_group']:reasons.append('Control group: no outbound delivery')
-    # Internal drafts are allowed, even for a currently ineligible channel; delivery is always disabled.
-    identity=digest({'decision':decision_id,'input':decision['input_hash'],'quote':q['id'],'channel':channel,'version':'channel-v2'})
+    plan=next(p for p in channel_plans(engine,cid,decision) if p['channel']==channel)
+    reasons=plan['reasons']
+    if reasons:raise ValueError('Generation is not permitted for this channel: '+'; '.join(reasons))
+    identity=digest({'decision':decision_id,'input':decision['input_hash'],'quote':q['id'],'channel':channel,'version':'channel-v4-bounded-repair'})
     if not refresh:
         with db.connect() as c:row=c.execute('SELECT * FROM outreach_materials WHERE identity=? AND status=? ORDER BY id DESC LIMIT 1',(identity,'validated')).fetchone()
         if row:return {**json.loads(row['payload']),'id':row['id']}
     payload={'identity':identity,'decision_id':decision_id,'channel':channel,'quote':q,'dossier':dossier(engine,cid),
              'status':'failed','material':None,'errors':[],'error':None,'dispatch_allowed':False,'channel_eligible':not reasons,
              'delivery_reasons':reasons,'model':ai_nba.provider_status()['model'],'draft_id':None,'usage':[]}
-    try:
-        material,usage=ai_nba.complete(schema,WRITE,{'channel':channel,'tone':profile['tone'],'proposal':p,'quote':q,'facts':packet['facts'],
-                    'internal_dossier':payload['dossier'],'draft_only':True})
-        payload['usage'].append(usage)
-        errors=ai_nba.evidence_errors(material.evidence,packet)+numeric_errors(material,q,channel,profile['tone'])
-        if errors:
-            material,usage=ai_nba.complete(schema,WRITE,{'channel':channel,'tone':profile['tone'],'proposal':p,'quote':q,'facts':packet['facts'],
-                'previous_material':material.model_dump(),'errors_to_fix':errors,'draft_only':True})
-            payload['usage'].append(usage)
-            errors=ai_nba.evidence_errors(material.evidence,packet)+numeric_errors(material,q,channel,profile['tone'])
-        current=ai_nba.latest(engine,cid)
-        if not current['current'] or current['result']['id']!=decision_id:errors.append('Decision or policy changed during generation')
-        payload['material']=material.model_dump();payload['errors']=errors;payload['status']='blocked' if errors else 'validated'
-    except ai_nba.ProviderError as exc:payload['error']=str(exc)
+    result=material_generation.generate(schema,WRITE,{'channel':channel,'tone':profile['tone'],'proposal':p,'quote':q,'facts':packet['facts'],
+                'internal_dossier':payload['dossier'],'draft_only':True},
+                lambda material:ai_nba.evidence_errors(material.evidence,packet)+numeric_errors(material,q,channel,profile['tone']))
+    payload.update({key:result[key] for key in ('errors','error','usage','attempts','max_attempts','status')})
+    payload['material']=result['material'].model_dump() if result['material'] else None
+    current=ai_nba.latest(engine,cid)
+    if not current['current'] or current['result']['id']!=decision_id:payload['errors'].append('Decision or policy changed during generation')
+    elif not next(p for p in channel_plans(engine,cid,current['result']) if p['channel']==channel)['allowed']:payload['errors'].append('Channel permission changed during generation')
+    if payload['errors'] and payload['status']=='validated':payload['status']='blocked'
+    payload['failure_reasons']=material_generation.explain(payload['errors'],profile['tone'])
     with db.connect() as c:
         cursor=c.execute('INSERT INTO outreach_materials(customer_id,decision_id,identity,channel,status,payload) VALUES (?,?,?,?,?,?)',
             (cid,decision_id,identity,channel,payload['status'],json.dumps(payload,ensure_ascii=False)))

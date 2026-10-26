@@ -2,6 +2,7 @@ import json
 from contextlib import asynccontextmanager
 from typing import Dict, List, Literal, Optional
 from pathlib import Path
+from datetime import date
 from fastapi import FastAPI, HTTPException, Query, BackgroundTasks
 from fastapi.responses import FileResponse, Response
 from fastapi.staticfiles import StaticFiles
@@ -10,13 +11,13 @@ from . import database as db
 from .ingestion import import_sources
 from .service import EngineService, safe
 from .replay import preview
-from . import ai_nba, outreach
+from . import ai_nba, outreach, portfolio, newsletter
 from .insights import customer_insights
 from .email_template import for_draft
 
 @asynccontextmanager
 async def lifespan(app):
-    db.initialize();import_sources();app.state.engine=EngineService()
+    db.initialize();newsletter.seed();import_sources();app.state.engine=EngineService()
     with db.connect() as c:
         c.execute("UPDATE ai_batches SET status='interrupted' WHERE status IN ('queued','running')")
     yield
@@ -73,6 +74,19 @@ def customers(q:str='',action:Optional[str]=None,offset:int=Query(0,ge=0),limit:
 
 @app.get('/api/customers/{cid}')
 def customer(cid:str):return call(engine().customer,cid)
+
+class ExternalProduct(BaseModel):
+    category:Literal['electricity','gas','mobile','internet','charging','devices','other']
+    provider:str=Field(min_length=1,max_length=120)
+    name:str=Field(min_length=1,max_length=150)
+    evidence:str=Field(min_length=8,max_length=1500)
+    monthly_eur:Optional[float]=Field(default=None,ge=0,le=10000)
+
+@app.get('/api/customers/{cid}/products')
+def customer_products(cid:str):return call(portfolio.products,engine(),cid)
+
+@app.post('/api/customers/{cid}/external-products')
+def external_product(cid:str,body:ExternalProduct):return call(portfolio.add_external,engine(),cid,body.model_dump())
 
 @app.get('/api/customers/{cid}/insights')
 def insights(cid:str):return call(customer_insights,engine(),cid)
@@ -151,6 +165,30 @@ def ai_batch(body:AIBatch,background:BackgroundTasks):
     job,created=ai_nba.start_batch(engine(),body.limit)
     if created:background.add_task(ai_nba.run_batch,engine(),job['id'])
     return job
+
+class NewsSource(BaseModel):
+    title:str=Field(min_length=5,max_length=200)
+    published_at:date
+    url:str=Field(max_length=500)
+    summary:str=Field(min_length=20,max_length=1800)
+
+class NewsletterRequest(BaseModel):
+    article_id:str
+    mode:Literal['informational','offer']='informational'
+    decision_id:Optional[int]=None
+    refresh:bool=False
+
+@app.post('/api/news')
+def add_news(body:NewsSource):return call(newsletter.add_article,body.model_dump(mode='json'))
+
+@app.get('/api/customers/{cid}/newsletter-context')
+def newsletter_context(cid:str):return call(newsletter.context,engine(),cid)
+
+@app.get('/api/customers/{cid}/newsletters')
+def newsletter_history(cid:str):return call(newsletter.history,engine(),cid)
+
+@app.post('/api/customers/{cid}/newsletters')
+def newsletter_generate(cid:str,body:NewsletterRequest):return call(newsletter.generate,engine(),cid,body.article_id,body.mode,body.decision_id,body.refresh)
 
 class OutreachRequest(BaseModel):
     decision_id:int=Field(ge=1)

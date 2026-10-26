@@ -18,7 +18,7 @@ Start `postman simulation run postman/simulations/ai-nba.sim.yaml --port 4900 --
 ## Observations
 
 <!-- begin:observations -->
-2026-10-26: 87 tests passed, including AI, chart-data and channel-material checks. The sole member `hessian-chat` received chat-completions requests for successful NBA/email generation, invalid product, fabricated evidence, malformed JSON, HTTP 503 and timeout. No members were silent. The same member also served concrete-quote email/call/SMS material generation and fabricated-price rejection. An independent live Kolibri comparison of 30 customers completed with 28 source/policy passes, 2 blocked decisions and 11 drafts; it does not establish commercial accuracy.
+2026-10-26: 96 tests passed, including AI, chart-data and channel-material checks. The sole member `hessian-chat` received chat-completions requests for successful NBA/email generation, invalid product, fabricated evidence, malformed JSON, HTTP 503 and timeout. No members were silent. Consent/DOI denial, product portfolio provenance and independent informational/news-led offer newsletters were also exercised. The same member also served concrete-quote email/call/SMS material generation and fabricated-price rejection. An independent live Kolibri comparison of 30 customers completed with 28 source/policy passes, 2 blocked decisions and 11 drafts; it does not establish commercial accuracy.
 <!-- end:observations -->
 
 ## What didn't work
