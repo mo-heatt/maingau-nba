@@ -38,7 +38,11 @@ def initialize():
         CREATE INDEX IF NOT EXISTS external_customer ON external_products(customer_id);
         CREATE TABLE IF NOT EXISTS news_items(id TEXT PRIMARY KEY,payload TEXT NOT NULL,created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP);
         CREATE TABLE IF NOT EXISTS newsletter_materials(id INTEGER PRIMARY KEY,customer_id TEXT NOT NULL,input_hash TEXT NOT NULL,status TEXT NOT NULL,payload TEXT NOT NULL,created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP);
-        PRAGMA user_version=5;
+        CREATE TRIGGER IF NOT EXISTS source_records_no_update BEFORE UPDATE ON source_records
+        BEGIN SELECT RAISE(ABORT, 'Imported source records are immutable; use an audited source migration'); END;
+        CREATE TRIGGER IF NOT EXISTS source_records_no_delete BEFORE DELETE ON source_records
+        BEGIN SELECT RAISE(ABORT, 'Imported source records are immutable; use an audited source migration'); END;
+        PRAGMA user_version=6;
         ''')
         c.execute('INSERT OR IGNORE INTO settings VALUES (1,1,?)',(json.dumps({'contact_cap_30d':3,'min_dclv_eur':0,'offers_off':[],'channels_off':[],'priorities':{},'tone_mode':'mirror','content_approvals':{}}),))
 

@@ -8,6 +8,7 @@ import pandas as pd
 from . import database as db
 from .ingestion import load_tables, SNAPSHOT
 from .engine.state import build_state
+from .snapshot import CustomerSnapshot
 from .engine.scoring import params, acceptance_model, score_customer
 from .engine.arbitration import arbitrate
 from .engine.content import message
@@ -29,9 +30,14 @@ def control(cid):return int(hashlib.sha256(cid.encode()).hexdigest(),16)%1000<10
 class EngineService:
     def __init__(self):
         self.lock=RLock();self.X,self.quality=load_tables();self.P=params(self.X);self.A=acceptance_model(self.X)
-        self.catalog=self.X['product_catalog'].set_index('product_id');self.state=build_state(self.X)
+        self.catalog=self.X['product_catalog'].set_index('product_id');self._snapshot=CustomerSnapshot(build_state(self.X))
         comp=self.X['service_interactions'];comp=comp[(comp.category=='complaint')&(comp.status=='closed')]
-        self.fcr=float(comp.first_contact_resolution.mean());self.cache={}
+        self.fcr=float(comp.first_contact_resolution.mean());self._cache={}
+
+    @property
+    def state(self):
+        """Read-only snapshot; nested values returned to callers are copies."""
+        return self._snapshot
 
     def settings(self):
         with db.connect() as c:r=c.execute('SELECT version,payload FROM settings WHERE id=1').fetchone()
@@ -45,7 +51,7 @@ class EngineService:
             payload=json.loads(row['payload']);payload.update(values)
             self.validate_settings(payload)
             c.execute('UPDATE settings SET version=version+1,payload=? WHERE id=1',(json.dumps(payload),));db.audit(c,'settings_updated',payload)
-            self.cache.clear()
+            self._cache.clear()
         return self.settings()
 
     def validate_settings(self,p):
@@ -74,7 +80,7 @@ class EngineService:
         result={'id':identity,'action':kind,'product_id':pick['offer'] if pick else None,'name':decision['title'],'channel':pick['channel'] if pick else None,'tone':s['tone'],'p_accept':pick['p'] if pick else None,'expected_gain_eur':pick['dclv'] if pick and kind in ['offer','service'] else 0,'reason':decision['reason'],'log':decision['log'],'control_group':control(cid),'message':message(s,decision) if kind in ['offer','service'] else None,'status':'held_out' if control(cid) else 'pending','overridden':bool(override)}
         return safe({'id':cid,'city':s['city'],'since':s['customer_since'],'household_size':s['household_size'],'language':s['language'],'portal_account':s['portal_account'],'app_installed':s['app_installed'],'value':{**s['value'],'clv':sc['clv_now'],'churn':sc['churn_now']},'products':s['products'],'signals':[{'key':k,'value':v['value'],'class':v['class'],'evidence':s['evidence'].get(k,[])} for k,v in s['signals'].items() if sc['profiling'] or v['class']!='behavioural'],'consent':s['consent'],'profiling':sc['profiling'],'tone':s['tone'],'tone_reason':s['tone_reason'],'tone_sample':s['tone_sample'] if sc['profiling'] else None,'contacts_30d':s['contacts_30d'],'open_tickets':s['open_tickets'],'tickets':s['recent_tickets'],'history':s['legacy_actions'],'channels':sc['channels'],'candidates':sc['candidates'],'decision':result,'data_quality':self.quality})
 
-    def all(self):
+    def _cached_rows(self):
         with self.lock:
             settings=self.settings();version=settings['version']
             with db.connect() as c:
@@ -82,24 +88,32 @@ class EngineService:
                 reviews={}
                 for r in c.execute('SELECT * FROM reviews ORDER BY id'):reviews[r['customer_id']]=dict(r)
             key=(version,json.dumps(overrides,sort_keys=True))
-            if key not in self.cache:
+            if key not in self._cache:
                 rows={}
                 for cid in self.state:
                     try:rows[cid]=self.evaluate(cid,settings,overrides.get(cid))
                     except ValueError:
                         rows[cid]=self.evaluate(cid,settings);rows[cid]['decision']['log'].append('Saved override expired: current rules no longer allow it')
-                self.cache={key:rows}
-            result=copy.deepcopy(self.cache[key])
-            for cid,row in result.items():
-                r=reviews.get(cid)
-                if r and not row['decision']['control_group']:
-                    row['decision']['status']=r['status'] if r['decision_id']==row['decision']['id'] else 'stale'
-            return result
+                self._cache={key:rows}
+            return self._cache[key], reviews
+
+    def _with_review(self,row,reviews):
+        row=copy.deepcopy(row)
+        r=reviews.get(row['id'])
+        if r and not row['decision']['control_group']:
+            row['decision']['status']=r['status'] if r['decision_id']==row['decision']['id'] else 'stale'
+        return row
+
+    def all(self):
+        with self.lock:
+            rows,reviews=self._cached_rows()
+            return {cid:self._with_review(row,reviews) for cid,row in rows.items()}
 
     def customer(self,cid):
-        rows=self.all()
-        if cid not in rows:raise KeyError(cid)
-        return rows[cid]
+        with self.lock:
+            rows,reviews=self._cached_rows()
+            if cid not in rows:raise KeyError(cid)
+            return self._with_review(rows[cid],reviews)
 
     def review(self,cid,decision_id,status,note=''):
         with self.lock:
@@ -118,7 +132,7 @@ class EngineService:
                 if offer_id:c.execute('INSERT OR REPLACE INTO overrides(customer_id,offer_id,note) VALUES (?,?,?)',(cid,offer_id,note))
                 else:c.execute('DELETE FROM overrides WHERE customer_id=?',(cid,))
                 db.audit(c,'override_updated',{'offer_id':offer_id,'note':note},cid)
-            self.cache.clear()
+            self._cache.clear()
         return self.customer(cid)
 
     def marketing(self):

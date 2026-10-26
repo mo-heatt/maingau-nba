@@ -37,9 +37,11 @@ def test_newsletter_denies_missing_doi_before_model_call(engine,monkeypatch):
     newsletter.seed()
     consent=copy.deepcopy(engine.state['MG-100005']['consent'])
     consent['newsletter_email']['doi']=None
-    monkeypatch.setitem(engine.state['MG-100005'],'consent',consent)
+    # Build a separate test snapshot: production source reads are intentionally immutable.
+    from types import SimpleNamespace
+    isolated=SimpleNamespace(state={'MG-100005':{'consent':consent}},customer=engine.customer,settings=engine.settings)
     monkeypatch.setattr(ai_nba,'complete',lambda *a:pytest.fail('Forbidden channel must not call provider'))
-    with pytest.raises(ValueError,match='not permitted'):newsletter.generate(engine,'MG-100005','mobile-data-guide','informational')
+    with pytest.raises(ValueError,match='not permitted'):newsletter.generate(isolated,'MG-100005','mobile-data-guide','informational')
 
 
 def test_informational_newsletter_does_not_need_nba(engine,provider,monkeypatch):

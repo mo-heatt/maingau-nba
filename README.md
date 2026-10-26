@@ -4,6 +4,21 @@ A customer intelligence and next-best-action workspace for **Futury Build Days #
 
 React + TypeScript on the frontend, FastAPI + SQLite on the backend. The rules engine provides a transparent baseline; Hessian AI evaluates customer needs across the enabled product catalogue and prepares channel-specific material. Both paths respect contact permissions, exclusions and economic checks. All customer data is synthetic event data. **Messages are drafts; external sending is disabled.**
 
+## Architecture and source data
+
+See [System architecture and data flows](docs/architecture.md) for diagrams of source ingestion, Customer 360, AI NBA selection, offer/call-kit generation, newsletter, caching and feedback. The Developer area's **How it works** also distinguishes the running MVP from the production target.
+
+- **Recorded consent** comes from the original `consent_status` rows in SQLite. It is read only and shown separately from **Action availability**. A control group, missing app, contact cap or stale AI decision can block an action without changing consent.
+- **Contact channel filters** in Customers match consent, newsletter double opt-in and portal/app availability. They do not require a generated offer and do not hide consented customers in the control group.
+- Imported source rows reject updates/deletes; customer snapshot values are private and returned as detached copies. No AI or permission-edit endpoint writes consent.
+- Browser GETs are deduplicated and reused in memory for 30 seconds (100-entry limit); successful writes invalidate the cache. Backend profile evaluation and SQLite-saved generations have separate version/fingerprint checks. Generation always rechecks current server policy.
+
+For **MG-100126**, newsletter, portal/app personalisation and profiling are granted; marketing email, phone and SMS are not given. The customer is in the stable 10% control group. All 4,500 imported consent records were verified against the workbook without differences. Recheck without changing either file:
+
+```bash
+.venv/bin/python scripts/check_source_consents.py
+```
+
 ## What is in the app
 
 | Area | What it does |
@@ -162,7 +177,7 @@ Then run:
 NBA_TEST_PROVIDER_URL=http://127.0.0.1:4900/hessian/v1 .venv/bin/python -m pytest backend/tests -q
 ```
 
-The fixture is for tests only; the running application never substitutes it for real AI. Coverage includes consent/exclusions, source provenance, channel consistency, bounded repairs, per-browser credentials, expiry, cross-origin rejection, secret-safe errors and batch credential propagation. The local full run for this version passed **118 tests**.
+The fixture is for tests only; the running application never substitutes it for real AI. Coverage includes consent/exclusions, source provenance, channel consistency, bounded repairs, per-browser credentials, expiry, cross-origin rejection, secret-safe errors and batch credential propagation. The local full run for this version passed **124 tests**.
 
 After a normal frontend build, FastAPI also serves the compiled app at **http://127.0.0.1:8001/**. For public hosting, add authenticated team access, HTTPS and request limits; the Developer area shortcut is a UI convenience, **not an authentication boundary**. Persist `data/` on the server. `NBA_PUBLIC_APP_URL` sets the public origin for demo CTA links and Developer area origin checks.
 

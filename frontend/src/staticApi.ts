@@ -23,7 +23,11 @@ export async function staticRequest<T>(path: string, method = 'GET', body?: any)
     if (route === '/customers') {
       const q = (p.get('q') || '').toLowerCase(), action = p.get('action') || '';
       const offset = +(p.get('offset') || 0), limit = +(p.get('limit') || 50);
-      const rows = (S.__list as any[]).filter(r => (r.id + ' ' + r.city).toLowerCase().includes(q) && (!action || r.decision.action === action));
+      const rows = (S.__list as any[]).map(row => {
+        const profile=S['/customers/'+row.id];
+        if(!profile)return row;
+        return {...row,preview:{language:profile.language,tone:profile.tone,profiling:profile.profiling,products:profile.products||[],open_cases:profile.open_tickets?.length||0,contacts_30d:profile.contacts_30d,...row.preview,contact_channels:row.preview?.contact_channels||profile.channels?.filter((ch:any)=>ch.allowed).map((ch:any)=>ch.channel)||[]}};
+      }).filter(r => (r.id + ' ' + r.city).toLowerCase().includes(q) && (!action || r.decision.action === action));
       return {total: rows.length, offset, limit, items: rows.slice(offset, offset + limit)} as T;
     }
     if (route in S) return structuredClone(S[route]) as T;

@@ -94,7 +94,7 @@ def catalog():
 def customers(q:str='',action:Optional[str]=None,offset:int=Query(0,ge=0),limit:int=Query(50,ge=1,le=750)):
     rows=list(engine().all().values());rows=[r for r in rows if q.lower() in (r['id']+' '+r['city']).lower() and (not action or r['decision']['action']==action)]
     rows.sort(key=lambda r:(-r['decision']['expected_gain_eur'],r['id']))
-    return {'total':len(rows),'offset':offset,'limit':limit,'items':[{**{k:r[k] for k in ['id','city','since','value','decision']},'preview':{'language':r['language'],'tone':r['tone'],'profiling':r['profiling'],'products':r['products'],'open_cases':len(r['open_tickets']),'contacts_30d':r['contacts_30d']}} for r in rows[offset:offset+limit]]}
+    return {'total':len(rows),'offset':offset,'limit':limit,'items':[{**{k:r[k] for k in ['id','city','since','value','decision']},'preview':{'language':r['language'],'tone':r['tone'],'profiling':r['profiling'],'products':r['products'],'open_cases':len(r['open_tickets']),'contacts_30d':r['contacts_30d'],'contact_channels':[ch['channel'] for ch in r['channels'] if ch['allowed']]}} for r in rows[offset:offset+limit]]}
 
 @app.get('/api/customers/{cid}')
 def customer(cid:str):return call(engine().customer,cid)
