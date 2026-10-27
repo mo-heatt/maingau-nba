@@ -1,17 +1,19 @@
 import {useEffect, useMemo, useState} from 'react';
-import {Activity, ArrowRight, ArrowUpRight, Check, CheckCheck, FileText, FlaskConical, Megaphone, Plus, RotateCcw, Save, Search, ShieldCheck, SlidersHorizontal, X} from 'lucide-react';
+import {Activity, ArrowRight, ArrowUpRight, Check, CheckCheck, FileText, FlaskConical, LayoutDashboard, Megaphone, Plus, RotateCcw, Save, Search, ShieldCheck, SlidersHorizontal, X} from 'lucide-react';
 import {AISample} from '../components/AIDecision';
 import {useApi, request, eur, channel} from '../api';
 import type {Settings, Catalog, Marketing as MarketingData, QueueRow, Preview, Totals, Replay} from '../types';
 import {Loading, Metric, PageTitle, Panel} from '../components/ui';
 import {CampaignsTab, NewCampaign} from '../components/Campaigns';
+import Recommendations from './Recommendations';
 import '../marketing.css';
 
-type Tab = 'monitor' | 'campaigns' | 'approve' | 'steer' | 'content' | 'learn';
+type Tab = 'monitor' | 'recommendations' | 'campaigns' | 'approve' | 'steer' | 'content' | 'learn';
 type Props = {revision: number; onSelect: (id: string) => void; onChanged: () => void; notify: (s: string) => void};
 
 const TABS: [Tab, string, typeof Activity][] = [
   ['monitor', 'Monitor', Activity],
+  ['recommendations', 'Recommendations', LayoutDashboard],
   ['campaigns', 'Campaigns', Megaphone],
   ['approve', 'Approve', CheckCheck],
   ['steer', 'Steer', SlidersHorizontal],
@@ -42,6 +44,8 @@ export default function Marketing({revision, onSelect, onChanged, notify}: Props
   const [busy, setBusy] = useState(false);
   const [creating, setCreating] = useState(false);
   useEffect(() => { if (saved) setDraft(saved); }, [saved]);
+  // Links such as #marketing?tab=recommendations can arrive while this page is open.
+  useEffect(() => { const fn = () => setTab(initialTab()); window.addEventListener('hashchange', fn); return () => window.removeEventListener('hashchange', fn); }, []);
   const dirty = !!draft && rules(draft) !== rules(saved);
 
   // What-if: once the draft settles, ask the server what the engine would decide under it.
@@ -108,6 +112,7 @@ export default function Marketing({revision, onSelect, onChanged, notify}: Props
     </nav>
 
     {tab === 'monitor' && <Monitor m={m} revision={revision} onSelect={onSelect} onGo={go} />}
+    {tab === 'recommendations' && <Recommendations revision={revision} onSelect={onSelect} embedded />}
     {tab === 'campaigns' && <CampaignsTab revision={revision} names={names} onNew={() => setCreating(true)} onChanged={onChanged} notify={notify} />}
     {tab === 'approve' && <Approve m={m} names={names} busy={busy} onSelect={onSelect} onReview={review} />}
     {tab === 'steer' && <Steer m={m} catalog={catalog} draft={draft} setDraft={setDraft} preview={preview} dirty={dirty} />}
