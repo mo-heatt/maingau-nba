@@ -11,13 +11,14 @@ import CurrentProducts from '../components/CurrentProducts';
 import CustomerTimeline from '../components/CustomerTimeline';
 import BusinessLines from '../components/BusinessLines';
 import NewsletterStudio from '../components/NewsletterStudio';
+import CustomerChat from '../components/CustomerChat';
 import {type RadarData} from './ServiceFirst';
 import {useApi,request,eur,channel} from '../api';
 import type {Customer} from '../types';
 import {Panel,Loading} from '../components/ui';
 const tabs=[['overview','Overview'],['studio','Offer studio'],['products','Products'],['insights','Insights'],['history','History'],['permissions','Permissions']] as const;
 function initialTab(){const t=new URLSearchParams(location.hash.split('?')[1]||'').get('tab');return tabs.some(([key])=>key===t)?t!:'overview'}
-export default function Customer360({id,revision,onChanged,notify}:{id:string;revision:number;onChanged:()=>void;notify:(s:string)=>void}){
+export default function Customer360({id,revision,onChanged,notify,onSelect,onConnect}:{id:string;revision:number;onChanged:()=>void;notify:(s:string)=>void;onSelect:(id:string)=>void;onConnect:()=>void}){
  const[tab,setTab]=useState(initialTab),[busy,setBusy]=useState(false),[newsletterEmbedded,setNewsletterEmbedded]=useState(false),[editorialOpen,setEditorialOpen]=useState(false),[override,setOverride]=useState(''),[note,setNote]=useState('');
  const{data,error}=useApi<Customer>('/customers/'+id,revision),{data:radar}=useApi<RadarData>('/radar',revision);
  const c=data?.id===id?data:null,stuck=radar?.cards.find(r=>r.customer_id===id);
@@ -27,6 +28,7 @@ export default function Customer360({id,revision,onChanged,notify}:{id:string;re
  return <CustomerDecisionProvider id={id} revision={revision}><ChannelPolicyProvider id={id} revision={revision}><div className="customer-detail">
  {error?<Loading error={error}/>:!c?<Loading/>:<><header className="customer-profile-header"><div className="customer-profile-identity"><CustomerAvatar id={c.id} large/><div><span className="workspace-caption">Customer profile</span><h1>{c.id}</h1><p><span className="profile-location"><MapPin size={13}/>{c.city}</span><i className="profile-divider"/><span className="profile-since"><CalendarDays size={13}/>Customer since {new Date(c.since).getFullYear()}</span></p></div></div><div className="customer-profile-flags"><span className="pill">{c.language.toUpperCase()} · {toneLabel(c.language,c.tone)}</span><span className={'profile-consent '+(c.profiling?'granted':'restricted')}><ShieldCheck size={13}/>{c.profiling?'Profiling permitted':'No profiling consent'}</span><small className="profile-snapshot">Snapshot · 30 Sep 2026</small></div></header>
  <div className="customer-profile-metrics"><div><span><TrendingUp size={14}/>Customer lifetime value</span><strong>{eur(c.value.clv)}</strong></div><div><span>Estimated churn risk</span><strong>{Math.round(c.value.churn*100)}<small>%</small></strong></div><div><span><Layers size={14}/>Active business lines</span><strong>{c.value.lines}</strong></div><div><span><Headphones size={14}/>Open service cases</span><strong>{c.open_tickets.length}</strong></div></div>
+ <CustomerChat customer={c} onSelect={onSelect} onConnect={onConnect}/>
  <nav className="customer-detail-tabs" aria-label="Customer sections">{tabs.map(([key,label])=><button key={key} aria-current={tab===key?'page':undefined} className={tab===key?'active':''} onClick={()=>open(key)}>{label}{key==='history'&&c.open_tickets.length>0&&<span>{c.open_tickets.length}</span>}</button>)}</nav>
  <div className="customer-tab-content" key={tab}>
  {tab==='overview'&&<CustomerOverview customer={c} stuck={stuck} onOpen={open}/>}

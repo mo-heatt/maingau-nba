@@ -246,11 +246,13 @@ class ChatTurn(BaseModel):
 class Chat(BaseModel):
     model_config=ConfigDict(extra='forbid')
     messages:List[ChatTurn]=Field(min_length=1,max_length=40)
+    customer_id:Optional[str]=Field(default=None,pattern=r'^MG-\d+$')
 
 @app.post('/api/assistant')
 def ask_assistant(body:Chat):
     if body.messages[-1].role!='user':raise HTTPException(422,'The last message must be a question.')
-    try:return assistant.answer(engine(),[m.model_dump() for m in body.messages])
+    try:return assistant.answer(engine(),[m.model_dump(exclude={'customer_id'}) for m in body.messages],body.customer_id)
+    except KeyError:raise HTTPException(404,'Customer not found')
     except assistant.AssistantError as exc:raise HTTPException(503,str(exc))
 
 @app.get('/api/ai/status')
