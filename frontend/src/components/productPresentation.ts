@@ -32,3 +32,18 @@ export function destination(id:string){
  if(id.startsWith('P-SV'))return {url:'https://www.maingau-energie.de/service',label:'Zum MAINGAU Service',category:'Service',Icon:Headphones,image:null};
  return {url:'https://www.maingau-energie.de/'+(id.startsWith('P-SL')?'smart-living':'onlineshop'),label:'Produkte entdecken',category:id.startsWith('P-SL')?'Smart Living':'Onlineshop',Icon:House,image:null};
 }
+
+// The verified MAINGAU page for a product category. Prices and availability live there.
+const CATEGORY_LINKS:Record<string,{url:string;label:string}>={
+ electricity:{url:'https://www.maingau-energie.de/strom',label:'MAINGAU Stromtarife'},
+ gas:{url:'https://www.maingau-energie.de/gas',label:'MAINGAU Gastarife'},
+ mobile:{url:'https://www.maingau-energie.de/mobilfunk',label:'MAINGAU Mobilfunktarife'},
+ internet:{url:'https://www.maingau-energie.de/internet',label:'MAINGAU Internet'},
+ charging:{url:'https://www.maingau-energie.de/e-mobilitaet/autostrom',label:'MAINGAU Autostrom'},
+ devices:{url:'https://www.maingau-energie.de/smart-living',label:'MAINGAU Smart Living'},
+ smart_living:{url:'https://www.maingau-energie.de/smart-living',label:'MAINGAU Smart Living'},
+ shop:{url:'https://www.maingau-energie.de/onlineshop',label:'MAINGAU Onlineshop'},
+ energy:{url:'https://www.maingau-energie.de/strom',label:'MAINGAU Stromtarife'},
+ e_mobility:{url:'https://www.maingau-energie.de/e-mobilitaet/autostrom',label:'MAINGAU Autostrom'},
+};
+export function categoryLink(category:string){return CATEGORY_LINKS[category]||{url:'https://www.maingau-energie.de/',label:'MAINGAU website'};}
