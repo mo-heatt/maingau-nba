@@ -41,12 +41,10 @@ def test_money_claims_and_tone_are_checked():
 
 
 @pytest.fixture(scope='module')
-def engine(tmp_path_factory):
-    source=db.ROOT/'data/nba.sqlite'
-    if not source.exists():pytest.skip('Local dataset required')
+def engine(tmp_path_factory,source_db):
     with pytest.MonkeyPatch.context() as mp:
         dest=tmp_path_factory.mktemp('outreach')/'test.sqlite'
-        with sqlite3.connect(source) as src,sqlite3.connect(dest) as target:src.backup(target)
+        with sqlite3.connect(source_db) as src,sqlite3.connect(dest) as target:src.backup(target)
         mp.setenv('NBA_DB_PATH',str(dest));db.initialize()
         yield EngineService()
 

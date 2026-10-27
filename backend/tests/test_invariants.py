@@ -5,13 +5,10 @@ consent and exclusion violations must be exactly zero, for all 750 customers.
 Skips gracefully when the mock data is not present.
 """
 import itertools
-import os
-from pathlib import Path
 
 import pytest
 
-from app import database as db
-from app.ingestion import import_sources, load_tables
+from app.ingestion import load_tables
 from app.engine.arbitration import arbitrate
 from app.engine.constants import CHANNELS, SETTINGS
 from app.engine.scoring import acceptance_model, params, score_customer
@@ -19,24 +16,12 @@ from app.engine.state import build_state
 from app.engine.templates import TEMPLATES
 from app.service import control
 
-ROOT = Path(__file__).resolve().parents[2]
-
 
 @pytest.fixture(scope="session")
-def tables(tmp_path_factory):
-    data_dir = ROOT / "data"
-    if (data_dir / "nba.sqlite").exists():
-        os.environ.setdefault("NBA_DB_PATH", str(data_dir / "nba.sqlite"))
-        with db.connect() as c:
-            imported = c.execute("SELECT COUNT(*) FROM source_records").fetchone()[0] > 0
-        if imported:
-            return load_tables()
-    if not (data_dir / "maingau_nba_mockdata.xlsx").exists():
-        pytest.skip("Mock data not present: put maingau_nba_mockdata.xlsx in data/")
-    os.environ["NBA_DB_PATH"] = str(tmp_path_factory.mktemp("db") / "invariants.sqlite")
-    db.initialize()
-    import_sources()
-    return load_tables()
+def tables(source_db):
+    with pytest.MonkeyPatch.context() as mp:
+        mp.setenv("NBA_DB_PATH", str(source_db))
+        return load_tables()
 
 
 @pytest.fixture(scope="session")
