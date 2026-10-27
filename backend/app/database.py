@@ -38,6 +38,7 @@ def initialize():
         CREATE INDEX IF NOT EXISTS external_customer ON external_products(customer_id);
         CREATE TABLE IF NOT EXISTS news_items(id TEXT PRIMARY KEY,payload TEXT NOT NULL,created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP);
         CREATE TABLE IF NOT EXISTS newsletter_materials(id INTEGER PRIMARY KEY,customer_id TEXT NOT NULL,input_hash TEXT NOT NULL,status TEXT NOT NULL,payload TEXT NOT NULL,created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP);
+        CREATE TABLE IF NOT EXISTS campaigns(id INTEGER PRIMARY KEY,status TEXT NOT NULL,payload TEXT NOT NULL,created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,launched_at TEXT);
         CREATE TRIGGER IF NOT EXISTS source_records_no_update BEFORE UPDATE ON source_records
         BEGIN SELECT RAISE(ABORT, 'Imported source records are immutable; use an audited source migration'); END;
         CREATE TRIGGER IF NOT EXISTS source_records_no_delete BEFORE DELETE ON source_records

@@ -1,0 +1,48 @@
+/* Campaigns: the New campaign button sits next to the rules pill; the New campaign dialog (reuses the developer-dialog frame) and the Campaigns tab with tracking. */
+.mk-title-actions{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:flex-end}
+.developer-dialog.campaign-dialog{width:min(640px,calc(100vw - 32px))}
+.cp-form{display:grid;grid-template-columns:1fr 1fr;gap:14px 16px;margin-bottom:18px}
+.cp-form label,.cp-form legend{display:flex;flex-direction:column;gap:6px;font-size:var(--t-sm);font-weight:600;color:var(--text-strong)}
+.cp-form input,.cp-form select{font:inherit;font-weight:400;font-size:var(--t-base);padding:8px 10px;border:1px solid var(--line);border-radius:var(--r-sm);background:var(--surface);color:var(--text-strong)}
+.cp-form fieldset{border:0;margin:0;padding:0}
+.cp-form legend{margin-bottom:6px}
+.cp-wide{grid-column:1/-1}
+.cp-dates{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.cp-chips{display:flex;flex-wrap:wrap;gap:6px}
+.cp-chips button{display:inline-flex;align-items:center;gap:5px;padding:6px 10px;border:1px solid var(--line);border-radius:999px;background:var(--surface);color:var(--text-strong);font-size:var(--t-sm);cursor:pointer}
+.cp-chips button.on{background:var(--surface-raised);border-color:var(--blue);color:var(--blue);font-weight:600}
+.cp-audience{border:1px solid var(--line);border-radius:var(--r);background:var(--surface-muted);padding:14px 16px;margin-bottom:16px;transition:opacity var(--dur) var(--ease)}
+.cp-audience.loading{opacity:.55}
+.cp-reach{margin:0 0 8px;font-size:var(--t-md);color:var(--text-strong)}
+.cp-reach b{font-size:var(--t-2xl);margin-right:4px}
+.cp-reach span{color:var(--text-muted);font-size:var(--t-sm)}
+.cp-audience ul{list-style:none;margin:0;padding:0;display:grid;gap:4px}
+.cp-audience li{display:grid;grid-template-columns:16px 1fr auto;gap:6px;align-items:center;font-size:var(--t-sm);color:var(--text)}
+.cp-audience li svg{color:var(--text-muted)}
+.cp-audience li b{font-variant-numeric:tabular-nums;color:var(--text-strong)}
+.cp-expect{margin:10px 0 0;padding-top:10px;border-top:1px solid var(--line);font-size:var(--t-sm);color:var(--text-strong)}
+
+.cp-list{display:grid;gap:20px}
+.cp-list .panel{margin:0}
+.cp-body{padding:0 23px 20px}
+.cp-status{font-size:var(--t-xs);font-weight:700;text-transform:uppercase;letter-spacing:.8px;padding:4px 8px;border-radius:var(--r-sm);background:var(--surface-raised);color:var(--text-muted)}
+.cp-status.running{background:var(--success-bg);color:var(--success-text)}
+.cp-actions{display:flex;gap:8px;flex-wrap:wrap}
+.cp-track{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.2fr);gap:24px;align-items:start}
+.cp-funnel{list-style:none;margin:0;padding:0;display:grid;gap:10px}
+.cp-funnel li{display:grid;grid-template-columns:70px minmax(0,1fr) 40px;gap:10px;align-items:center;font-size:var(--t-sm);color:var(--text-strong)}
+.cp-funnel b{text-align:right;font-variant-numeric:tabular-nums}
+.cp-funnel .bar-track div{background:var(--data-1)}
+.cp-kpis{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:0}
+.cp-kpis div{border:1px solid var(--line);border-radius:var(--r);padding:10px 12px}
+.cp-kpis dt{font-size:var(--t-xs);color:var(--text-muted)}
+.cp-kpis dd{margin:4px 0 0;font-size:var(--t-xl);font-weight:700;color:var(--text-strong);font-variant-numeric:tabular-nums}
+.cp-kpis dd.good{color:var(--success-text)}
+.cp-kpis small{display:block;font-size:var(--t-xs);font-weight:400;color:var(--text-muted);margin-top:2px}
+.cp-sim{margin:14px 0 0;font-size:var(--t-xs);color:var(--text-muted)}
+.cp-empty{text-align:center;padding:48px 20px;border:1px dashed var(--line);border-radius:var(--r);background:var(--surface);color:var(--text-muted)}
+.cp-empty h3{color:var(--text-strong);margin:10px 0 6px}
+.cp-empty p{margin:0 auto 16px;max-width:420px;font-size:var(--t-base)}
+@media(max-width:760px){.cp-track{grid-template-columns:1fr}.cp-form{grid-template-columns:1fr}}
+@media(prefers-reduced-motion:reduce){.cp-audience{transition:none}}
+.campaign-dialog .notice{margin:0 0 16px}

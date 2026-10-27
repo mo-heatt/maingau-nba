@@ -18,7 +18,7 @@ from .insights import customer_insights
 from .email_template import for_draft
 from .overview import overview as overview_data
 from .radar import radar as radar_data
-from . import orchestration
+from . import orchestration, campaigns
 from .timeline import timeline as timeline_data
 
 @asynccontextmanager
@@ -162,6 +162,41 @@ def marketing():return engine().marketing()
 @app.post('/api/marketing/preview')
 def marketing_preview(body:Settings):
     data=body.model_dump();data.pop('version');return call(orchestration.preview,engine(),data)
+
+class Campaign(BaseModel):
+    model_config=ConfigDict(extra='forbid')
+    name:str=Field(min_length=1,max_length=80)
+    offer:str
+    channel:str
+    value_tier:List[str]=[]
+    tenure:List[str]=[]
+    lines:List[str]=[]
+    city:List[str]=[]
+    starts:Optional[date]=None
+    ends:Optional[date]=None
+
+def campaign_call(fn,*args):
+    try:return fn(*args)
+    except KeyError:raise HTTPException(404,'Campaign not found')
+    except ValueError as exc:raise HTTPException(409,str(exc))
+
+@app.get('/api/campaigns/options')
+def campaign_options():return campaigns.options(engine())
+
+@app.get('/api/campaigns')
+def campaign_list():return campaigns.all_campaigns(engine())
+
+@app.post('/api/campaigns/preview')
+def campaign_preview(body:Campaign):return campaign_call(campaigns.preview,engine(),body.model_dump(mode='json'))
+
+@app.post('/api/campaigns')
+def campaign_create(body:Campaign):return campaign_call(campaigns.create,engine(),body.model_dump(mode='json'))
+
+@app.post('/api/campaigns/{cid}/launch')
+def campaign_launch(cid:int):return campaign_call(campaigns.launch,engine(),cid)
+
+@app.delete('/api/campaigns/{cid}')
+def campaign_delete(cid:int):return campaign_call(campaigns.delete,cid)
 
 @app.get('/api/replay')
 def replay():return preview(engine())
