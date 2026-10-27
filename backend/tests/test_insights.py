@@ -3,14 +3,14 @@ import pandas as pd
 import pytest
 from app.insights import customer_insights
 from app.ingestion import SNAPSHOT
-from app import database as db
 from app.service import EngineService
 
 
 @pytest.fixture(scope='module')
-def insight_engine():
-    if not db.path().exists(): pytest.skip('Local source database required')
-    return EngineService()
+def insight_engine(source_db):
+    with pytest.MonkeyPatch.context() as mp:
+        mp.setenv('NBA_DB_PATH',str(source_db))
+        yield EngineService()
 
 
 def test_mobile_chart_preserves_aggregate_without_inventing_months(insight_engine):
