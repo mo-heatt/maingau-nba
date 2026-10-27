@@ -222,5 +222,52 @@ main{max-width:1740px}.customer-layout{grid-template-columns:208px minmax(0,1fr)
 .tt-hint{opacity:.8}
 .tt-legend-hint{margin-left:auto;font-style:italic}
 .tl-item.tl-flash{background:var(--warning-bg);border-radius:var(--r);transition:background 400ms ease}
+
+/* Collapsible business lines, product details and upgrade ideas */
+.lines-tools{display:flex;align-items:center;gap:14px}
+.lines-tools>span{font-size:var(--t-xs);color:var(--text-muted)}
+.line-head{display:flex;align-items:flex-start;gap:10px;width:100%;background:none;border:0;padding:0;text-align:left;color:inherit;font:inherit;cursor:pointer}
+.line-head.static{cursor:default}
+.line-head svg:first-child{margin-top:2px;flex-shrink:0}
+.line-head>div{flex:1;min-width:0}
+.line-head b{font-size:var(--t-md);color:var(--text-strong)}
+.line-head small{display:block;color:var(--text-muted);margin-top:2px;font-size:var(--t-sm)}
+.line-card.in-use .line-head:hover b{color:var(--blue)}
+.line-chevron{margin-left:auto;flex-shrink:0;color:var(--text-muted);transition:transform 200ms ease}
+.line-card.expanded .line-chevron{transform:rotate(180deg)}
+.line-summary{list-style:none;padding:10px 0 0;margin:0;display:grid;gap:6px}
+.line-summary.hidden{display:none}
+.line-products{margin-top:12px;border-top:1px solid var(--line);padding-top:12px;display:grid;gap:8px}
+.line-product{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:10px 12px;border:1px solid var(--line);border-radius:var(--r);background:var(--surface-muted)}
+.line-product-main{display:flex;align-items:center;gap:9px;flex-wrap:wrap;min-width:0}
+.line-product-main b{font-size:var(--t-base);font-weight:400;color:var(--text-strong)}
+.line-product-main em{font-style:normal}
+.line-product-main small{font-size:var(--t-xs);color:var(--text-muted)}
+.line-product-main em.ok{color:var(--success-text)}
+.line-product-main em.warn{color:var(--warning-text)}
+.line-product-actions{display:flex;gap:7px;align-items:center;flex-wrap:wrap}
+.line-product-actions .button{font-size:var(--t-xs);padding:6px 9px}
+.product-detail-backdrop{position:fixed;inset:0;background:#00153073;z-index:40;display:grid;place-items:center;padding:20px}
+.product-detail{position:relative;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);max-width:640px;width:100%;max-height:86vh;overflow:auto;padding:24px;box-shadow:none}
+.product-detail-head{display:flex;justify-content:space-between;align-items:flex-start;gap:14px}
+.product-detail-head h2{font-size:var(--t-xl);letter-spacing:-.5px;margin:8px 0 4px;color:var(--text-strong)}
+.detail-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px 20px;margin:18px 0;padding:16px;background:var(--surface-muted);border-radius:var(--r)}
+.detail-grid>div>span{display:block;font-size:var(--t-xs);color:var(--text-muted);text-transform:uppercase;letter-spacing:.8px}
+.detail-grid>div>b{font-size:var(--t-md);font-weight:400;color:var(--text-strong)}
+.maingau-link{margin:4px 0 16px}
+.upgrade-ideas{display:grid;gap:10px}
+.upgrade-list{display:grid;gap:9px}
+.upgrade-card{border:1px solid var(--line);border-radius:var(--r);padding:13px 14px;background:var(--surface-muted)}
+.upgrade-card h4{margin:0 0 6px;font-size:var(--t-base);color:var(--text-strong)}
+.upgrade-card p{margin:4px 0 0;font-size:var(--t-sm);line-height:1.55;color:var(--text)}
+.upgrade-foot{display:flex;align-items:center;gap:5px;flex-wrap:wrap}
+.upgrade-foot a{display:inline-flex;gap:3px;align-items:center;color:var(--blue)}
+.upgrade-chat-hint{display:inline-flex;gap:4px;align-items:center;color:var(--text-muted)}
+.spin{animation:upgrade-spin 900ms linear infinite}
+@keyframes upgrade-spin{to{transform:rotate(360deg)}}
+.known-product-actions{display:flex;gap:7px;align-items:center;margin:10px 0 4px}
+.known-product-actions .button{font-size:var(--t-xs);padding:6px 9px}
+@media(max-width:640px){.detail-grid{grid-template-columns:1fr}.line-product{align-items:flex-start;flex-direction:column}}
+
 /* Top bar: the breadcrumb shortens instead of wrapping or pushing the controls off screen. */
 .topbar{min-width:0}.breadcrumb{min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.topbar-right{flex-shrink:0}
