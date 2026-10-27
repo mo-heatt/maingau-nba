@@ -83,6 +83,31 @@ def test_named_customer_comes_with_calls_contract_and_portal_visits(engine):
     ('Was ist los mit MG-100004?', 'German'),
     ('Why is MG-100004 not getting an offer?', 'English'),
     ('What was the uplift?', 'English'),
+    ('Was ist los?', 'German'),
+    ('Wie viele Angebote gibt es?', 'German'),
+    ('How many offers?', 'English'),
+    ('What did the customer say in their last contact, and what was promised?', 'English'),
+    ('Suggest an opening sentence for a call (Du).', 'English'),
 ])
 def test_answer_language_follows_the_question(question, expected):
     assert assistant.language(question) == expected
+
+
+def test_customer_chat_sends_only_that_customer(engine, fake_provider):
+    assistant.answer(engine, [{'role': 'user', 'content': 'Was ist los?'}], 'MG-100562')
+    system = fake_provider['body']['messages'][0]['content']
+    assert system.startswith(assistant.CUSTOMER_INSTRUCTIONS)
+    assert 'dritten Mal' in system and '"top_recommendations"' not in system and 'MG-100004' not in system
+    assert fake_provider['body']['messages'][-1]['content'].endswith('(Answer in German.)')
+
+
+def test_customer_packet_has_everything_the_profile_shows(engine):
+    c = assistant.customer_packet(engine, 'MG-100004')['customer']
+    assert c['case_radar']['days_waiting'] > 0 and c['open_tickets'] and c['all_options'] and c['channels']
+    assert c['rules']['contact_limit_30d'] >= 1
+
+
+def test_unknown_customer_is_rejected_before_calling_the_provider(engine, fake_provider):
+    with pytest.raises(KeyError):
+        assistant.answer(engine, [{'role': 'user', 'content': 'Hi'}], 'MG-999999')
+    assert 'body' not in fake_provider
