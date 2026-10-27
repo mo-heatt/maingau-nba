@@ -68,6 +68,18 @@ def apply_event(s, e, P):
         return "Call transcript arrived – tone re-checked"
     if t == "agent_nba_feedback":
         return f"Agent {pl.get('agent_action')} suggestion {pl.get('suggested_offer_id')} ({pl.get('dismiss_reason')})"
+    if t == "portal_login":
+        # Feeds the team rule "will they see it soon?": a portal pop-up needs 3+ logins in 90 days.
+        s["portal_sessions_90d"] = s.get("portal_sessions_90d", 0) + 1
+        return f"Portal login ({pl.get('client', 'web')}) – {s['portal_sessions_90d']} in 90 days"
+    if t == "mobile_data_threshold":
+        pct = int(pl.get("threshold_pct") or 0)
+        if pct >= 100:  # only a reached limit counts toward the "data limit reached 2+ times" signal
+            n = int((s["signals"].get("data_limit_reached") or {}).get("value", 0)) + 1
+            if n >= 2:
+                s["signals"]["data_limit_reached"] = {"value": n, "class": BEHAVIOURAL}
+                s["evidence"]["data_limit_reached"].append(f"Data limit reached {n}× in 3 months (live event)")
+        return f"Mobile data at {pct}% of the plan" + ("" if pct >= 100 else " – warning only, limit not reached")
     if t == "hems_device_offline":
         s["signals"]["hems_offline"] = {"value": True, "class": CONTRACT}
         return "HEMS gateway went offline"

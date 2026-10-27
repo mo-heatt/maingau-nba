@@ -13,6 +13,16 @@ const steps: [string, string, string][] = [
   ['7', 'Preview & review', 'Decisions and materials are saved in SQLite. A stable 10% control group is held back. All output is preview-only: no external sending.'],
 ];
 
+// Why each remaining event type is logged but does not change a decision.
+const IGNORED: Record<string, string> = {
+  page_viewed: 'Not used yet. A visit to the offers or tariff page could become an interest signal later.',
+  newsletter_opened: 'Opens are unreliable (Apple Mail opens automatically); clicks are used instead.',
+  charge_session_started: 'Only failed charging sessions change a decision.',
+  charge_session_completed: 'Only failed charging sessions change a decision.',
+  meter_reading_submitted: 'Routine meter reading; no decision depends on it.',
+  hems_daily_summary: 'One day of solar data; the engine uses the longer usage profile.',
+};
+
 export default function Method({revision}: {revision: number}) {
   const {data: r, error} = useApi<Replay>('/replay', revision);
   return <>
@@ -43,7 +53,7 @@ export default function Method({revision}: {revision: number}) {
       <div className="metrics three"><Metric label="Source events" value={r.source_events} /><Metric label="Duplicates skipped" value={r.duplicates_skipped} /><Metric label="Decisions changed" value={r.changed} /></div>
       <p className="small-text muted">{r.note}</p>
       <div className="table-wrap"><table><thead><tr><th>Received</th><th>Customer</th><th>Event</th><th>Before → after</th></tr></thead><tbody>{r.changes.filter(c => c.changed).map(c => <tr key={c.event_id}><td>{c.ingested_at}</td><td>{c.customer_id}</td><td>{c.note}</td><td>{c.before} → {c.after}</td></tr>)}</tbody></table></div>
-      <details><summary>Event types not handled by this prototype</summary><pre>{JSON.stringify(r.unhandled_types, null, 2)}</pre></details></>}
+      <details><summary>Event types that never change a decision ({Object.values(r.unhandled_types).reduce((a, b) => a + b, 0)} events)</summary><ul className="ignored-events">{Object.entries(r.unhandled_types).map(([t, n]) => <li key={t}><b>{t.replaceAll('_', ' ')}</b> · {n}<span>{IGNORED[t] || 'Not used by this prototype.'}</span></li>)}</ul></details></>}
     </Panel>
   </>;
 }

@@ -162,3 +162,18 @@ def test_portal_popup_needs_regular_logins():
         return next(c["factor"] for c in channel_options(s, A, P) if c["channel"] == "portal_popup")
     assert factor(PORTAL_REGULAR_LOGINS_90D) == 1.3
     assert factor(1) == 0.6 and factor(0) == 0.6
+
+
+def test_portal_login_event_counts_toward_popup_rule():
+    from app.engine.events import apply_event
+    s = {"portal_sessions_90d": 2, "signals": {}, "evidence": {}}
+    note = apply_event(s, {"event_type": "portal_login", "payload": {"client": "web"}}, {})
+    assert s["portal_sessions_90d"] == 3 and "3 in 90 days" in note
+
+
+def test_data_warning_below_limit_does_not_create_signal():
+    from collections import defaultdict
+    from app.engine.events import apply_event
+    s = {"signals": {}, "evidence": defaultdict(list)}
+    note = apply_event(s, {"event_type": "mobile_data_threshold", "payload": {"threshold_pct": 80}}, {})
+    assert "data_limit_reached" not in s["signals"] and "warning only" in note
