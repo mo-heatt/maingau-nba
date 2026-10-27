@@ -1,0 +1,731 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>MAINGAU NBA — Backend Architecture</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/ScrollTrigger.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/MotionPathPlugin.min.js"></script>
+<style>
+  :root {
+    --navy: #002657;
+    --navy-deep: #0a315d;
+    --navy-ink: #071f3d;
+    --yellow: #ffe500;
+    --paper: #eef3f9;
+    --card: #ffffff;
+    --line: #d7e1ee;
+    --muted: #52677f;
+    --faint: #647d9a;
+    --green: #16836a;
+    --green-bg: #e2f3ec;
+    --red: #b3261e;
+    --red-bg: #fdeaea;
+    --font-display: 'Outfit', sans-serif;
+    --font-body: 'Inter', sans-serif;
+    --font-mono: 'IBM Plex Mono', monospace;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: auto; }
+  body {
+    font-family: var(--font-body);
+    background: var(--paper);
+    color: var(--navy-ink);
+    overflow-x: hidden;
+  }
+  ::selection { background: var(--yellow); color: var(--navy); }
+
+  /* ---------- top bar ---------- */
+  .topbar {
+    position: fixed; inset: 0 0 auto 0; z-index: 90;
+    display: flex; align-items: center; gap: 20px;
+    padding: 18px 34px;
+    pointer-events: none;
+  }
+  .wordmark { display: inline-flex; align-items: center; gap: 9px; pointer-events: auto; }
+  .wordmark b { color: #fff; font-family: var(--font-display); font-size: 21px; letter-spacing: .8px; font-weight: 700; }
+  .wordmark i { font-style: normal; background: var(--yellow); color: var(--navy); border-radius: 50%; width: 22px; height: 22px; display: grid; place-items: center; font-weight: 700; font-size: 15px; font-family: var(--font-display); }
+  .topbar .crumb {
+    margin-left: auto; font-family: var(--font-mono); font-size: 13px; letter-spacing: 2.5px;
+    text-transform: uppercase; color: #93a9c4; pointer-events: auto;
+  }
+  .progress { position: fixed; top: 0; left: 0; right: 0; height: 3px; z-index: 95; background: rgba(255,255,255,.12); }
+  .progress b { display: block; height: 100%; background: var(--yellow); transform-origin: 0 50%; transform: scaleX(0); }
+
+  /* ---------- side rail ---------- */
+  .rail { position: fixed; right: 26px; top: 50%; transform: translateY(-50%); z-index: 90; display: grid; gap: 14px; }
+  .rail a { display: flex; align-items: center; justify-content: flex-end; gap: 10px; text-decoration: none; }
+  .rail .lbl {
+    font-family: var(--font-mono); font-size: 12px; letter-spacing: 1.5px; text-transform: uppercase;
+    color: var(--faint); opacity: 0; transform: translateX(6px); transition: all .25s ease; white-space: nowrap;
+  }
+  .rail .dot { width: 9px; height: 9px; border-radius: 50%; background: #b7c6d8; transition: all .25s ease; flex-shrink: 0; }
+  .rail a:hover .lbl { opacity: 1; transform: none; }
+  .rail a.active .dot { background: var(--navy); box-shadow: 0 0 0 4px rgba(0,38,87,.14); transform: scale(1.25); }
+  .rail.on-dark .dot { background: rgba(255,255,255,.35); }
+  .rail.on-dark a.active .dot { background: var(--yellow); box-shadow: 0 0 0 4px rgba(255,229,0,.18); }
+  .rail.on-dark .lbl { color: #8ba3c2; }
+
+  /* ---------- hero / outro (dark) ---------- */
+  .dark-sec { position: relative; background: var(--navy); color: #fff; overflow: hidden; }
+  .dark-sec .glow { position: absolute; inset: 0; pointer-events: none; background:
+    radial-gradient(1000px 640px at 80% 12%, rgba(255,229,0,.10), transparent 62%),
+    radial-gradient(1300px 900px at 8% 92%, rgba(64,120,190,.28), transparent 65%); }
+  .gridbg { position: absolute; inset: 0; pointer-events: none; opacity: .5;
+    background-image: linear-gradient(rgba(255,255,255,.045) 1px, transparent 1px),
+                      linear-gradient(90deg, rgba(255,255,255,.045) 1px, transparent 1px);
+    background-size: 72px 72px; }
+
+  .hero { min-height: 100vh; display: flex; flex-direction: column; justify-content: center; padding: 0 8vw; }
+  .hero .kick { font-family: var(--font-mono); font-size: 15px; letter-spacing: 5px; text-transform: uppercase; color: #8ba3c2; margin-bottom: 26px; display: flex; align-items: center; gap: 16px; }
+  .hero .kick::before { content: ""; width: 44px; height: 2px; background: var(--yellow); display: inline-block; }
+  .hero h1 { font-family: var(--font-display); font-size: clamp(56px, 8.6vw, 128px); font-weight: 800; letter-spacing: -0.035em; line-height: 1.0; }
+  .hero h1 em { font-style: normal; color: var(--yellow); }
+  .hero .lede { font-size: clamp(17px, 1.5vw, 22px); color: #a8bad1; max-width: 640px; line-height: 1.65; margin-top: 30px; }
+  .hero .chips { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 44px; }
+  .scrollhint { position: absolute; bottom: 34px; left: 50%; transform: translateX(-50%); display: grid; justify-items: center; gap: 10px; font-family: var(--font-mono); font-size: 12px; letter-spacing: 3px; color: #7d95b4; text-transform: uppercase; }
+  .scrollhint .line { width: 2px; height: 44px; background: linear-gradient(var(--yellow), transparent); animation: drip 1.6s ease-in-out infinite; transform-origin: top; }
+  @keyframes drip { 0% { transform: scaleY(0); } 45% { transform: scaleY(1); } 100% { transform: scaleY(0); transform-origin: bottom; } }
+
+  .chip {
+    display: inline-flex; align-items: center; gap: 10px;
+    background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.16);
+    border-radius: 999px; padding: 10px 20px; font-family: var(--font-mono); font-size: 14px; color: #dbe6f2;
+  }
+  .chip .led { width: 8px; height: 8px; border-radius: 50%; background: var(--yellow); animation: pulse 2.2s ease-in-out infinite; }
+  @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: .35; } }
+
+  /* ---------- chapters ---------- */
+  .chapter { position: relative; min-height: 100vh; }
+  .pinwrap { min-height: 100vh; display: flex; flex-direction: column; justify-content: center; padding: 90px 0 40px; }
+  .chapter-head { padding: 0 8vw; margin-bottom: 34px; }
+  .chapter-head .kick { font-family: var(--font-mono); font-size: 14px; letter-spacing: 4px; text-transform: uppercase; color: var(--faint); margin-bottom: 12px; display: flex; align-items: baseline; gap: 14px; }
+  .chapter-head .kick b { color: var(--navy); font-weight: 600; }
+  .chapter-head .kick .num { font-size: 30px; color: var(--navy); opacity: .18; font-weight: 600; letter-spacing: 0; }
+  .chapter-head h2 { font-family: var(--font-display); font-size: clamp(34px, 3.6vw, 54px); font-weight: 700; letter-spacing: -0.025em; color: var(--navy-deep); }
+  .chapter-head .sub { font-size: 18px; color: var(--muted); margin-top: 10px; max-width: 760px; line-height: 1.55; }
+
+  .stage-outer { will-change: transform; }
+  .stage { position: relative; width: 1720px; height: 620px; margin: 0 auto; transform-origin: top center; }
+  .stage svg.wires { position: absolute; inset: 0; overflow: visible; }
+  .stage svg.wires path { fill: none; stroke: #9db2c9; stroke-width: 3; }
+  .stage svg.wires path.hot { stroke: var(--navy); stroke-width: 3.5; }
+  .stage svg.wires path.dashed { stroke-dasharray: 8 10; }
+  .stage svg.wires path.alert { stroke: var(--red); }
+
+  .node {
+    position: absolute; background: var(--card); border: 1px solid var(--line); border-radius: 18px;
+    padding: 24px 28px; box-shadow: 0 14px 40px rgba(0,38,87,.08);
+    transition: transform .3s ease, box-shadow .3s ease, border-color .3s ease;
+  }
+  .node:hover { transform: translateY(-5px); box-shadow: 0 22px 54px rgba(0,38,87,.14); border-color: #b9cbe0; }
+  .node h3 { font-family: var(--font-display); font-size: 26px; font-weight: 600; color: var(--navy-deep); display: flex; align-items: center; gap: 12px; }
+  .node p { font-size: 17px; color: var(--muted); margin-top: 8px; line-height: 1.5; }
+  .node .dot { width: 13px; height: 13px; border-radius: 50%; background: var(--yellow); border: 3px solid var(--navy); flex-shrink: 0; }
+  .node.hero-node { border: 2px solid var(--navy); box-shadow: 0 18px 50px rgba(0,38,87,.16); }
+  .node.dim .dot { background: #c6d3e2; }
+  .node.tint-green { background: #f2f8f4; border-color: #bcd9c9; }
+  .node.tint-green .dot { background: #8fd6b8; border-color: var(--green); }
+
+  .chip.light { background: var(--card); border-color: var(--line); color: var(--ink); color: var(--navy-ink); }
+  .chip.light .led { background: var(--green); animation: none; }
+  .footchips { position: absolute; left: 0; right: 0; bottom: -66px; display: flex; gap: 14px; flex-wrap: wrap; justify-content: center; }
+  .chip.ok-green { background: var(--green-bg); border-color: #bcd9c9; color: #0f5c47; }
+  .chip.ok-green .led { background: var(--green); animation: none; }
+  .chip.yellow { background: var(--yellow); border-color: #e0c400; color: var(--navy); font-weight: 600; }
+  .chip.yellow .led { background: var(--navy); }
+
+  .packet { position: absolute; width: 18px; height: 18px; border-radius: 50%; background: var(--yellow); border: 4px solid var(--navy); box-shadow: 0 4px 14px rgba(0,38,87,.35); z-index: 5; opacity: 0; }
+  .packet.green { background: #bfe8d5; }
+
+  .badge { display: inline-block; font-family: var(--font-mono); font-size: 13px; letter-spacing: 2px; padding: 6px 14px; border-radius: 8px; }
+  .badge.ok { background: var(--green-bg); color: var(--green); }
+  .badge.stale { background: var(--red-bg); color: var(--red); }
+
+  /* data chapter */
+  .src-col { position: absolute; left: 0; top: 10px; display: grid; gap: 12px; }
+  .src { background: var(--card); border: 1px solid var(--line); border-left: 5px solid var(--yellow); border-radius: 10px; padding: 11px 18px; font-family: var(--font-mono); font-size: 16px; color: var(--navy-ink); white-space: nowrap; box-shadow: 0 8px 22px rgba(0,38,87,.06); }
+
+  /* engine chapter */
+  .step-col { position: absolute; top: 40px; width: 340px; }
+  .step-col .n { font-family: var(--font-mono); font-size: 13px; letter-spacing: 3px; color: var(--faint); margin-bottom: 10px; }
+  .step-col .node { position: relative; }
+
+  /* materials channels */
+  .chan-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-top: 16px; }
+  .chan { background: var(--paper); border: 1px solid var(--line); border-radius: 12px; padding: 13px 16px; font-size: 17px; font-weight: 600; color: var(--navy-deep); display: flex; align-items: center; gap: 11px; }
+  .chan small { display: block; font-size: 13px; font-weight: 400; color: var(--muted); margin-top: 1px; }
+  .chan .ic { width: 32px; height: 32px; border-radius: 9px; background: var(--navy); color: var(--yellow); display: grid; place-items: center; font-family: var(--font-mono); font-size: 15px; flex-shrink: 0; }
+
+  /* cache chapter */
+  .formula {
+    position: absolute; left: 0; top: 0; background: var(--navy); color: var(--yellow); border-radius: 16px;
+    padding: 26px 36px; font-family: var(--font-mono); font-size: 21px; letter-spacing: .4px; display: inline-block;
+    box-shadow: 0 18px 44px rgba(0,38,87,.22);
+  }
+  .formula b { color: #fff; font-weight: 600; }
+  .mat-row {
+    position: absolute; display: flex; align-items: center; gap: 20px; background: var(--card);
+    border: 1px solid var(--line); border-radius: 14px; padding: 19px 26px; font-family: var(--font-mono);
+    font-size: 18px; color: var(--navy-ink); box-shadow: 0 10px 28px rgba(0,38,87,.07);
+  }
+  .mat-row .badge { margin-left: auto; }
+  .flip-btn {
+    position: absolute; display: inline-flex; align-items: center; gap: 12px; cursor: pointer;
+    background: var(--navy); color: #fff; border: none; border-radius: 999px; padding: 15px 28px;
+    font-family: var(--font-display); font-size: 18px; font-weight: 600; letter-spacing: .2px;
+    box-shadow: 0 14px 34px rgba(0,38,87,.28); transition: transform .25s ease, box-shadow .25s ease;
+  }
+  .flip-btn:hover { transform: translateY(-3px) scale(1.02); box-shadow: 0 20px 44px rgba(0,38,87,.36); }
+  .flip-btn .arr { font-family: var(--font-mono); color: var(--yellow); }
+
+  /* ship chapter */
+  .job { display: flex; align-items: center; gap: 11px; font-family: var(--font-mono); font-size: 15px; color: var(--navy-ink); background: var(--paper); border: 1px solid var(--line); border-radius: 10px; padding: 10px 14px; margin-top: 10px; }
+  .job .led { width: 9px; height: 9px; border-radius: 50%; background: var(--green); }
+
+  /* ---------- outro ---------- */
+  .outro { min-height: 100vh; display: flex; flex-direction: column; justify-content: center; padding: 0 8vw; }
+  .outro h2 { font-family: var(--font-display); font-size: clamp(44px, 6.4vw, 96px); font-weight: 800; letter-spacing: -0.03em; line-height: 1.05; margin: 30px 0 24px; }
+  .outro h2 em { font-style: normal; color: var(--yellow); }
+  .outro .lede { font-size: clamp(16px, 1.4vw, 21px); color: #a8bad1; max-width: 720px; line-height: 1.65; }
+  .outro .chips { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 44px; }
+  .outro a.chip { text-decoration: none; transition: all .25s ease; pointer-events: auto; }
+  .outro a.chip:hover { background: rgba(255,229,0,.14); border-color: rgba(255,229,0,.5); }
+
+  @media (max-width: 900px) {
+    .rail { display: none; }
+    .stage { transform: scale(.42); }
+  }
+</style>
+</head>
+<body>
+
+<div class="progress"><b id="progressbar"></b></div>
+
+<header class="topbar">
+  <span class="wordmark"><b>MAINGAU</b><i>+</i></span>
+  <span class="crumb" id="crumb">backend architecture</span>
+</header>
+
+<nav class="rail" id="rail"></nav>
+
+<!-- ================= HERO ================= -->
+<section class="dark-sec hero" id="sec-hero" data-crumb="backend architecture" data-nav="Intro">
+  <div class="glow" id="hero-glow"></div>
+  <div class="gridbg"></div>
+  <svg width="100%" height="100%" style="position:absolute;inset:0;opacity:.5" viewBox="0 0 1920 1080" preserveAspectRatio="xMidYMid slice">
+    <path id="hero-p1" d="M -50 800 C 400 620, 700 980, 1150 780 S 1900 560, 2000 700" fill="none" stroke="rgba(140,170,205,.25)" stroke-width="2"/>
+    <path id="hero-p2" d="M -50 300 C 500 180, 900 420, 1400 240 S 1950 140, 2000 260" fill="none" stroke="rgba(140,170,205,.2)" stroke-width="2"/>
+  </svg>
+  <div class="packet" id="hero-pk1"></div>
+  <div class="packet green" id="hero-pk2"></div>
+
+  <div class="hero-inner" style="position:relative;z-index:2">
+    <div class="kick" data-hero>Hackathon demo · snapshot 30 Sep 2026</div>
+    <h1 data-hero>Backend <em>architecture</em></h1>
+    <p class="lede" data-hero>How customer data and requests move through the NBA console — from raw records to a checked, consent-gated draft. Scroll to follow the data.</p>
+    <div class="chips" data-hero>
+      <span class="chip"><span class="led"></span>FastAPI</span>
+      <span class="chip"><span class="led"></span>single Python engine</span>
+      <span class="chip"><span class="led"></span>Hessian AI · vllm/Kolibri-1</span>
+    </div>
+  </div>
+  <div class="scrollhint"><span>scroll</span><span class="line"></span></div>
+</section>
+
+<!-- ================= 01 BIG PICTURE ================= -->
+<section class="chapter" id="sec-flow" data-crumb="01 · big picture" data-nav="Big picture">
+  <div class="pinwrap">
+    <div class="chapter-head">
+      <div class="kick"><span class="num">01</span><b>big picture</b></div>
+      <h2>One request, one engine</h2>
+      <p class="sub">The browser talks to a single FastAPI process. The decision engine holds everything in memory — no per-request database hits. AI is a side call, not a link in the chain.</p>
+    </div>
+    <div class="stage-outer"><div class="stage" data-stage>
+      <svg class="wires" viewBox="0 0 1720 620">
+        <path id="f1" data-step="1" pathLength="1" class="hot" d="M 360 210 L 590 210"/>
+        <path id="f2" data-step="2" pathLength="1" class="hot" d="M 950 210 L 1180 210"/>
+        <path id="f3" data-step="3" pathLength="1" d="M 1290 320 L 1290 430"/>
+        <path id="f4" data-step="4" pathLength="1" d="M 1180 300 C 980 380, 780 380, 630 285"/>
+        <path id="f5" data-step="4" pathLength="1" class="dashed" d="M 1450 320 C 1520 380, 1560 400, 1585 430"/>
+      </svg>
+      <div class="node" data-step="1" style="left:40px;top:140px;width:320px;">
+        <h3><span class="dot"></span>Browser UI</h3>
+        <p>React + Vite · :5173<br>static build served by the API</p>
+      </div>
+      <div class="node hero-node" data-step="1" style="left:590px;top:130px;width:360px;">
+        <h3><span class="dot"></span>FastAPI</h3>
+        <p>uvicorn · :8001 · REST/JSON<br>every call validated server-side</p>
+      </div>
+      <div class="node hero-node" data-step="2" style="left:1180px;top:120px;width:320px;">
+        <h3><span class="dot"></span>Decision engine</h3>
+        <p>one Python process · full state in memory</p>
+      </div>
+      <div class="node dim" data-step="3" style="left:1150px;top:430px;width:280px;">
+        <h3><span class="dot"></span>SQLite</h3>
+        <p>single file · loaded once at startup</p>
+      </div>
+      <div class="node dim" data-step="4" style="left:1450px;top:430px;width:270px;">
+        <h3><span class="dot"></span>Hessian AI</h3>
+        <p>stateless HTTP · JSON schema</p>
+      </div>
+      <div class="packet" id="pk-flow"></div>
+      <div class="packet green" id="pk-back"></div>
+      <div class="footchips" data-step="4">
+        <span class="chip light"><span class="led"></span>750 customers · snapshot 30 Sep 2026</span>
+        <span class="chip light"><span class="led"></span>API key from env — never in git</span>
+      </div>
+    </div></div>
+  </div>
+</section>
+
+<!-- ================= 02 DATA LAYER ================= -->
+<section class="chapter" id="sec-data" data-crumb="02 · data layer" data-nav="Data">
+  <div class="pinwrap">
+    <div class="chapter-head">
+      <div class="kick"><span class="num">02</span><b>data layer</b></div>
+      <h2>Imported once, served from memory</h2>
+      <p class="sub">Audited scripts load the synthetic demo source into SQLite — the only persisted state. At startup the server builds pandas frames from it; reads never touch SQLite again.</p>
+    </div>
+    <div class="stage-outer"><div class="stage" data-stage>
+      <svg class="wires" viewBox="0 0 1720 620">
+        <path data-step="2" pathLength="1" d="M 380 310 L 580 310"/>
+        <path data-step="3" pathLength="1" class="hot" d="M 950 310 L 1150 310"/>
+        <path data-step="4" pathLength="1" class="hot" d="M 1320 400 C 1100 520, 860 520, 700 500"/>
+      </svg>
+      <div class="src-col" data-step="1">
+        <div class="src">energy_contracts</div>
+        <div class="src">mobile_contracts</div>
+        <div class="src">shop_orders</div>
+        <div class="src">tickets &amp; CSAT</div>
+        <div class="src">consent records</div>
+        <div class="src">customer master</div>
+      </div>
+      <div class="node" data-step="2" style="left:580px;top:230px;width:370px;">
+        <h3><span class="dot"></span>Import</h3>
+        <p>audited scripts · synthetic demo source<br>one-way, reproducible</p>
+      </div>
+      <div class="node" data-step="3" style="left:1150px;top:230px;width:340px;">
+        <h3><span class="dot"></span>SQLite</h3>
+        <p>one file · the only persisted state</p>
+      </div>
+      <div class="node hero-node tint-green" data-step="4" style="left:180px;top:420px;width:520px;">
+        <h3><span class="dot"></span>In-memory snapshot</h3>
+        <p>pandas frames built at startup — reads never touch SQLite</p>
+      </div>
+      <div class="footchips" data-step="4">
+        <span class="chip light"><span class="led"></span>restart = reload from SQLite · no re-import</span>
+        <span class="chip light"><span class="led"></span>writes are audited · source consent is never edited</span>
+      </div>
+    </div></div>
+  </div>
+</section>
+
+<!-- ================= 03 DECISION ENGINE ================= -->
+<section class="chapter" id="sec-engine" data-crumb="03 · decision engine" data-nav="Engine">
+  <div class="pinwrap">
+    <div class="chapter-head">
+      <div class="kick"><span class="num">03</span><b>decision engine</b></div>
+      <h2>Deterministic by design</h2>
+      <p class="sub">Four pure steps from facts to a recommended action. Same input, same decision — no randomness. A control group is held out so uplift is measurable.</p>
+    </div>
+    <div class="stage-outer"><div class="stage" data-stage>
+      <svg class="wires" viewBox="0 0 1720 620">
+        <path data-step="2" pathLength="1" class="hot" d="M 345 190 L 435 190"/>
+        <path data-step="3" pathLength="1" class="hot" d="M 785 190 L 875 190"/>
+        <path data-step="4" pathLength="1" class="hot" d="M 1225 190 L 1315 190"/>
+      </svg>
+      <div class="step-col" data-step="1" style="left:0px;">
+        <div class="n">STEP 1</div>
+        <div class="node"><h3><span class="dot"></span>Signals</h3><p>facts with recorded evidence per customer — contracts, tickets, consent</p></div>
+      </div>
+      <div class="step-col" data-step="2" style="left:440px;">
+        <div class="n">STEP 2</div>
+        <div class="node"><h3><span class="dot"></span>Scoring</h3><p>p_accept · ΔCLV · churn risk — per offer, per channel</p></div>
+      </div>
+      <div class="step-col" data-step="3" style="left:880px;">
+        <div class="n">STEP 3</div>
+        <div class="node"><h3><span class="dot"></span>Arbitration</h3><p>policy weights · min ΔCLV · blocked lists</p></div>
+      </div>
+      <div class="step-col" data-step="4" style="left:1320px;">
+        <div class="n">STEP 4</div>
+        <div class="node hero-node"><h3><span class="dot"></span>Baseline NBA</h3><p>action · product · channel — control group held out for measurement</p></div>
+      </div>
+      <div class="footchips" data-step="4">
+        <span class="chip light"><span class="led"></span>same input → same decision · no randomness</span>
+        <span class="chip light"><span class="led"></span>reviews &amp; overrides are separate records — nothing is rewritten</span>
+      </div>
+    </div></div>
+  </div>
+</section>
+
+<!-- ================= 04 AI LAYER ================= -->
+<section class="chapter" id="sec-ai" data-crumb="04 · ai layer" data-nav="AI layer">
+  <div class="pinwrap">
+    <div class="chapter-head">
+      <div class="kick"><span class="num">04</span><b>AI layer</b></div>
+      <h2>AI on top — never in charge</h2>
+      <p class="sub">The model receives an evidence-linked policy packet and must answer in strict JSON. Validation checks every quote and number; bounded repair allows one draft and two fixes — then it stops.</p>
+    </div>
+    <div class="stage-outer"><div class="stage" data-stage>
+      <svg class="wires" viewBox="0 0 1720 620">
+        <path data-step="2" pathLength="1" class="hot" d="M 480 210 L 660 210"/>
+        <path data-step="3" pathLength="1" class="hot" d="M 1050 210 L 1230 210"/>
+        <path data-step="3" pathLength="1" class="dashed alert" d="M 1400 320 C 1380 470, 1000 470, 940 330"/>
+        <path data-step="4" pathLength="1" class="hot" d="M 1500 310 L 1500 430 L 1000 520 L 620 520"/>
+      </svg>
+      <div class="node" data-step="1" style="left:110px;top:130px;width:370px;">
+        <h3><span class="dot"></span>Policy packet</h3>
+        <p>facts F1… with quotes · full catalogue · channel policy · customer language</p>
+      </div>
+      <div class="node hero-node" data-step="2" style="left:660px;top:120px;width:390px;">
+        <h3><span class="dot"></span>Hessian AI</h3>
+        <p>vllm/Kolibri-1 · strict JSON schema in and out</p>
+      </div>
+      <div class="node" data-step="3" style="left:1230px;top:110px;width:380px;">
+        <h3><span class="dot" style="background:#f3b9b5;border-color:var(--red);"></span>Validation</h3>
+        <p>evidence quotes exact · numbers match · language guard DE/EN</p>
+      </div>
+      <div class="chip light" data-step="3" style="position:absolute;left:690px;top:390px;">≤ 2 repairs, then stop</div>
+      <div class="node hero-node tint-green" data-step="4" style="left:560px;top:440px;width:440px;">
+        <h3><span class="dot"></span>Validated proposal</h3>
+        <p>stored with usage &amp; attempts — the baseline NBA is untouched</p>
+      </div>
+      <div class="footchips" data-step="4">
+        <span class="chip light"><span class="led"></span>bounded: 1 draft + 2 repairs → stop</span>
+        <span class="chip light"><span class="led"></span>AI never mutates the baseline decision</span>
+      </div>
+    </div></div>
+  </div>
+</section>
+
+<!-- ================= 05 MATERIALS ================= -->
+<section class="chapter" id="sec-materials" data-crumb="05 · materials" data-nav="Materials">
+  <div class="pinwrap">
+    <div class="chapter-head">
+      <div class="kick"><span class="num">05</span><b>materials</b></div>
+      <h2>From decision to draft</h2>
+      <p class="sub">Consent and channel policy gate everything. One generation call renders the customer's language — DE or EN — per channel. Drafts are preview and download only.</p>
+    </div>
+    <div class="stage-outer"><div class="stage" data-stage>
+      <svg class="wires" viewBox="0 0 1720 620">
+        <path data-step="2" pathLength="1" class="hot" d="M 500 260 L 610 260"/>
+        <path data-step="3" pathLength="1" class="hot" d="M 1170 260 L 1280 260"/>
+      </svg>
+      <div class="node" data-step="1" style="left:110px;top:160px;width:390px;">
+        <h3><span class="dot"></span>Gates first</h3>
+        <p>consent · channel policy · contact limits<br>customer language DE / EN</p>
+      </div>
+      <div class="node" data-step="2" style="left:610px;top:90px;width:560px;">
+        <h3><span class="dot"></span>One generation per channel</h3>
+        <div class="chan-grid">
+          <div class="chan"><span class="ic">@</span><span>Email<small>branded HTML</small></span></div>
+          <div class="chan"><span class="ic">☎</span><span>Call kit<small>script + objections</small></span></div>
+          <div class="chan"><span class="ic">›</span><span>SMS<small>≤ 160 chars</small></span></div>
+          <div class="chan"><span class="ic">◉</span><span>Push<small>short copy</small></span></div>
+          <div class="chan"><span class="ic">▣</span><span>Portal<small>web offer</small></span></div>
+          <div class="chan"><span class="ic">✉</span><span>Newsletter<small>consent-gated</small></span></div>
+        </div>
+      </div>
+      <div class="node" data-step="3" style="left:1280px;top:150px;width:330px;">
+        <h3><span class="dot"></span>Draft</h3>
+        <p>rendered preview · .eml download<br>every claim checked server-side</p>
+      </div>
+      <div class="footchips" data-step="4">
+        <span class="chip ok-green"><span class="led"></span>no send connector — nothing is ever sent</span>
+        <span class="chip light"><span class="led"></span>demo responses are audit events, not messages</span>
+      </div>
+    </div></div>
+  </div>
+</section>
+
+<!-- ================= 06 CACHING ================= -->
+<section class="chapter" id="sec-cache" data-crumb="06 · caching &amp; invalidation" data-nav="Cache">
+  <div class="pinwrap">
+    <div class="chapter-head">
+      <div class="kick"><span class="num">06</span><b>caching &amp; invalidation</b></div>
+      <h2>Fingerprints, not hope</h2>
+      <p class="sub">Every generated material is keyed by a digest of everything that matters — including the customer's language. Try it: flip the customer's language and watch the cache invalidate.</p>
+    </div>
+    <div class="stage-outer"><div class="stage" data-stage>
+      <div class="formula" data-step="1">identity = digest(<b>decision · input · quote · channel · version · language</b>)</div>
+      <div class="mat-row" data-step="2" style="left:0px;top:220px;width:980px;">
+        outreach · email · <b>de</b> · v5
+        <span class="badge ok" data-debadge>CURRENT</span>
+        <span class="badge stale" data-enbadge style="display:none;">STALE</span>
+      </div>
+      <div class="mat-row" data-step="2" style="left:0px;top:330px;width:980px;">
+        newsletter · editorial · <b>de</b>
+        <span class="badge ok" data-debadge>CURRENT</span>
+        <span class="badge stale" data-enbadge style="display:none;">STALE</span>
+      </div>
+      <button class="flip-btn" id="langflip" data-step="3" style="left:1080px;top:250px;">
+        customer language <span class="arr">de → en</span>
+      </button>
+      <div class="footchips" data-step="3">
+        <span class="chip yellow"><span class="led"></span>saved German copy is not current for an English customer — regenerate</span>
+      </div>
+    </div></div>
+  </div>
+</section>
+
+<!-- ================= 07 DELIVERY ================= -->
+<section class="chapter" id="sec-ship" data-crumb="07 · delivery" data-nav="Delivery">
+  <div class="pinwrap">
+    <div class="chapter-head">
+      <div class="kick"><span class="num">07</span><b>delivery</b></div>
+      <h2>Ship loop</h2>
+      <p class="sub">Three CI jobs guard every pull request. After merge the VM watcher pulls dev or prod within two minutes — same compose files, same checks as locally.</p>
+    </div>
+    <div class="stage-outer"><div class="stage" data-stage>
+      <svg class="wires" viewBox="0 0 1720 620">
+        <path data-step="2" pathLength="1" class="hot" d="M 570 260 L 740 260"/>
+        <path data-step="3" pathLength="1" class="hot" d="M 1120 260 L 1290 260"/>
+      </svg>
+      <div class="node" data-step="1" style="left:110px;top:130px;width:460px;">
+        <h3><span class="dot"></span>GitHub Actions</h3>
+        <div class="job"><span class="led"></span>backend-tests</div>
+        <div class="job"><span class="led"></span>frontend-build</div>
+        <div class="job"><span class="led"></span>frontend-tests</div>
+      </div>
+      <div class="node" data-step="2" style="left:740px;top:140px;width:380px;">
+        <h3><span class="dot"></span>Pull request</h3>
+        <p>merge → <b>dev</b> or <b>main</b><br>green CI required</p>
+      </div>
+      <div class="node hero-node" data-step="3" style="left:1290px;top:120px;width:330px;">
+        <h3><span class="dot"></span>VM watcher</h3>
+        <p>pulls every 2 minutes<br>dev stack &amp; prod stack</p>
+      </div>
+      <div class="footchips" data-step="3">
+        <span class="chip light"><span class="led"></span>live ~2 minutes after merge</span>
+        <span class="chip light"><span class="led"></span>same compose files, same checks — locally and on the VM</span>
+      </div>
+    </div></div>
+  </div>
+</section>
+
+<!-- ================= OUTRO ================= -->
+<section class="dark-sec outro" id="sec-outro" data-crumb="thank you" data-nav="Outro">
+  <div class="glow"></div>
+  <div class="gridbg"></div>
+  <div style="position:relative;z-index:2">
+    <span class="wordmark"><b>MAINGAU</b><i>+</i></span>
+    <h2 data-outro>Everything verified.<br><em>Nothing sent.</em></h2>
+    <p class="lede" data-outro>Deterministic engine · evidence-linked AI · consent-gated drafts. Now switch to the live app and walk a real customer through.</p>
+    <div class="chips" data-outro>
+      <a class="chip" href="https://github.com/mo-heatt/maingau-nba" target="_blank" rel="noopener"><span class="led"></span>github.com/mo-heatt/maingau-nba</a>
+      <span class="chip">live demo →</span>
+    </div>
+  </div>
+</section>
+
+<script>
+gsap.registerPlugin(ScrollTrigger, MotionPathPlugin);
+
+/* ---------- stage scaling (fixed 1720px canvas scaled to viewport) ---------- */
+const STAGE_W = 1720, STAGE_H = 620;
+function fitStages() {
+  const s = Math.min(1, (window.innerWidth * 0.92) / STAGE_W);
+  document.querySelectorAll('.stage-outer').forEach(o => {
+    o.style.transform = `scale(${s})`;
+    o.style.transformOrigin = 'top center';
+    o.style.height = STAGE_H * s + 'px';
+    o.style.width = STAGE_W * s + 'px';
+    o.style.margin = '0 auto';
+  });
+}
+window.addEventListener('resize', fitStages);
+fitStages();
+
+/* ---------- hero entrance ---------- */
+gsap.from('[data-hero]', { opacity: 0, y: 44, duration: 1, stagger: 0.14, ease: 'power3.out', delay: 0.15 });
+gsap.to('#hero-glow', { opacity: 0.6, duration: 3, repeat: -1, yoyo: true, ease: 'sine.inOut' });
+gsap.to('#pk-flow', {
+  motionPath: { path: '#hero-p1', align: '#hero-p1', alignOrigin: [0.5, 0.5] },
+  duration: 14, repeat: -1, ease: 'none',
+  onStart() { gsap.set('#pk-flow', { opacity: 1 }); }
+});
+gsap.to('#pk-back', {
+  motionPath: { path: '#hero-p2', align: '#hero-p2', alignOrigin: [0.5, 0.5] },
+  duration: 17, repeat: -1, ease: 'none', delay: 3,
+  onStart() { gsap.set('#pk-back', { opacity: 1 }); }
+});
+
+/* ---------- outro entrance ---------- */
+gsap.from('[data-outro]', {
+  scrollTrigger: { trigger: '#sec-outro', start: 'top 65%' },
+  opacity: 0, y: 44, duration: 0.9, stagger: 0.14, ease: 'power3.out'
+});
+
+/* ---------- chapter build-ups (scrubbed, pinned) ---------- */
+document.querySelectorAll('.chapter').forEach(sec => {
+  const stage = sec.querySelector('[data-stage]');
+  if (!stage) return;
+
+  const groups = {};
+  stage.querySelectorAll('[data-step]').forEach(el => {
+    (groups[el.dataset.step] ??= []).push(el);
+  });
+  const stepKeys = Object.keys(groups).sort((a, b) => a - b);
+
+  const tl = gsap.timeline({
+    scrollTrigger: {
+      trigger: sec,
+      start: 'top top',
+      end: '+=' + (stepKeys.length * 55) + '%',
+      scrub: 0.7,
+      pin: true,
+      anticipatePin: 1,
+    }
+  });
+
+  stepKeys.forEach(k => {
+    const els = groups[k];
+    const paths = els.filter(e => e.tagName.toLowerCase() === 'path');
+    const rest = els.filter(e => e.tagName.toLowerCase() !== 'path');
+    if (rest.length) {
+      tl.fromTo(rest, { opacity: 0, y: 40, scale: 0.97 },
+        { opacity: 1, y: 0, scale: 1, duration: 0.6, stagger: 0.12, ease: 'power3.out' });
+    }
+    paths.forEach((p, i) => {
+      tl.fromTo(p, { strokeDashoffset: 1, opacity: 0 },
+        { strokeDashoffset: 0, opacity: 1, duration: 0.45, ease: 'power1.inOut' }, i === 0 ? '<' : '<' + 0.1);
+    });
+    tl.to({}, { duration: 0.25 }); // breathing room between steps
+  });
+
+  tl.to({}, { duration: 0.4 }); // hold the finished diagram
+
+  /* per-chapter ambient effects */
+  if (sec.id === 'sec-ship') {
+    gsap.to('.node .job .led', { opacity: 0.35, duration: 0.9, repeat: -1, yoyo: true, ease: 'sine.inOut', stagger: 0.3 });
+  }
+});
+
+/* ---------- flow chapter: packet rides the whole route ---------- */
+(function () {
+  // composite route: f1 (ui→api) then f2 (api→engine); return via f4
+  const route = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+  route.setAttribute('d', 'M 360 210 L 590 210 L 950 210 L 1180 210');
+  route.setAttribute('fill', 'none');
+  route.setAttribute('stroke', 'none');
+  document.querySelector('#sec-flow svg.wires').appendChild(route);
+  gsap.to('#pk-flow', {
+    motionPath: { path: route, align: route, alignOrigin: [0.5, 0.5] },
+    duration: 2.6, repeat: -1, ease: 'power1.inOut', delay: 0.3,
+    onStart() { gsap.set('#pk-flow', { opacity: 1 }); }
+  });
+  const back = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+  back.setAttribute('d', 'M 1180 260 C 980 340, 780 340, 630 245 L 400 245');
+  back.setAttribute('fill', 'none');
+  back.setAttribute('stroke', 'none');
+  document.querySelector('#sec-flow svg.wires').appendChild(back);
+  gsap.to('#pk-back', {
+    motionPath: { path: back, align: back, alignOrigin: [0.5, 0.5] },
+    duration: 2.2, repeat: -1, ease: 'power1.inOut', delay: 3.2,
+    onStart() { gsap.set('#pk-back', { opacity: 1 }); }
+  });
+})();
+
+/* ---------- cache chapter: language flip ---------- */
+(function () {
+  const btn = document.getElementById('langflip');
+  let flipped = false;
+  function flip() {
+    if (flipped) return;
+    flipped = true;
+    const rows = document.querySelectorAll('#sec-cache .mat-row');
+    const tl = gsap.timeline();
+    tl.to(rows, { scale: 0.985, duration: 0.12, ease: 'power1.in' })
+      .to(rows, { scale: 1, duration: 0.35, ease: 'back.out(2.5)' })
+      .add(() => {
+        document.querySelectorAll('#sec-cache [data-debadge]').forEach(b => {
+          b.style.display = 'none';
+        });
+        document.querySelectorAll('#sec-cache [data-enbadge]').forEach(b => {
+          b.style.display = 'inline-block';
+        });
+      }, '-=0.28')
+      .fromTo('#sec-cache [data-enbadge]', { scale: 0.6, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.35, ease: 'back.out(3)', stagger: 0.1 }, '-=0.25')
+      .to(btn, { opacity: 0.45, pointerEvents: 'none', duration: 0.3 }, '-=0.2');
+  }
+  btn.addEventListener('click', flip);
+  // auto-flip once when the chapter is nearly done building
+  ScrollTrigger.create({
+    trigger: '#sec-cache',
+    start: 'top+=120% top',
+    once: true,
+    onEnter: flip
+  });
+})();
+
+/* ---------- top progress + crumb ---------- */
+/* ---------- rail + active crumb (position-based, pin-aware) ---------- */
+(function () {
+  const rail = document.getElementById('rail');
+  const crumb = document.getElementById('crumb');
+  const secs = [...document.querySelectorAll('section[data-nav]')];
+  secs.forEach(sec => {
+    const a = document.createElement('a');
+    a.href = '#' + sec.id;
+    a.innerHTML = `<span class="lbl">${sec.dataset.nav}</span><span class="dot"></span>`;
+    a.addEventListener('click', e => {
+      e.preventDefault();
+      const y = sec.classList.contains('chapter') ? sec.getBoundingClientRect().top + window.scrollY + 2 : sec.offsetTop;
+      window.scrollTo({ top: y, behavior: 'smooth' });
+    });
+    rail.appendChild(a);
+    sec._railLink = a;
+  });
+
+  let activeSec = null;
+  function updateActive() {
+    const probe = window.innerHeight * 0.5;
+    let found = null;
+    for (const sec of secs) {
+      const r = sec.getBoundingClientRect();
+      if (r.top <= probe && r.bottom > probe) { found = sec; break; }
+    }
+    if (!found || found === activeSec) return;
+    activeSec = found;
+    secs.forEach(s => s._railLink.classList.remove('active'));
+    found._railLink.classList.add('active');
+    crumb.textContent = found.dataset.crumb;
+    rail.classList.toggle('on-dark', found.classList.contains('dark-sec'));
+  }
+
+  window.addEventListener('scroll', () => {
+    gsap.set('#progressbar', { scaleX: window.scrollY / Math.max(1, document.body.scrollHeight - window.innerHeight) });
+    updateActive();
+  }, { passive: true });
+  updateActive();
+})();
+
+/* ---------- keyboard navigation ---------- */
+(function () {
+  const secs = [...document.querySelectorAll('section[data-nav]')];
+  function currentIdx() {
+    const mid = window.scrollY + window.innerHeight / 2;
+    let idx = 0;
+    secs.forEach((s, i) => { if (s.offsetTop <= mid) idx = i; });
+    return idx;
+  }
+  window.addEventListener('keydown', e => {
+    if (['ArrowDown', 'PageDown', ' '].includes(e.key)) {
+      e.preventDefault();
+      const t = secs[Math.min(currentIdx() + 1, secs.length - 1)];
+      window.scrollTo({ top: t.offsetTop, behavior: 'smooth' });
+    } else if (['ArrowUp', 'PageUp'].includes(e.key)) {
+      e.preventDefault();
+      const t = secs[Math.max(currentIdx() - 1, 0)];
+      window.scrollTo({ top: t.offsetTop, behavior: 'smooth' });
+    }
+  });
+})();
+</script>
+</body>
+</html>
