@@ -1,0 +1,2 @@
+customer_id;city;household_size;preferred_contact_language;birth_year;postal_code_prefix;customer_since;portal_account;app_installed;consent_newsletter_email;consent_marketing_email;consent_marketing_phone;consent_marketing_sms;consent_portal_app_personalisation;consent_profiling_analytics;newsletter_double_opt_in_at
+;Offenbach;3;de;1986;630;2026-09-15;ja;ja;not_given;granted;not_given;withdrawn;granted;granted;

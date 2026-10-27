@@ -1,6 +1,25 @@
-/* Shared UI colours. Customer email previews retain their own email styling. */
+/* Design tokens. Customer email previews retain their own email styling.
+   Rules: one type scale (11px minimum), a 4px spacing grid, two radii, borders over shadows,
+   colour only where it carries meaning: brand, state, data. Theme-independent scales first. */
+:root {
+  /* Type scale */
+  --t-xs: 11px; --t-sm: 12px; --t-base: 13px; --t-md: 14px; --t-lg: 16px;
+  --t-xl: 20px; --t-2xl: 24px; --t-3xl: 28px; --t-4xl: 32px; --t-5xl: 36px; --t-display: 44px;
+  /* Spacing */
+  --s-1: 4px; --s-2: 8px; --s-3: 12px; --s-4: 16px; --s-5: 20px; --s-6: 24px; --s-7: 32px; --s-8: 48px;
+  /* Shape and motion */
+  --r-sm: 4px; --r: 8px;
+  --ease: cubic-bezier(.2,0,0,1); --dur: 160ms;
+  /* Brand: navy rail and one yellow accent, the same in both themes */
+  --yellow-hover: #f2d900;
+  --rail-text: #c3d0e2; --rail-muted: #8fa3c0; --rail-hover: #ffffff0d; --rail-active: #ffffff17; --rail-line: #ffffff17;
+}
 :root {
   color-scheme: light;
+  --brand: #002657;
+  --accent-warm: #c9940a;
+  --data-1: #2b5fae; --data-1-soft: #8fadd8; --data-track: #edf1f6;
+  --warning-line: #d9901a;
   --chart-blue: #2258aa;
   --page: #f4f7fb;
   --surface: #ffffff;
@@ -8,19 +27,23 @@
   --surface-raised: #eaf0f7;
   --text-strong: #183858;
   --text: #42658d;
-  --text-muted: #71839a;
+  --text-muted: #5b6b80; /* 5.3:1 on white, 4.6:1 on warning-bg (was #71839a, 3.9:1) */
   --border: #dce5f1;
   --line: var(--border);
   --link: #004bad;
   --warning-bg: #fff5d9;
   --warning-text: #765210;
   --success-bg: #eaf7f0;
-  --success-text: #22815c;
+  --success-text: #1a6f4e; /* 5.3:1 on success-bg (was #22815c, 4.4:1) */
   --danger-bg: #fff0ec;
   --danger-text: #b75151;
 }
 :root[data-theme="dark"] {
   color-scheme: dark;
+  --brand: #16477f;
+  --accent-warm: #e3bb47;
+  --data-1: #7fa9eb; --data-1-soft: #4f75ad; --data-track: #22334b;
+  --warning-line: #e0a64a;
   --chart-blue: #8ab8ff;
   --page: #0b1422;
   --surface: #121f31;
@@ -39,14 +62,11 @@
   --danger-text: #ffadad;
 }
 /* Solid brand buttons keep white text in both themes. */
-:root[data-theme="dark"] .button.primary { background: #16477f; border-color: #426fa4; }
+:root[data-theme="dark"] .button.primary { background: var(--brand); border-color: #426fa4; }
 .theme-picker { display: inline-flex; align-items: center; gap: 7px; color: var(--text-muted); }
 .theme-picker select { max-width: 130px; background: var(--surface); color: var(--text); border-color: var(--line); }
 :focus-visible { outline: 2px solid var(--link); outline-offset: 3px; }
 @media (max-width: 650px) { .theme-picker select { max-width: 95px; } }
-.theme-control{display:grid;grid-template-columns:repeat(3,36px);position:relative;isolation:isolate;padding:4px;border:1px solid var(--line);border-radius:24px;background:var(--surface-muted);width:max-content;flex-shrink:0}.theme-control button{display:grid;place-items:center;width:36px;height:30px;border:0;padding:0;border-radius:20px;background:transparent;color:var(--text-muted);position:relative;z-index:1;transition:color 160ms ease}.theme-control button:hover{color:var(--text-strong)}.theme-control button[aria-checked="true"]{color:var(--text-strong)}.theme-selection{position:absolute;top:4px;left:4px;width:36px;height:30px;border-radius:20px;background:var(--surface);box-shadow:0 1px 4px #00265716;transform:translateX(calc(var(--theme-index)*36px));transition:transform 220ms cubic-bezier(.22,1,.36,1)}:root[data-theme="dark"] .theme-selection{background:var(--surface-raised);box-shadow:0 1px 5px #00000030}@media(prefers-reduced-motion:reduce){.theme-selection,.theme-control button{transition:none}}
-
-/* Two labelled choices: Light and Dark */
-.theme-control{grid-template-columns:repeat(2,78px)}
-.theme-control button{width:78px;display:flex;gap:6px;justify-content:center;font-size:14px}
-.theme-selection{width:78px;transform:translateX(calc(var(--theme-index)*78px))}
+.theme-control{display:grid;grid-template-columns:repeat(3,36px);position:relative;isolation:isolate;padding:4px;border:1px solid var(--line);border-radius:var(--r);background:var(--surface-muted);width:max-content;flex-shrink:0}.theme-control button{display:grid;place-items:center;width:36px;height:30px;border:0;padding:0;border-radius:var(--r);background:transparent;color:var(--text-muted);position:relative;z-index:1;transition:color 160ms ease}.theme-control button:hover{color:var(--text-strong)}.theme-control button[aria-checked="true"]{color:var(--text-strong)}.theme-selection{position:absolute;top:4px;left:4px;width:36px;height:30px;border-radius:var(--r);background:var(--surface);box-shadow:0 0 0 1px var(--border);transform:translateX(calc(var(--theme-index)*36px));transition:transform 220ms cubic-bezier(.22,1,.36,1)}:root[data-theme="dark"] .theme-selection{background:var(--surface-raised);box-shadow:0 0 0 1px var(--border)}@media(prefers-reduced-motion:reduce){.theme-selection,.theme-control button{transition:none}}
+/* Inner pieces sit 4px inside the control, so they take the smaller radius. */
+.theme-control button,.theme-selection{border-radius:var(--r-sm)}

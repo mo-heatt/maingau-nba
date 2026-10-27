@@ -131,6 +131,8 @@ More detail: [team setup and hosting](docs/team-setup.md).
 
 The directory searches IDs, cities and recorded product names. Filter by action, city, business line or profiling consent; sort by estimated gain, churn risk, customer value or ID. Twenty rows are rendered per page. Search, filters, pagination and the selected customer are reflected in the URL.
 
+**Import customer** creates one new customer from a CSV or JSON file with master data and the six consent types (download a template in the dialog). The file is checked and the customer scored before anything is stored; the preview shows the engine's next action, then **Create customer** appends the rows and opens the new profile. Stored imports cannot be edited or deleted. Details and limits: [architecture](docs/architecture.md#customer-import).
+
 Open a customer to see the next step, why it was selected, relevant observations, current product information and contact context. **Back to customers** restores the directory/filter state. Neutral ID-based avatars are decorative identifiers; no names or real customer portraits are invented.
 
 | Profile section | Contents |

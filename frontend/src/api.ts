@@ -6,6 +6,8 @@ export async function request<T>(path:string,method='GET',body?:unknown,signal?:
 const reads=new Map<string,{value:unknown;expires:number}>();
 const pending=new Map<string,Promise<unknown>>();
 let readEpoch=0;
+/** For mutations made outside request(), such as the customer import. */
+export function invalidate(){readEpoch++;reads.clear();pending.clear()}
 function read<T>(path:string,revision:number):Promise<T>{
  const key=path+'@'+revision,hit=reads.get(key);
  if(hit&&hit.expires>Date.now())return Promise.resolve(hit.value as T);
