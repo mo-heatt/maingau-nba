@@ -45,7 +45,7 @@ services:
       - "80:80"
       - "443:443"
     volumes:
-      - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
+      - .:/etc/nginx/conf.d:ro
       - /srv/maingau-nba/tls:/etc/nginx/tls:ro
 
 volumes:
