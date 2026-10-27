@@ -56,10 +56,10 @@ def test_session_expires_without_exposing_or_overwriting_server_key(clients,monk
 
 def test_invalid_inputs_do_not_echo_secrets(clients):
     a,_=clients
-    for payload in [{'api_key':'dummy secret value'},{'unexpected':'dummy-secret-key'}]:
+    for payload in [{'api_key':'dummy\x00secret-value'},{'unexpected':'dummy-secret-key'}]:
         response=a.post('/api/developer/ai',json=payload)
         assert response.status_code in (400,422)
-        assert 'dummy secret value' not in response.text and 'dummy-secret-key' not in response.text
+        assert 'dummy' not in response.text and 'dummy-secret-key' not in response.text
     response=a.post('/api/developer/ai',json={'api_key':'valid-fixture-key'},headers={'origin':'https://other-site.test'})
     assert response.status_code==403
 
@@ -100,8 +100,38 @@ def test_local_frontend_origin_is_allowed_but_foreign_sites_are_not(clients):
     a,_=clients
     # Reject malformed keys before any upstream request; dev proxy origin still passes CSRF.
     for origin in ['http://127.0.0.1:5173','http://localhost:5173']:
-        response=a.post('/api/developer/ai',json={'api_key':'not a key'},headers={'origin':origin})
+        response=a.post('/api/developer/ai',json={'api_key':' \n\t\u200b'},headers={'origin':origin})
         assert response.status_code==400
-        assert 'without spaces' in response.json()['detail']
-    response=a.post('/api/developer/ai',json={'api_key':'not a key'},headers={'origin':'https://untrusted.test'})
+        assert 'valid API key' in response.json()['detail']
+    response=a.post('/api/developer/ai',json={'api_key':' \n\t\u200b'},headers={'origin':'https://untrusted.test'})
     assert response.status_code==403
+
+
+def test_copy_whitespace_is_removed_before_verification(clients):
+    a,_=clients
+    response=a.post('/api/developer/ai',json={'api_key':' \ufeffsk-fixture- \nkey\u00a0\u200b\u2060'})
+    assert response.status_code==200,response.text
+    assert developer.session_key(a.cookies.get(developer.COOKIE))=='sk-fixture-key'
+    assert 'sk-fixture-key' not in response.text
+
+
+def test_normalized_rejected_key_keeps_previous_session(clients):
+    a,_=clients
+    assert a.post('/api/developer/ai',json={'api_key':'valid-fixture-key'}).status_code==200
+    token=a.cookies.get(developer.COOKIE)
+    response=a.post('/api/developer/ai',json={'api_key':'rejected- \nkey\u200b'})
+    assert response.status_code==400
+    assert a.cookies.get(developer.COOKIE)==token
+    assert developer.session_key(token)=='valid-fixture-key'
+    assert 'rejected-key' not in response.text
+
+
+def test_denied_key_explains_permissions_and_keeps_previous_session(clients):
+    a,_=clients
+    assert a.post('/api/developer/ai',json={'api_key':'valid-fixture-key'}).status_code==200
+    token=a.cookies.get(developer.COOKIE)
+    response=a.post('/api/developer/ai',json={'api_key':'forbidden-key'})
+    assert response.status_code==400
+    assert '(403)' in response.json()['detail'] and 'permissions' in response.json()['detail']
+    assert developer.session_key(token)=='valid-fixture-key'
+    assert 'forbidden-key' not in response.text

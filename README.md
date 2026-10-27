@@ -85,11 +85,14 @@ In **Hessian AI connection**:
 
 1. Paste the key into the masked **API key** field.
 2. Select **Save key & check access**.
+   Accidental spaces, line breaks and common invisible copy characters are removed automatically before the key is checked. The key itself is never included in status messages.
 3. Wait for the access confirmation, then close Developer area.
 
 ![Hessian connection screen: the masked key field and Save key & check access button](docs/images/developer-connection.png)
 
 The check calls the configured gateway's `/models` endpoint and verifies that the configured model is listed. Generate one NBA or material afterwards to check inference access as well; listing a model does not establish language quality or guarantee every generation will pass validation.
+
+“Server key is configured” reports that an environment credential is present; it is not a live access check. A personal key is checked with Hessian before replacing the browser session.
 
 The key is held **only in backend memory for this browser session**, for up to **8 hours** or until the backend restarts. An HttpOnly, SameSite cookie identifies the session; the credential is not returned to the browser, stored in localStorage, written to `.env`/SQLite, included in audit logs or committed to Git. Other browser sessions keep their own credentials. Failed replacements retain the previous connection. **Use server default** removes the session key and returns to the server's environment configuration, if present. Batch workers use the initiating session's connection.
 
@@ -120,7 +123,7 @@ More detail: [team setup and hosting](docs/team-setup.md).
 | Symptom | What to check |
 | --- | --- |
 | No AI connection | Start the backend, then connect a key in Developer area or set root `.env` and restart. |
-| Key rejected / HTTP 401 or 403 | Check the issued key and its model permissions with the organiser. |
+| Key rejected / HTTP 401 or 403 | The gateway did not accept the credential or denied access. Copy the issued key again and check its validity, gateway and account permissions. The previous connection is retained. |
 | HTTP 429 | The provider is limiting requests; wait before retrying. |
 | Model not listed | The server model must be available to that credential; default is `vllm/Kolibri-1`. |
 | Key disappeared after restart | Browser session keys are intentionally held in memory; reconnect or configure the server default. |

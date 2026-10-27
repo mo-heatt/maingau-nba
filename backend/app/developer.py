@@ -1,5 +1,6 @@
 """Ephemeral browser-scoped Hessian credentials; no credential is persisted or returned."""
 import os
+import re
 import secrets
 import time
 from contextvars import ContextVar
@@ -57,13 +58,17 @@ def connection(request:Request):return status(request.cookies.get(COOKIE))
 @router.post('/ai')
 async def connect(body:KeyInput,request:Request,response:Response):
     require_same_origin(request)
-    key=body.api_key.get_secret_value().strip()
-    if not key or len(key)>8192 or any(c.isspace() for c in key):raise HTTPException(400,'Enter the API key without spaces or line breaks.')
+    raw=body.api_key.get_secret_value()
+    if len(raw)>16384:raise HTTPException(400,'The API key is too long. Paste only the key value.')
+    key=re.sub(r'[\s\u200b\u2060\ufeff]+','',raw)
+    if not key or len(key)>8192 or any(ord(c)<33 or ord(c)>126 for c in key):
+        raise HTTPException(400,'Enter a valid API key. Spaces and line breaks are removed automatically.')
     base=os.getenv('NBA_AI_BASE_URL','https://hip-gw.hessian.ai/v1').rstrip('/')
     try:
         async with httpx.AsyncClient(timeout=15,follow_redirects=False) as client:
             check=await client.get(base+'/models',headers={'Authorization':'Bearer '+key})
-        if check.status_code in (401,403):raise HTTPException(400,'Hessian rejected this API key. Check the key and your model access.')
+        if check.status_code==401:raise HTTPException(400,'Hessian did not accept this API key (401). Copy it again from the issuer and check whether it expired or was revoked. The previous connection was kept.')
+        if check.status_code==403:raise HTTPException(400,'Hessian denied access for this key (403). Check gateway and account permissions with the organiser. The previous connection was kept.')
         if check.status_code==429:raise HTTPException(429,'Hessian is limiting requests. Wait before checking again.')
         if check.status_code!=200:raise HTTPException(502,'Hessian could not verify access. The previous connection was kept.')
         ids={item.get('id') for item in check.json().get('data',[])}

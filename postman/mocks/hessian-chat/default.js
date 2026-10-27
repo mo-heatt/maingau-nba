@@ -1,7 +1,7 @@
 // Local contract fixture; never a production AI fallback.
 const http = require('http');
 http.createServer(async (req, res) => {
-  if(req.method==='GET'&&req.url.endsWith('/v1/models')){const denied=req.headers.authorization==='Bearer rejected-key';res.writeHead(denied?401:200,{'Content-Type':'application/json'});res.end(JSON.stringify(denied?{error:'unauthorized'}:{data:[{id:'fixture'}]}));return;}
+  if(req.method==='GET'&&req.url.endsWith('/v1/models')){const denied=req.headers.authorization==='Bearer rejected-key'?401:req.headers.authorization==='Bearer forbidden-key'?403:0;res.writeHead(denied||200,{'Content-Type':'application/json'});res.end(JSON.stringify(denied?{error:'unauthorized'}:{data:[{id:'fixture'}]}));return;}
 
   if (req.method !== 'POST' || !req.url.endsWith('/v1/chat/completions')) {
     res.writeHead(501, {'Content-Type':'application/json'}); res.end('{}'); return;
