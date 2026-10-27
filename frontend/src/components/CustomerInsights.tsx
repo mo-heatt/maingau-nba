@@ -1,5 +1,5 @@
 import {useApi,eur} from '../api';
-import type {Customer,Marketing} from '../types';
+import type {Customer} from '../types';
 
 export type Insights={customer_id:string;profiling:boolean;mobile:{plan:string;data_volume_gb:number;avg_data_used_gb_3m:number|null;data_limit_reached_3m:number|null;monthly_fee_eur:number;sim_count:number}[];activity:{month:string;portal_sessions:number|null;service_contacts:number}[];telemetry:{date:string;consumption_kwh:number;solar_kwh:number}[];charging:{date:string;energy_kwh:number;sessions:number}[];energy_contracts:{tariff:string;commodity:string;annual_consumption_kwh:number;monthly_installment_eur:number}[]};
 const fmt=(n:number)=>new Intl.NumberFormat('de-DE',{maximumFractionDigits:1}).format(n);
@@ -35,8 +35,3 @@ export default function CustomerInsights({customer,revision}:{customer:Customer;
  </div>
 }
 
-export function PortfolioCharts({stats}:{stats:Marketing}){
- const parts=[{label:'Offers',value:stats.offers,color:'var(--chart-blue)'},{label:'Service',value:stats.service_fixes,color:'var(--accent-warm)'},{label:'Wait / no contact / review',value:stats.no_contact,color:'var(--surface-raised)'}];
- let offset=0;const total=stats.customers||1;
- return <div className="portfolio-charts"><section className="insight-card"><div className="insight-title"><h3>Customer action mix</h3><span className="micro-tag">Engine</span></div><div className="portfolio-mix"><svg viewBox="0 0 130 130" role="img" aria-label={parts.map(p=>`${p.label}: ${p.value}`).join(', ')}>{parts.map(p=>{const start=offset;offset+=p.value/total*314.16;return <circle key={p.label} cx="65" cy="65" r="50" fill="none" stroke={p.color} strokeWidth="15" strokeDasharray={`${p.value/total*314.16} 314.16`} strokeDashoffset={-start} transform="rotate(-90 65 65)"/>})}<text x="65" y="66" textAnchor="middle" className="ring-value">{stats.customers}</text><text x="65" y="83" textAnchor="middle" className="ring-caption">customers</text></svg><div>{parts.map(p=><div className="mix-legend" key={p.label}><i style={{background:p.color}}/><span>{p.label}</span><b>{p.value}</b></div>)}</div></div></section><section className="insight-card"><div className="insight-title"><h3>Where the opportunities are</h3><span className="micro-tag">Customers</span></div><div className="score-chart">{stats.top_actions.slice(0,4).map(a=><div key={a.product_id}><div><span>{a.name}</span><b>{a.customers}</b></div><div className="score-track"><i style={{width:a.customers/Math.max(...stats.top_actions.map(x=>x.customers),1)*100+'%'}}/></div></div>)}</div></section></div>
-}
