@@ -1,0 +1,21 @@
+{
+  "customer": {
+    "city": "Darmstadt",
+    "household_size": 4,
+    "preferred_contact_language": "de",
+    "birth_year": 1979,
+    "postal_code_prefix": 642,
+    "customer_since": "2026-08-01",
+    "portal_account": true,
+    "app_installed": false
+  },
+  "consents": {
+    "newsletter_email": "granted",
+    "marketing_email": "granted",
+    "marketing_phone": "granted",
+    "marketing_sms": "not_given",
+    "portal_app_personalisation": "granted",
+    "profiling_analytics": "not_given"
+  },
+  "newsletter_double_opt_in_at": "2026-08-03"
+}
