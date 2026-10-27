@@ -159,6 +159,13 @@ Suggested presentation flow: open Customers, show the mobile example `MG-100005`
 
 See [the AI contract](docs/ai-nba.md).
 
+## Deployment
+
+The workshop VM runs **prod** (branch `main`, http://130.83.85.181:41080) and
+**dev** (branch `dev`, https://130.83.85.181:41443, self-signed TLS) as Docker
+containers, redeployed automatically when the branch moves. See
+[deployment](docs/deployment.md).
+
 ## Tests and builds
 
 ```sh
