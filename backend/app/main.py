@@ -19,6 +19,10 @@ from .email_template import for_draft
 from .overview import overview as overview_data
 from .radar import radar as radar_data
 from .timeline import timeline as timeline_data
+from .customer_import import CustomerImport, import_customer
+from pydantic import ValidationError
+from threading import Lock
+_reload=Lock()
 
 @asynccontextmanager
 async def lifespan(app):
@@ -92,7 +96,7 @@ def catalog():
     return {'products':safe(engine().X['product_catalog'].to_dict(orient='records')),'channels':list(CHANNELS),'templates':TEMPLATES}
 
 @app.get('/api/customers')
-def customers(q:str='',action:Optional[str]=None,offset:int=Query(0,ge=0),limit:int=Query(50,ge=1,le=750)):
+def customers(q:str='',action:Optional[str]=None,offset:int=Query(0,ge=0),limit:int=Query(50,ge=1,le=5000)):
     rows=list(engine().all().values());rows=[r for r in rows if q.lower() in (r['id']+' '+r['city']).lower() and (not action or r['decision']['action']==action)]
     rows.sort(key=lambda r:(-r['decision']['expected_gain_eur'],r['id']))
     return {'total':len(rows),'offset':offset,'limit':limit,'items':[{**{k:r[k] for k in ['id','city','since','value','decision']},'preview':{'language':r['language'],'tone':r['tone'],'profiling':r['profiling'],'products':r['products'],'open_cases':len(r['open_tickets']),'contacts_30d':r['contacts_30d'],'contact_channels':[ch['channel'] for ch in r['channels'] if ch['allowed']]}} for r in rows[offset:offset+limit]]}
@@ -109,6 +113,18 @@ class ExternalProduct(BaseModel):
 
 @app.get('/api/customers/{cid}/products')
 def customer_products(cid:str):return call(portfolio.products,engine(),cid)
+
+@app.post('/api/customers/import')
+def customer_import(body:dict):
+    """One customer (master data + consents). dry_run validates and previews; otherwise rows are appended and the engine reloads."""
+    try:payload=CustomerImport.model_validate(body)
+    except ValidationError as exc:
+        raise HTTPException(422,'; '.join(f"{'.'.join(str(p) for p in e['loc'] if p not in ('customer',))}: {e['msg'].removeprefix('Value error, ')}" for e in exc.errors()))
+    with _reload:
+        try:result=import_customer(set(engine().state),payload)
+        except ValueError as exc:raise HTTPException(409,str(exc))
+        if result['stored']:app.state.engine=EngineService()
+    return result
 
 @app.post('/api/customers/{cid}/external-products')
 def external_product(cid:str,body:ExternalProduct):return call(portfolio.add_external,engine(),cid,body.model_dump())

@@ -20,8 +20,12 @@ def build_state(X):
         consent[r.customer_id][r.consent_type] = {"status": r.status, "updated_at": str(r.updated_at), "source": r.source, "doi": None if pd.isna(r.double_opt_in_confirmed_at) else str(r.double_opt_in_confirmed_at)}
 
     state = {}
+    # A customer imported after the snapshot has no CLV row yet: start at zero value with the portfolio's median churn.
+    median_churn = float(cv.churn_prob_12m.median()) if len(cv) else 0.2
     for cid, c in cm.iterrows():
-        v = cv.loc[cid]
+        v = cv.loc[cid] if cid in cv.index else pd.Series({"annual_margin_eur": 0.0, "cost_to_serve_12m_eur": 0.0, "service_cost_12m_eur": 0.0,
+                                                          "churn_prob_12m": median_churn, "clv_eur": 0.0, "clv_service_impact_eur": 0.0,
+                                                          "churn_drivers": "new customer: no value history yet", "active_business_lines": 0})
         s = {"customer_id": cid, "city": c.city, "customer_since": str(c.customer_since)[:10], "birth_year": int(c.birth_year) if not pd.isna(c.birth_year) else None,
              "household_size": int(c.household_size) if not pd.isna(c.household_size) else 1,
              "portal_account": bool(c.portal_account), "app_installed": bool(c.app_installed), "language": c.preferred_contact_language,

@@ -3,12 +3,13 @@ import {ArrowDown,ArrowUpRight,ChevronLeft,ChevronRight,Search,SlidersHorizontal
 import {useApi,eur,channel} from '../api';
 import type {CustomerPage,CustomerSummary} from '../types';
 import CustomerAvatar from '../components/CustomerAvatar';
+import CustomerImport from '../components/CustomerImport';
 import {Badge,Loading} from '../components/ui';
 type Filters={q:string;action:string;city:string;line:string;consent:string;contact:string;sort:string;page:number};
 function initial():Filters{const p=new URLSearchParams(location.hash.split('?')[1]||'');return {q:p.get('q')||'',action:p.get('action')||'',city:p.get('city')||'',line:p.get('line')||'',consent:p.get('consent')||'',contact:p.get('contact')||'',sort:p.get('sort')||'gain',page:Math.max(1,Number(p.get('page'))||1)}}
 const choices=[['','All customers'],['offer','Sales opportunities'],['service','Service first'],['wait','Wait'],['human_review','Human review'],['none','No contact']] as const;
-export default function CustomerDirectory({revision,active,onSelect}:{revision:number;active:boolean;onSelect:(id:string)=>void}){
- const{data,error,loading}=useApi<CustomerPage>('/customers?limit=750',revision);
+export default function CustomerDirectory({revision,active,onSelect,onChanged}:{revision:number;active:boolean;onSelect:(id:string)=>void;onChanged?:()=>void}){
+ const{data,error,loading}=useApi<CustomerPage>('/customers?limit=5000',revision);
  const[filters,setFilters]=useState<Filters>(initial),[advanced,setAdvanced]=useState(false);
  const query=useDeferredValue(filters.q.trim().toLowerCase());
  const all=data?.items||[];
@@ -23,7 +24,7 @@ export default function CustomerDirectory({revision,active,onSelect}:{revision:n
  function update(key:keyof Filters,value:string){setFilters(old=>({...old,[key]:value,page:1}))}
  const filterCount=[filters.city,filters.line,filters.consent,filters.contact].filter(Boolean).length;
  function href(c:CustomerSummary){const p=new URLSearchParams();Object.entries(filters).forEach(([key,value])=>{if(value&&!(key==='sort'&&value==='gain')&&!(key==='page'&&value===1))p.set(key,String(value))});p.set('customer',c.id);return '#customers?'+p.toString()}
- return <div className="customer-directory"><div className="directory-heading"><div><span className="workspace-caption">Customer intelligence</span><h1>Know the customer.<br/>Find the right next step.</h1><p>One place to see the need, the opportunity and when service comes first.</p></div><div className="directory-total"><UsersRound size={22}/><strong>{data?.total??'—'}</strong><span>customer profiles</span><small>Snapshot · 30 Sep 2026</small></div></div>
+ return <div className="customer-directory"><div className="directory-heading"><div><span className="workspace-caption">Customer intelligence</span><h1>Know the customer.<br/>Find the right next step.</h1><p>One place to see the need, the opportunity and when service comes first.</p></div><div className="directory-total"><UsersRound size={22}/><strong>{data?.total??'—'}</strong><span>customer profiles</span><small>Snapshot · 30 Sep 2026</small><CustomerImport ids={(data?.items||[]).map(c=>c.id)} onImported={id=>{onChanged?.();onSelect(id)}}/></div></div>
  <div className="directory-scenarios" aria-label="Presentation examples"><span>Explore a real case</span>{[['MG-100005','Mobile data need'],['MG-100004','Service before sales'],['MG-100026','Contact limit']].map(([id,label])=><a key={id} href={'#customers?customer='+id} onClick={e=>{if(e.metaKey||e.ctrlKey||e.shiftKey||e.altKey)return;e.preventDefault();onSelect(id)}}>{label}<ArrowUpRight size={13}/></a>)}</div>
  <section className="directory-panel"><div className="directory-toolbar"><label className="directory-search"><Search size={17}/><input type="search" name="customer-search" aria-label="Search customers" autoComplete="off" placeholder="Search by ID, city or product…" value={filters.q} onChange={e=>update('q',e.target.value)}/></label><button className={'button '+(advanced||filterCount?'filter-active':'')} aria-expanded={advanced} onClick={()=>setAdvanced(v=>!v)}><SlidersHorizontal size={15}/>Filters{filterCount>0&&<span className="filter-count">{filterCount}</span>}</button><label className="directory-sort">Sort by<select name="customer-sort" value={filters.sort} onChange={e=>update('sort',e.target.value)}><option value="gain">Expected gain</option><option value="risk">Churn risk</option><option value="value">Customer value</option><option value="id">Customer ID</option></select><ArrowDown size={13}/></label></div>
  <div className="directory-views" aria-label="Customer action filter">{choices.map(([value,label])=><button key={value} className={filters.action===value?'active':''} aria-pressed={filters.action===value} onClick={()=>update('action',value)}>{label}<span>{value?all.filter(c=>c.decision.action===value).length:all.length}</span></button>)}</div>
