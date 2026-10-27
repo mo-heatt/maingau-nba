@@ -5,22 +5,22 @@ import {STATIC_MODE} from '../staticApi';
 import {Loading, Panel} from './ui';
 import '../campaigns.css';
 
-type Filter = 'value_tier' | 'tenure' | 'lines' | 'city';
+type Filter = 'value_tier' | 'tenure' | 'lines' | 'city' | 'product';
 type Options = {offers: {id: string; name: string}[]; channels: {id: string; name: string}[]} & Record<Filter, string[]>;
 type Audience = {total: number; targeted: number; contactable: number; control: number; expected_gain_eur: number; expected_yes: number; left_out: {reason: string; label: string; customers: number}[]};
 type Tracking = {simulated: true; sent: number; seen: number; yes: number; control: number; control_yes: number; yes_rate: number | null; control_rate: number | null; uplift: number | null; value_won_eur: number};
 type Spec = {name: string; offer: string; channel: string; starts: string; ends: string} & Record<Filter, string[]>;
 export type Campaign = Spec & {id: number; status: 'draft' | 'running'; created_at: string; launched_at: string | null; audience: Audience; tracking: Tracking | null};
 
-const FILTERS: [Filter, string][] = [['value_tier', 'Value'], ['tenure', 'Tenure'], ['lines', 'Products']];
-const EMPTY: Spec = {name: '', offer: '', channel: 'newsletter_email', starts: '', ends: '', value_tier: [], tenure: [], lines: [], city: []};
+const FILTERS: [Filter, string][] = [['value_tier', 'Value'], ['tenure', 'Tenure'], ['lines', 'Products'], ['product', 'Holds tariff']];
+const EMPTY: Spec = {name: '', offer: '', channel: 'newsletter_email', starts: '', ends: '', value_tier: [], tenure: [], lines: [], city: [], product: []};
 const pct = (v: number | null) => v == null ? '—' : (v * 100).toFixed(1).replace('.', ',') + ' %';
 const day = (iso: string) => new Date(iso + 'T12:00:00').toLocaleDateString('en-GB', {day: 'numeric', month: 'short'});
 // The API takes dates as null when empty.
 const body = (s: Spec) => ({...s, starts: s.starts || null, ends: s.ends || null});
 
 function target(c: Spec) {
-  const parts = [...c.value_tier, ...c.tenure, ...c.lines, ...c.city];
+  const parts = [...c.value_tier, ...c.tenure, ...c.lines, ...(c.product ?? []), ...c.city];
   return parts.length ? parts.join(' · ') : 'All customers';
 }
 
@@ -33,11 +33,14 @@ function AudienceBox({a, loading}: {a: Audience; loading?: boolean}) {
   </div>;
 }
 
-export function NewCampaign({open, onClose, onCreated}: {open: boolean; onClose: () => void; onCreated: (c: Campaign) => void}) {
+export function NewCampaign({open, onClose, onCreated, prefill}: {open: boolean; onClose: () => void; onCreated: (c: Campaign) => void; prefill?: Partial<Spec>}) {
   const modal = useRef<HTMLDialogElement>(null);
   const {data: o} = useApi<Options>('/campaigns/options');
   const [spec, setSpec] = useState<Spec>(EMPTY), [preview, setPreview] = useState<{a: Audience | null; error: string; loading: boolean}>({a: null, error: '', loading: false}), [busy, setBusy] = useState(false);
-  useEffect(() => {if (open) modal.current?.showModal(); else {modal.current?.close();setSpec(EMPTY);setPreview({a: null, error: '', loading: false});setBusy(false)}}, [open]);
+  useEffect(() => {
+    if (open) {if (prefill) setSpec(s => ({...s, ...prefill})); modal.current?.showModal();}
+    else {modal.current?.close();setSpec(EMPTY);setPreview({a: null, error: '', loading: false});setBusy(false)}
+  }, [open]);
   useEffect(() => {if (o && !spec.offer) setSpec(s => ({...s, offer: o.offers[0].id}))}, [o, spec.offer]);
 
   // Recount the audience shortly after the form settles.

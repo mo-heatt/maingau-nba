@@ -1,19 +1,21 @@
 import {useEffect, useMemo, useState} from 'react';
-import {Activity, ArrowRight, ArrowUpRight, Check, CheckCheck, FileText, FlaskConical, LayoutDashboard, Megaphone, Plus, RotateCcw, Save, Search, ShieldCheck, SlidersHorizontal, X} from 'lucide-react';
+import {Activity, ArrowRight, ArrowUpRight, Check, CheckCheck, FileText, FlaskConical, LayoutDashboard, Megaphone, Plus, Recycle, RotateCcw, Save, Search, ShieldCheck, SlidersHorizontal, X} from 'lucide-react';
 import {AISample} from '../components/AIDecision';
 import {useApi, request, eur, channel} from '../api';
 import type {Settings, Catalog, Marketing as MarketingData, QueueRow, Preview, Totals, Replay} from '../types';
 import {Loading, Metric, PageTitle, Panel} from '../components/ui';
 import {CampaignsTab, NewCampaign} from '../components/Campaigns';
+import Lifecycle, {type CampaignPrefill} from '../components/Lifecycle';
 import Recommendations from './Recommendations';
 import '../marketing.css';
 
-type Tab = 'monitor' | 'recommendations' | 'campaigns' | 'approve' | 'steer' | 'content' | 'learn';
+type Tab = 'monitor' | 'recommendations' | 'lifecycle' | 'campaigns' | 'approve' | 'steer' | 'content' | 'learn';
 type Props = {revision: number; onSelect: (id: string) => void; onChanged: () => void; notify: (s: string) => void};
 
 const TABS: [Tab, string, typeof Activity][] = [
   ['monitor', 'Monitor', Activity],
   ['recommendations', 'Recommendations', LayoutDashboard],
+  ['lifecycle', 'Product lifecycle', Recycle],
   ['campaigns', 'Campaigns', Megaphone],
   ['approve', 'Approve', CheckCheck],
   ['steer', 'Steer', SlidersHorizontal],
@@ -43,6 +45,7 @@ export default function Marketing({revision, onSelect, onChanged, notify}: Props
   const [preview, setPreview] = useState<{data: Preview | null; error: string; loading: boolean}>({data: null, error: '', loading: false});
   const [busy, setBusy] = useState(false);
   const [creating, setCreating] = useState(false);
+  const [prefill, setPrefill] = useState<CampaignPrefill | undefined>(undefined);
   useEffect(() => { if (saved) setDraft(saved); }, [saved]);
   // Links such as #marketing?tab=recommendations can arrive while this page is open.
   useEffect(() => { const fn = () => setTab(initialTab()); window.addEventListener('hashchange', fn); return () => window.removeEventListener('hashchange', fn); }, []);
@@ -93,7 +96,7 @@ export default function Marketing({revision, onSelect, onChanged, notify}: Props
     <PageTitle eyebrow="Marketing orchestration" title="Steer the engine. Approve what goes out.">
       <div className="mk-title-actions"><span className="pill">Rules revision {saved?.version} · nothing is sent automatically</span><button className="button primary" onClick={() => setCreating(true)}><Plus size={15} />New campaign</button></div>
     </PageTitle>
-    <NewCampaign open={creating} onClose={() => setCreating(false)} onCreated={c => { setCreating(false); go('campaigns'); onChanged(); notify(`Campaign “${c.name}” saved as a draft. Approve & launch it when ready.`); }} />
+    <NewCampaign open={creating} prefill={prefill} onClose={() => { setCreating(false); setPrefill(undefined); }} onCreated={c => { setCreating(false); setPrefill(undefined); go('campaigns'); onChanged(); notify(`Campaign “${c.name}” saved as a draft. Approve & launch it when ready.`); }} />
     <p className="page-intro">The engine proposes one next best action per customer, ranked by expected gain in customer lifetime value. Marketing sets the boundaries, approves offers, texts and tone, and watches whether contacts really cause the result.</p>
 
     <div className="metrics">
@@ -113,6 +116,7 @@ export default function Marketing({revision, onSelect, onChanged, notify}: Props
 
     {tab === 'monitor' && <Monitor m={m} revision={revision} onSelect={onSelect} onGo={go} />}
     {tab === 'recommendations' && <Recommendations revision={revision} onSelect={onSelect} embedded />}
+    {tab === 'lifecycle' && <Lifecycle revision={revision} names={names} onNewCampaign={p => { setPrefill(p); setCreating(true); }} />}
     {tab === 'campaigns' && <CampaignsTab revision={revision} names={names} onNew={() => setCreating(true)} onChanged={onChanged} notify={notify} />}
     {tab === 'approve' && <Approve m={m} names={names} busy={busy} onSelect={onSelect} onReview={review} />}
     {tab === 'steer' && <Steer m={m} catalog={catalog} draft={draft} setDraft={setDraft} preview={preview} dirty={dirty} />}

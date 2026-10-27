@@ -17,7 +17,8 @@ SEEN_RATE = {'newsletter_email': 0.35, 'email': 0.45, 'sms': 0.9, 'app_push': 0.
 # The control group still buys sometimes without a contact; share of the treated chance of yes.
 CONTROL_SHARE = 0.4
 
-FILTERS = ('value_tier', 'tenure', 'lines', 'city')
+FILTERS = ('value_tier', 'tenure', 'lines', 'city', 'product')
+LIST_FILTERS = {'product'}  # a customer can hold several; any match counts
 REASONS = {
     'control': 'Held back as control group',
     'not_relevant': 'Already has it, not relevant or switched off',
@@ -32,6 +33,12 @@ def _lines(r):
     return 'Single line' if r['value']['lines'] <= 1 else 'Multi-line (2+)'
 
 
+def held_tariffs(engine):
+    """Sellable plan/tariff names customers actually hold, for the campaign product filter."""
+    from .lifecycle import _groups
+    return sorted({g['name'] for g in _groups(engine)})
+
+
 def options(engine):
     rows = engine.all()
     tier = tiers(rows)
@@ -43,6 +50,7 @@ def options(engine):
         'tenure': pick(lambda r: tenure(r['since'])),
         'lines': pick(_lines),
         'city': pick(lambda r: r['city']),
+        'product': held_tariffs(engine),
     }
 
 
@@ -55,11 +63,24 @@ def audience(engine, spec):
     """Who the campaign reaches, who it may contact, and why everyone else is left out."""
     rows = engine.all()
     tier = tiers(rows)
-    key = {'value_tier': lambda r: tier(r['value']['clv']), 'tenure': lambda r: tenure(r['since']), 'lines': _lines, 'city': lambda r: r['city']}
+    key = {'value_tier': lambda r: tier(r['value']['clv']), 'tenure': lambda r: tenure(r['since']), 'lines': _lines,
+           'city': lambda r: r['city'], 'product': lambda r: [p['name'] for p in r['products']]}
     cap = engine.settings()['contact_cap_30d']
+
+    def excluded(r):
+        for f in FILTERS:
+            wanted = spec.get(f)
+            if not wanted:
+                continue
+            held = key[f](r)
+            hit = bool(set(held) & set(wanted)) if f in LIST_FILTERS else held in wanted
+            if not hit:
+                return True
+        return False
+
     targeted, contactable, left_out = [], [], {k: 0 for k in REASONS}
     for r in rows.values():
-        if any(spec.get(f) and key[f](r) not in spec[f] for f in FILTERS):
+        if excluded(r):
             continue
         targeted.append(r['id'])
         option = next((o for o in r['candidates'] if o['offer'] == spec['offer']), None)
