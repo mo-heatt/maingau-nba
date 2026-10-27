@@ -58,7 +58,8 @@ def test_answer_sends_data_and_recent_turns(engine, fake_provider):
     body = fake_provider['body']
     assert fake_provider['auth'] == 'Bearer fixture-key'
     assert body['messages'][0]['role'] == 'system' and '"service_fixes"' in body['messages'][0]['content']
-    assert [m['content'] for m in body['messages'][1:]] == [t['content'] for t in turns[-assistant.MAX_TURNS:]]
+    sent, recent = [m['content'] for m in body['messages'][1:]], [t['content'] for t in turns[-assistant.MAX_TURNS:]]
+    assert sent[:-1] == recent[:-1] and sent[-1] == recent[-1] + '\n\n(Answer in English.)'
 
 
 def test_provider_error_is_reported_not_raised_raw(engine, monkeypatch):
@@ -67,3 +68,21 @@ def test_provider_error_is_reported_not_raised_raw(engine, monkeypatch):
     monkeypatch.setenv('HAI_API_KEY', 'fixture-key')
     with pytest.raises(assistant.AssistantError, match='HTTP 500'):
         assistant.answer(engine, [{'role': 'user', 'content': 'Hi'}])
+
+
+def test_named_customer_comes_with_calls_contract_and_portal_visits(engine):
+    c = assistant.packet(engine, 'MG-100562 Rechnung nicht angekommen')['customers_asked_about'][0]
+    assert c['energy_contracts'][0]['monthly_installment_eur'] > 0
+    assert 'dritten Mal' in c['call_transcripts'][0]['transcript']
+    assert c['portal_visits'] and c['service_history'][0]['status'] == 'open'
+
+
+@pytest.mark.parametrize('question, expected', [
+    ('MG-100562 rechnung nicht angekommen sagtr der kunder', 'German'),
+    ('Warum bekommt MG-100004 kein Angebot?', 'German'),
+    ('Was ist los mit MG-100004?', 'German'),
+    ('Why is MG-100004 not getting an offer?', 'English'),
+    ('What was the uplift?', 'English'),
+])
+def test_answer_language_follows_the_question(question, expected):
+    assert assistant.language(question) == expected

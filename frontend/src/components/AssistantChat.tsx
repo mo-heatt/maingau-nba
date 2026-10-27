@@ -8,11 +8,31 @@ type Turn = {role: 'user' | 'assistant'; content: string; error?: boolean};
 
 const SUGGESTIONS = ['Which offer is recommended most often?', 'Why is MG-100004 not getting an offer?', 'Which customers are stuck in service?'];
 
-// Customer IDs in an answer become links to their profile.
+// Customer IDs in an answer become links to their profile; **text** becomes bold.
 function Linked({text, onSelect}: {text: string; onSelect: (id: string) => void}) {
-  return <>{text.split(/(MG-\d{6})/g).map((part, i) => /^MG-\d{6}$/.test(part)
+  return <>{text.split(/(\*\*[^*]+\*\*|MG-\d{6})/g).map((part, i) => /^MG-\d{6}$/.test(part)
     ? <button key={i} className="link" onClick={() => onSelect(part)}>{part}</button>
+    : /^\*\*[^*]+\*\*$/.test(part) ? <b key={i}>{part.slice(2, -2)}</b>
     : <Fragment key={i}>{part}</Fragment>)}</>;
+}
+
+// The model answers in light markdown: bold headings on their own line, "- " or "1. " bullets, paragraphs.
+function Answer({text, onSelect}: {text: string; onSelect: (id: string) => void}) {
+  const blocks: {kind: 'p' | 'h' | 'ul' | 'ol'; lines: string[]}[] = [];
+  for (const raw of text.split('\n')) {
+    const line = raw.trim().replace(/^#{1,6}\s+/, '');
+    if (!line) {blocks.push({kind: 'p', lines: []});continue}
+    const bullet = line.match(/^[-*•]\s+(.*)/), numbered = line.match(/^\d+[.)]\s+(.*)/);
+    const kind = bullet ? 'ul' : numbered ? 'ol' : /^\*\*[^*]+\*\*:?$/.test(line) ? 'h' : 'p';
+    const content = bullet?.[1] ?? numbered?.[1] ?? (kind === 'h' ? line.replace(/^\*\*|\*\*:?$/g, '') : line);
+    const last = blocks[blocks.length - 1];
+    if (last && last.kind === kind && kind !== 'h' && last.lines.length) last.lines.push(content);
+    else blocks.push({kind, lines: [content]});
+  }
+  return <>{blocks.filter(b => b.lines.length).map((b, i) =>
+    b.kind === 'h' ? <h3 key={i}>{b.lines[0]}</h3>
+    : b.kind === 'p' ? <p key={i}><Linked text={b.lines.join(' ')} onSelect={onSelect} /></p>
+    : <b.kind key={i}>{b.lines.map((l, j) => <li key={j}><Linked text={l} onSelect={onSelect} /></li>)}</b.kind>)}</>;
 }
 
 // Floating data assistant: questions go to /assistant, which answers from the app's own numbers.
@@ -46,7 +66,7 @@ export default function AssistantChat({onSelect, onConnect}: {onSelect: (id: str
         {!turns.length && <div className="assistant-empty"><p>Ask about customers, recommendations or service cases.</p>
           {SUGGESTIONS.map(s => <button key={s} className="assistant-suggestion" onClick={() => ask(s)}>{s}</button>)}</div>}
         {turns.map((t, i) => <div key={i} className={'assistant-msg from-' + t.role + (t.error ? ' error' : '')}>
-          {t.role === 'assistant' && !t.error ? <Linked text={t.content} onSelect={onSelect} /> : t.content}
+          {t.role === 'assistant' && !t.error ? <Answer text={t.content} onSelect={onSelect} /> : t.content}
           {t.error && /Developer area/.test(t.content) && <button className="button small" onClick={onConnect}>Open Developer area</button>}
         </div>)}
         {busy && <div className="assistant-msg from-assistant thinking">Thinking…</div>}

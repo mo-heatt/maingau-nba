@@ -32,4 +32,16 @@ describe('AssistantChat', () => {
     expect(onConnect).toHaveBeenCalled();
     await waitFor(() => expect(screen.getByRole('button', {name: 'Send'})).toBeDisabled());
   });
+
+  it('shows answers with headings and bullet points', async () => {
+    const user = userEvent.setup();
+    request.mockResolvedValue({answer: '**In short**\nMG-100562 is upset and was promised a **callback**.\n\n**What to do now**\n- Call back today\n- Book the promised credit note'});
+    render(<AssistantChat onSelect={() => {}} onConnect={() => {}} />);
+    await user.click(screen.getByRole('button', {name: 'Ask the data assistant'}));
+    await user.type(screen.getByRole('textbox', {name: 'Question'}), 'Was ist mit MG-100562?{Enter}');
+    expect(await screen.findByRole('heading', {name: 'What to do now'})).toBeInTheDocument();
+    expect(screen.getAllByRole('listitem').map(li => li.textContent)).toEqual(['Call back today', 'Book the promised credit note']);
+    expect(screen.getByText('callback').tagName).toBe('B');
+    expect(screen.getByRole('button', {name: 'MG-100562'})).toBeInTheDocument();
+  });
 });
