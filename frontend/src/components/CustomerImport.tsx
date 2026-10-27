@@ -2,6 +2,7 @@ import {useEffect,useRef,useState} from 'react';
 import {AlertTriangle,CheckCircle2,FileDown,FileUp,LoaderCircle,UserPlus,X} from 'lucide-react';
 import {channel,eur} from '../api';
 import {STATIC_MODE} from '../staticApi';
+import '../customer-import.css';
 type Preview={customer_id:string;stored:boolean;warnings:string[];contact_channels:string[];
  customer:{city:string;household_size:number;preferred_contact_language:string;customer_since:string;birth_year:number|null;portal_account:boolean;app_installed:boolean};
  consents:Record<string,string>;decision:{action:string;name:string;reason:string;expected_gain_eur:number}};
