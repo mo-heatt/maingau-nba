@@ -21,4 +21,10 @@ describe('workspace breadcrumbs',()=>{
   expect(screen.queryByRole('link')).not.toBeInTheDocument();
   expect(screen.getByText('Overview')).toHaveAttribute('aria-current','page');
  });
+ it('puts Service first under Customers',()=>{
+  render(<Breadcrumbs view="service" title="Service first" customerId={null}/>);
+  const trail=screen.getByRole('navigation',{name:'Breadcrumb'});
+  expect(within(trail).getByRole('link',{name:'Customers'})).toHaveAttribute('href','#customers');
+  expect(within(trail).getByText('Service first')).toHaveAttribute('aria-current','page');
+ });
 });
