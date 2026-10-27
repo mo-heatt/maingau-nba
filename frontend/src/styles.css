@@ -289,3 +289,33 @@ main{max-width:1740px}.customer-layout{grid-template-columns:208px minmax(0,1fr)
 .ov-problem-fix b{color:var(--success-text)}
 @media(max-width:1100px){.ov-problems{grid-template-columns:repeat(2,minmax(0,1fr))}.ov-problem,.ov-problem:nth-child(4),.ov-problem:nth-child(5){grid-column:auto}.ov-problem:first-child{grid-column:1/-1}}
 @media(max-width:640px){.ov-problems{grid-template-columns:minmax(0,1fr);padding:0 16px 18px}.ov-problem strong{font-size:26px}}
+/* Engine in seven steps: a pipeline with arrows, a highlight travelling through it, and the learning loop back to step 4 */
+.flow{--g:30px;--w:calc((100% - 6 * var(--g)) / 7);--cycle:8.4s;padding:4px 23px 22px}
+.flow-steps{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:var(--g)}
+.flow-step{position:relative;min-width:0;display:flex}
+.flow-card{flex:1;border:1px solid var(--line);border-radius:var(--r);padding:14px 14px 16px;background:var(--surface);min-width:0;
+  animation:flow-in .5s ease-out calc(var(--i) * 80ms) backwards,flow-pulse var(--cycle) ease-in-out calc(1s + var(--i) * 1.2s) infinite}
+.flow-top{display:flex;align-items:center;justify-content:space-between;color:var(--text-muted)}
+.flow-num{display:grid;place-items:center;width:26px;height:26px;border-radius:50%;background:var(--surface-raised);color:var(--text-strong);font-weight:700;font-size:var(--t-sm);font-variant-numeric:tabular-nums;
+  animation:flow-num var(--cycle) ease-in-out calc(1s + var(--i) * 1.2s) infinite}
+.flow-card h3{margin:12px 0 4px;font-size:var(--t-md,15px);color:var(--text-strong)}
+.flow-card p{font-size:var(--t-sm);margin:0;color:var(--text-muted);line-height:1.5}
+.flow-arrow{position:absolute;top:50%;right:calc(var(--g) / -2);transform:translate(50%,-50%);z-index:1;display:grid;place-items:center;width:26px;height:26px;border-radius:50%;
+  background:var(--surface);border:1px solid var(--line);color:var(--text-muted);animation:flow-arrow var(--cycle) ease-in-out calc(1.6s + var(--i) * 1.2s) infinite}
+/* The loop starts under step 7 and ends with an arrowhead under step 4 */
+.flow-loop{position:relative;margin:8px calc(var(--w) / 2) 0 calc(3 * (var(--w) + var(--g)) + var(--w) / 2)}
+.flow-loop svg{display:block;width:100%;height:42px;overflow:visible}
+.flow-loop path{fill:none;stroke:var(--link);stroke-width:2;stroke-dasharray:6 6;vector-effect:non-scaling-stroke;animation:flow-dash 1.4s linear infinite;opacity:.75}
+.flow-loop-head{position:absolute;left:0;top:-7px;transform:translateX(-50%);width:0;height:0;border-left:7px solid transparent;border-right:7px solid transparent;border-bottom:10px solid var(--link);opacity:.85}
+.flow-loop p{margin:8px auto 0;max-width:620px;text-align:center;font-size:var(--t-sm);color:var(--text-muted);line-height:1.5}
+.flow-loop p b{color:var(--link);margin-right:6px}
+@keyframes flow-in{from{transform:translateY(10px);opacity:.3}}
+@keyframes flow-pulse{0%,13%,100%{border-color:var(--line);box-shadow:none;transform:none}4%,8%{border-color:var(--link);box-shadow:0 8px 22px #004bad26;transform:translateY(-4px)}}
+@keyframes flow-num{0%,13%,100%{background:var(--surface-raised);color:var(--text-strong)}4%,8%{background:#ffe500;color:#002657}}
+@keyframes flow-arrow{0%,10%,100%{color:var(--text-muted);border-color:var(--line);transform:translate(50%,-50%)}4%{color:var(--link);border-color:var(--link);transform:translate(calc(50% + 4px),-50%)}}
+@keyframes flow-dash{to{stroke-dashoffset:-24}}
+:root[data-theme="dark"] .flow-card{animation-name:flow-in,flow-pulse-dark}
+@keyframes flow-pulse-dark{0%,13%,100%{border-color:var(--line);box-shadow:none;transform:none}4%,8%{border-color:var(--link);box-shadow:0 8px 24px #00000066;transform:translateY(-4px)}}
+@media(prefers-reduced-motion:reduce){.flow-card,.flow-num,.flow-arrow,.flow-loop path{animation:none!important}}
+@media(max-width:1100px){.flow-steps{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.flow-arrow,.flow-loop svg,.flow-loop-head{display:none}.flow-loop{margin:14px 0 0}.flow-loop p{text-align:left;max-width:none}}
+@media(max-width:560px){.flow{padding:4px 16px 18px}.flow-steps{grid-template-columns:minmax(0,1fr)}}
