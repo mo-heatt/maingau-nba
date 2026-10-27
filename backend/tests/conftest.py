@@ -17,6 +17,28 @@ import pytest
 
 from app.engine.constants import SETTINGS
 
+# data/ is gitignored, so the workbook is missing in CI: tests that need it must skip, not crash.
+MOCKDATA = BACKEND.parent / "data" / "maingau_nba_mockdata.xlsx"
+
+
+@pytest.fixture(scope="session")
+def mockdata():
+    if not MOCKDATA.exists():
+        pytest.skip("Mock data not present: put maingau_nba_mockdata.xlsx in data/")
+    return MOCKDATA
+
+
+@pytest.fixture(scope="session")
+def source_db(tmp_path_factory, mockdata):
+    """A database imported from the workbook, as the app does at startup. Tests copy it, never write to it."""
+    from app import database as db, newsletter
+    from app.ingestion import import_sources
+    path = tmp_path_factory.mktemp("source") / "nba.sqlite"
+    with pytest.MonkeyPatch.context() as mp:
+        mp.setenv("NBA_DB_PATH", str(path))
+        db.initialize(); newsletter.seed(); import_sources()
+    return path
+
 
 @pytest.fixture(scope="session")
 def P():

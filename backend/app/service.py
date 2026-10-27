@@ -83,19 +83,29 @@ class EngineService:
     def _cached_rows(self):
         with self.lock:
             settings=self.settings();version=settings['version']
+            overrides=self.overrides()
             with db.connect() as c:
-                overrides={r['customer_id']:dict(r) for r in c.execute('SELECT * FROM overrides')}
                 reviews={}
                 for r in c.execute('SELECT * FROM reviews ORDER BY id'):reviews[r['customer_id']]=dict(r)
             key=(version,json.dumps(overrides,sort_keys=True))
-            if key not in self._cache:
-                rows={}
-                for cid in self.state:
-                    try:rows[cid]=self.evaluate(cid,settings,overrides.get(cid))
-                    except ValueError:
-                        rows[cid]=self.evaluate(cid,settings);rows[cid]['decision']['log'].append('Saved override expired: current rules no longer allow it')
-                self._cache={key:rows}
+            if key not in self._cache:self._cache={key:self.evaluate_all(settings,overrides)}
             return self._cache[key], reviews
+
+    def overrides(self):
+        with db.connect() as c:return {r['customer_id']:dict(r) for r in c.execute('SELECT * FROM overrides')}
+
+    def evaluate_all(self,settings,overrides):
+        rows={}
+        for cid in self.state:
+            try:rows[cid]=self.evaluate(cid,settings,overrides.get(cid))
+            except ValueError:
+                rows[cid]=self.evaluate(cid,settings);rows[cid]['decision']['log'].append('Saved override expired: current rules no longer allow it')
+        return rows
+
+    def preview_settings(self,values):
+        """What-if: decisions under draft settings, without saving them."""
+        settings={**self.settings(),**values};self.validate_settings(settings)
+        return self.evaluate_all(settings,self.overrides())
 
     def _with_review(self,row,reviews):
         row=copy.deepcopy(row)
@@ -136,8 +146,12 @@ class EngineService:
         return self.customer(cid)
 
     def marketing(self):
-        rows=list(self.all().values());actions=[r for r in rows if r['decision']['action'] in ['offer','service']]
+        from .orchestration import dashboard,tiers,tenure
+        everyone=self.all();rows=list(everyone.values());actions=[r for r in rows if r['decision']['action'] in ['offer','service']]
+        tier=tiers(everyone)
+        # Slim rows: the queue lists every actionable customer, so the full profile stays on /customers/{id}.
+        slim=lambda r:{'id':r['id'],'city':r['city'],'since':r['since'],'value':r['value'],'decision':r['decision'],'segment':{'tier':tier(r['value']['clv']),'tenure':tenure(r['since'])}}
         aggregate={}
         for r in actions:
             d=r['decision'];a=aggregate.setdefault(d['product_id'],{'product_id':d['product_id'],'name':d['name'],'customers':0,'expected_gain_eur':0});a['customers']+=1;a['expected_gain_eur']+=d['expected_gain_eur']
-        return safe({'customers':len(rows),'expected_gain_eur':round(sum(r['decision']['expected_gain_eur'] for r in actions),2),'offers':sum(r['decision']['action']=='offer' for r in rows),'service_fixes':sum(r['decision']['action']=='service' for r in rows),'held_out':sum(r['decision']['control_group'] and r['decision']['action'] in ['offer','service'] for r in rows),'approved':sum(r['decision']['status']=='approved' for r in rows),'no_contact':sum(r['decision']['action'] not in ['offer','service'] for r in rows),'queue':sorted([r for r in actions if not r['decision']['control_group']],key=lambda r:r['decision']['expected_gain_eur'],reverse=True)[:25],'top_actions':sorted(aggregate.values(),key=lambda a:a['expected_gain_eur'],reverse=True),'quality':self.quality,'acceptance':self.A})
+        return safe({'customers':len(rows),'expected_gain_eur':round(sum(r['decision']['expected_gain_eur'] for r in actions),2),'offers':sum(r['decision']['action']=='offer' for r in rows),'service_fixes':sum(r['decision']['action']=='service' for r in rows),'held_out':sum(r['decision']['control_group'] and r['decision']['action'] in ['offer','service'] for r in rows),'approved':sum(r['decision']['status']=='approved' for r in rows),'no_contact':sum(r['decision']['action'] not in ['offer','service'] for r in rows),'queue':[slim(r) for r in sorted([r for r in actions if not r['decision']['control_group']],key=lambda r:r['decision']['expected_gain_eur'],reverse=True)],'top_actions':sorted(aggregate.values(),key=lambda a:a['expected_gain_eur'],reverse=True),'quality':self.quality,'acceptance':self.A,**dashboard(everyone)})

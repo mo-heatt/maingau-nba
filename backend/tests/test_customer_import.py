@@ -59,11 +59,9 @@ def test_templates_parse_cleanly():
 
 
 @pytest.fixture
-def database(tmp_path, monkeypatch):
-    source = db.ROOT / 'data/nba.sqlite'
-    if not source.exists(): pytest.skip('Local dataset required')
+def database(tmp_path, monkeypatch, source_db):
     dest = tmp_path / 'import.sqlite'
-    with sqlite3.connect(source) as src, sqlite3.connect(dest) as target: src.backup(target)
+    with sqlite3.connect(source_db) as src, sqlite3.connect(dest) as target: src.backup(target)
     monkeypatch.setenv('NBA_DB_PATH', str(dest));db.initialize()
     return dest
 
