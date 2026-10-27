@@ -98,7 +98,10 @@ def test_engine_failure_stores_nothing(database):
     assert uploads(database) == before
 
 
-def test_api_returns_all_errors_as_422(database):
+def test_api_returns_all_errors_as_422(tmp_path, monkeypatch):
+    # Without the app's startup (no `with TestClient`), create the empty tables first: CI has no local database.
+    monkeypatch.setenv('NBA_DB_PATH', str(tmp_path / 'api.sqlite'))
+    db.initialize()
     response = TestClient(app).post('/api/customers/import', json={'filename': 'c.csv', 'content': 'city;household_size\n;0\n'})
     assert response.status_code == 422
     detail = response.json()['detail']
