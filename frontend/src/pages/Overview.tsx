@@ -1,4 +1,6 @@
-import {ArrowRight, Check, X, Mail, MessageSquareText, AlertTriangle} from 'lucide-react';
+import {ArrowRight, Check, X, Mail, MessageSquareText, AlertTriangle, ShieldAlert, BellOff, EyeOff, Scale, HeartCrack, CircleCheck} from 'lucide-react';
+import type {LucideIcon} from 'lucide-react';
+import type {ReactNode} from 'react';
 import {useApi, eur, channel} from '../api';
 import type {Customer, Catalog, Replay} from '../types';
 import {Metric, Panel, Loading} from '../components/ui';
@@ -74,13 +76,28 @@ export default function Overview({revision, onGo, onSelect}: {revision: number; 
       <ul className="ov-rules">{RULES.map(r => <li key={r}><Check size={14} />{r}</li>)}</ul>
     </Panel>
 
-    <Panel title="What we found in Maingau’s own data" subtitle={`The current rule engine made ${L.actions.toLocaleString('en-GB')} decisions from June to September with ${L.rules} broad rules. It looks at segments, not at the person.`}>
-      <div className="ov-finds">
-        <div><strong>{L.consent_not_checked}</strong><p>actions skipped the consent check; <b>{L.unchecked_and_no_consent}</b> reached a channel without consent.</p></div>
-        <div><strong>{L.app_push_without_app}/{L.app_push}</strong><p>app pushes went to customers who don’t have the app.</p></div>
-        <div><strong>{pct(((resp.ignored || 0) + (resp.dismissed || 0)) / (total || 1))}</strong><p>of contacts were ignored or dismissed.</p></div>
-        <div><strong>{pct(o.acceptance.treated, 1)} vs {pct(o.acceptance.control, 1)}</strong><p>bought after a contact vs. without one. Much would have happened anyway.</p></div>
-        <div><strong>{L.agent_dismissed_upset}/{L.agent_dismissed}</strong><p>sales tips dismissed by service agents: the customer was upset.</p></div>
+    <Panel title="5 problems in today’s rule engine" subtitle={`Found in Maingau’s own data: ${L.actions.toLocaleString('en-GB')} decisions from June to September, made by ${L.rules} broad rules that look at segments, not at the person. Each card shows the problem, why it matters and how our engine fixes it.`}>
+      <div className="ov-problems">
+        <Problem tone="critical" Icon={ShieldAlert} tag="Legal risk" figure={String(L.consent_not_checked)}
+          text={<>actions skipped the consent check; <b>{L.unchecked_and_no_consent}</b> reached a channel without consent.</>}
+          why="Contacting without consent breaks GDPR and UWG rules."
+          fix={`Consent is checked for every channel, every time. Violations in our run: ${o.violations}.`} />
+        <Problem tone="warning" Icon={BellOff} tag="Wasted contact" figure={`${L.app_push_without_app}/${L.app_push}`}
+          text="app pushes went to customers who don’t have the app."
+          why="These messages could never arrive."
+          fix="A channel is only used where the customer can see it: app installed, regular portal logins." />
+        <Problem tone="warning" Icon={EyeOff} tag="Ignored" figure={pct(((resp.ignored || 0) + (resp.dismissed || 0)) / (total || 1))}
+          text="of contacts were ignored or dismissed."
+          why="The same message to a whole segment teaches customers to ignore Maingau."
+          fix={`One offer per person, ranked by expected gain. If nothing is worth it, no contact (${o.summary.no_contact} customers left alone).`} />
+        <Problem tone="warning" Icon={Scale} tag="No proof of effect" figure={`${pct(o.acceptance.treated, 1)} vs ${pct(o.acceptance.control, 1)}`}
+          text="bought after a contact vs. without one."
+          why="Contacts get credit for purchases that would have happened anyway. The control group is small, so treat the gap with care."
+          fix="A stable 10% control group measures what each contact really adds." />
+        <Problem tone="warning" Icon={HeartCrack} tag="Hurts service" figure={`${L.agent_dismissed_upset}/${L.agent_dismissed}`}
+          text="sales tips dismissed by service agents because the customer was upset."
+          why="Selling to an upset customer makes the problem worse."
+          fix="Service first: complaints and unpaid bills get a fix, not an offer. Stuck cases go on the Case Radar." />
       </div>
     </Panel>
 
@@ -121,4 +138,15 @@ export default function Overview({revision, onGo, onSelect}: {revision: number; 
       {([['recommendations', 'Recommendations', 'Every customer: offer, channel, tone, expected gain and reason.'], ['customers', 'Customer 360°', 'For service agents: status, value, the best action and why.'], ['service', 'Service first', 'Case Radar: stuck customers, why, and one click to stop the harm.'], ['marketing', 'Marketing dashboard', 'Set limits, priorities and channels; approve texts and actions.'], ['method', 'How it works', 'The pipeline, event replay, learning loop and target architecture.']] as [View, string, string][]).map(([v, t, x]) => <button key={v} onClick={() => onGo(v)}><h3>{t} <ArrowRight size={14} /></h3><p>{x}</p></button>)}
     </div>
   </div>;
+}
+
+// One problem found in the current engine: what, why it matters, and how our engine fixes it.
+function Problem({tone, Icon, tag, figure, text, why, fix}: {tone: 'critical' | 'warning'; Icon: LucideIcon; tag: string; figure: string; text: ReactNode; why: string; fix: string}) {
+  return <article className={'ov-problem ' + tone}>
+    <header><span className="ov-problem-icon" aria-hidden="true"><Icon size={18} /></span><span className="ov-problem-tag">{tag}</span></header>
+    <strong>{figure}</strong>
+    <p className="ov-problem-what">{text}</p>
+    <p className="ov-problem-why">{why}</p>
+    <p className="ov-problem-fix"><CircleCheck size={15} aria-hidden="true" /><span><b>Our fix:</b> {fix}</span></p>
+  </article>;
 }
