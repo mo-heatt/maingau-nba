@@ -140,7 +140,7 @@
 @media(max-width:640px){.mk-tones,.ov-steps.mk-loop{grid-template-columns:minmax(0,1fr)}.mk-bars,.mk-list,.mk-events,.mk-delta,.mk-templates,.mk-form,.mk-note{padding-left:16px;padding-right:16px}.mk-sub{margin-left:16px}.mk-bulk{flex-wrap:wrap;padding:var(--s-3) 16px}.mk-bar{grid-template-columns:minmax(0,1fr) 72px}.mk-bar .bar-track{grid-column:1/-1;grid-row:2}.mk-bar small{grid-row:3}}
 
 /* Product lifecycle */
-.lc-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:12px}
+.lc-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:12px;padding:2px 23px 22px}
 .lc-card{border:1px solid var(--line);border-radius:10px;padding:14px 15px;background:var(--surface);display:grid;gap:10px;min-width:0}
 .lc-card.stage-aging{border-color:#d99a0055;background:linear-gradient(0deg,#d99a0008,#d99a0008),var(--surface)}
 .lc-card.stage-legacy{border-color:#c23b2255;background:linear-gradient(0deg,#c23b2208,#c23b2208),var(--surface)}
@@ -167,12 +167,13 @@
 .lc-ops td .lc-stage{display:inline-block}
 .lc-ops td b small,.lc-ops td small{display:block;font-size:11px;color:var(--text-muted);font-weight:normal}
 .lc-ops td.gain{color:#16836a;font-weight:bold}
-.lc-cliffs{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:10px}
+.lc-cliffs{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:10px;padding:2px 23px 22px}
 .lc-cliff{border:1px solid var(--line);border-radius:9px;padding:12px 13px;background:var(--surface-muted);display:grid;gap:4px}
 .lc-cliff b{font-size:13.5px;color:var(--text-strong)}
 .lc-cliff span{font-size:12.5px}
 .lc-cliff small{font-size:11px;color:var(--text-muted)}
-.lc-brief-empty{display:grid;gap:10px;justify-items:start}
+.lc-brief-empty{display:grid;gap:10px;justify-items:start;padding:2px 23px 22px}
+.lc-brief{padding:2px 23px 22px}
 .lc-brief header{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
 .lc-brief header h3{margin:4px 0 0;font-size:17px;color:var(--text-strong);letter-spacing:-.2px}
 .lc-brief .eyebrow{font-size:10px;letter-spacing:1.2px;color:var(--text-muted);text-transform:uppercase}
