@@ -72,9 +72,11 @@ def uploads(path):
     with sqlite3.connect(path) as c: return c.execute("SELECT source,customer_id FROM source_records WHERE origin='upload'").fetchall()
 
 
+# The local database may already hold customers someone imported, so compare before and after.
 def test_dry_run_scores_but_stores_nothing(database):
+    before = uploads(database)
     preview, engine = ci.run('c.csv', CSV, lambda rows: EngineService(extra=rows), dry_run=True)
-    assert not preview['stored'] and uploads(database) == []
+    assert not preview['stored'] and uploads(database) == before
     assert preview['decision']['action'] and engine.customer(preview['customer_id'])['city'] == 'Offenbach'
     assert set(preview['contact_channels']) <= {'email', 'portal_popup', 'app_push'}
 
@@ -82,7 +84,7 @@ def test_dry_run_scores_but_stores_nothing(database):
 def test_store_appends_rows_and_the_new_engine_knows_the_customer(database):
     preview, engine = ci.run('c.csv', CSV, lambda rows: EngineService(extra=rows), dry_run=False)
     cid = preview['customer_id']
-    assert preview['stored'] and sorted(s for s, _ in uploads(database)) == ['consent_status'] * 6 + ['customer_master', 'customer_value']
+    assert preview['stored'] and sorted(s for s, c in uploads(database) if c == cid) == ['consent_status'] * 6 + ['customer_master', 'customer_value']
     assert EngineService().customer(cid)['consent']['marketing_phone']['status'] == 'withdrawn'
     with pytest.raises(sqlite3.IntegrityError, match='immutable'):
         with db.connect() as c: c.execute("DELETE FROM source_records WHERE origin='upload'")
@@ -93,8 +95,9 @@ def test_store_appends_rows_and_the_new_engine_knows_the_customer(database):
 
 def test_engine_failure_stores_nothing(database):
     def broken(rows): raise RuntimeError('boom')
+    before = uploads(database)
     with pytest.raises(ci.CustomerFileError, match='Nothing was stored'): ci.run('c.csv', CSV, broken, dry_run=False)
-    assert uploads(database) == []
+    assert uploads(database) == before
 
 
 def test_api_returns_all_errors_as_422():
