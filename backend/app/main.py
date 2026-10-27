@@ -166,8 +166,11 @@ def marketing_preview(body:Settings):
 class Campaign(BaseModel):
     model_config=ConfigDict(extra='forbid')
     name:str=Field(min_length=1,max_length=80)
+    goal:str=Field(default='',max_length=500)
     offer:str
-    channel:str
+    channel:Optional[str]=None  # None: every customer gets their own best channel
+    segments:List[str]=Field(default=[],max_length=40)
+    follows:Optional[int]=None
     value_tier:List[str]=[]
     tenure:List[str]=[]
     lines:List[str]=[]
@@ -188,6 +191,12 @@ def campaign_list():return campaigns.all_campaigns(engine())
 
 @app.post('/api/campaigns/preview')
 def campaign_preview(body:Campaign):return campaign_call(campaigns.preview,engine(),body.model_dump(mode='json'))
+
+@app.post('/api/campaigns/suggest')
+def campaign_suggest(body:Campaign):return campaign_call(campaigns.suggest,engine(),body.model_dump(mode='json'))
+
+@app.post('/api/campaigns/{cid}/follow-up')
+def campaign_follow_up(cid:int):return campaign_call(campaigns.follow_up,engine(),cid)
 
 @app.post('/api/campaigns')
 def campaign_create(body:Campaign):return campaign_call(campaigns.create,engine(),body.model_dump(mode='json'))
