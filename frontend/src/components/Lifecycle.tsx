@@ -2,7 +2,7 @@ import {useState} from 'react';
 import {BrainCircuit, LoaderCircle, Megaphone, RefreshCw} from 'lucide-react';
 import {useApi, request, eur} from '../api';
 import {STATIC_MODE} from '../staticApi';
-import {Loading, Panel} from './ui';
+import {Loading, Panel, Metric} from './ui';
 
 const eur0 = (v: number) => new Intl.NumberFormat('de-DE', {style: 'currency', currency: 'EUR', maximumFractionDigits: 0}).format(v);
 
@@ -36,7 +36,7 @@ export default function Lifecycle({revision, names, onNewCampaign}: {revision: n
   if (!data) return <Loading />;
   const aging = data.products.filter(p => ['aging', 'legacy', 'dormant'].includes(p.stage));
   return <div className="lifecycle">
-    <div className="mk-metrics">
+    <div className="metrics">
       <Metric label="Products tracked" value={String(data.products.length)} hint="active plans and tariffs in the contracts" />
       <Metric label="Tired or worse" value={String(aging.length)} hint="aging, legacy or dormant products" />
       <Metric label="Computed migration gain" value={eur0(data.opportunities.reduce((s, o) => s + Math.max(0, o.expected_gain_eur), 0))} hint="expected CLV gain, engine-scored" />
@@ -111,6 +111,3 @@ export default function Lifecycle({revision, names, onNewCampaign}: {revision: n
   </div>;
 }
 
-function Metric({label, value, hint}: {label: string; value: string; hint?: string}) {
-  return <div className="mk-metric"><span>{label}</span><strong>{value}</strong>{hint && <small>{hint}</small>}</div>;
-}
