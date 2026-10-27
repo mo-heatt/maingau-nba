@@ -41,9 +41,6 @@ services:
   nginx:
     image: nginx:alpine
     restart: unless-stopped
-    depends_on:
-      - app-prod
-      - app-dev
     ports:
       - "80:80"
       - "443:443"
