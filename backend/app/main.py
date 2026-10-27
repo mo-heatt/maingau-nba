@@ -13,7 +13,7 @@ from . import database as db
 from .ingestion import import_sources
 from .service import EngineService, safe
 from .replay import preview
-from . import ai_nba, assistant, outreach, portfolio, newsletter, developer, customer_import
+from . import ai_nba, assistant, outreach, portfolio, newsletter, developer, customer_import, lifecycle
 from .insights import customer_insights
 from .email_template import for_draft
 from .overview import overview as overview_data
@@ -175,6 +175,7 @@ class Campaign(BaseModel):
     tenure:List[str]=[]
     lines:List[str]=[]
     city:List[str]=[]
+    product:List[str]=[]
     starts:Optional[date]=None
     ends:Optional[date]=None
 
@@ -185,6 +186,16 @@ def campaign_call(fn,*args):
 
 @app.get('/api/campaigns/options')
 def campaign_options():return campaigns.options(engine())
+
+@app.get('/api/marketing/lifecycle')
+def marketing_lifecycle():return safe(lifecycle.view(engine()))
+
+class BriefRequest(BaseModel):
+    model_config=ConfigDict(extra='forbid')
+    refresh:bool=False
+
+@app.post('/api/marketing/lifecycle/brief')
+def marketing_lifecycle_brief(body:BriefRequest):return call(lifecycle.brief,engine(),body.refresh)
 
 @app.get('/api/campaigns')
 def campaign_list():return campaigns.all_campaigns(engine())

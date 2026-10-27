@@ -31,7 +31,8 @@ DEFAULT_DAYS = 14
 # Below this many customers a rate is too noisy to act on.
 MIN_SAMPLE = 8
 
-FILTERS = ('value_tier', 'tenure', 'lines', 'city')
+FILTERS = ('value_tier', 'tenure', 'lines', 'city', 'product')
+LIST_FILTERS = {'product'}  # a customer can hold several; any match counts
 REASONS = {
     'control': 'Held back as control group',
     'not_relevant': 'Already has it, not relevant or switched off',
@@ -57,6 +58,12 @@ TIMES = [(6, 12, 'Morning'), (12, 17, 'Afternoon'), (17, 22, 'Evening')]
 
 def _lines(r):
     return 'Single line' if r['value']['lines'] <= 1 else 'Multi-line (2+)'
+
+
+def held_tariffs(engine):
+    """Sellable plan/tariff names customers actually hold, for the campaign product filter."""
+    from .lifecycle import _groups
+    return sorted({g['name'] for g in _groups(engine)})
 
 
 def need(why):
@@ -89,6 +96,7 @@ def options(engine):
         'tenure': pick(lambda r: tenure(r['since'])),
         'lines': pick(_lines),
         'city': pick(lambda r: r['city']),
+        'product': held_tariffs(engine),
     }
 
 
@@ -110,12 +118,13 @@ def plan(engine, spec):
     """Every customer in the target group: either a personal plan, or the reason they are left out."""
     rows = engine.all()
     tier = tiers(rows)
-    key = {'value_tier': lambda r: tier(r['value']['clv']), 'tenure': lambda r: tenure(r['since']), 'lines': _lines, 'city': lambda r: r['city']}
+    key = {'value_tier': lambda r: tier(r['value']['clv']), 'tenure': lambda r: tenure(r['since']), 'lines': _lines, 'city': lambda r: r['city'],
+           'product': lambda r: [p['name'] for p in r['products']]}
     settings = engine.settings()
     times = online_times(engine.X)
     targeted, members, left_out = 0, [], collections.Counter()
     for r in rows.values():
-        if any(spec.get(f) and key[f](r) not in spec[f] for f in FILTERS):
+        if any(spec.get(f) and (not (set(key[f](r)) & set(spec[f])) if f in LIST_FILTERS else key[f](r) not in spec[f]) for f in FILTERS):
             continue
         targeted += 1
         option = next((o for o in r['candidates'] if o['offer'] == spec['offer']), None)

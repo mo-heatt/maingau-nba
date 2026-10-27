@@ -5,7 +5,7 @@ import {STATIC_MODE} from '../staticApi';
 import {Loading, Panel} from './ui';
 import '../campaigns.css';
 
-type Filter = 'value_tier' | 'tenure' | 'lines' | 'city';
+type Filter = 'value_tier' | 'tenure' | 'lines' | 'city' | 'product';
 type Options = {offers: {id: string; name: string; description: string}[]; channels: {id: string; name: string}[]} & Record<Filter, string[]>;
 type Message = {language: string; subject: string; body: string};
 type Segment = {key: string; need: string; channel: string; channel_label: string; customers: number; expected_yes: number; expected_gain_eur: number; gain_per_contact_eur: number; recommended: boolean; included: boolean; tones: Record<string, number>; languages: Record<string, number>; best_time: string; examples: {id: string; reason: string; tone: string; time: string}[]; messages: Record<string, Message>};
@@ -18,9 +18,9 @@ type Insight = {kind: 'good' | 'warn' | 'idea'; title: string; text: string; dro
 type Spec = {name: string; goal: string; offer: string; channel: string; starts: string; ends: string; segments: string[]} & Record<Filter, string[]>;
 export type Campaign = Spec & {id: number; status: 'draft' | 'running'; created_at: string; launched_at: string | null; follows?: number; audience: Audience; tracking: Tracking | null; insights: Insight[]};
 
-const FILTERS: [Filter, string][] = [['value_tier', 'Value'], ['tenure', 'Tenure'], ['lines', 'Products']];
+const FILTERS: [Filter, string][] = [['value_tier', 'Value'], ['tenure', 'Tenure'], ['lines', 'Products'], ['product', 'Holds tariff']];
 const STEPS = ['Brief', 'Audience', 'Messages', 'Review'];
-const EMPTY: Spec = {name: '', goal: '', offer: '', channel: '', starts: '', ends: '', segments: [], value_tier: [], tenure: [], lines: [], city: []};
+const EMPTY: Spec = {name: '', goal: '', offer: '', channel: '', starts: '', ends: '', segments: [], value_tier: [], tenure: [], lines: [], city: [], product: []};
 const pct = (v: number | null) => v == null ? '—' : (v * 100).toFixed(1).replace('.', ',') + ' %';
 const pts = (v: number | null) => v == null ? '—' : (v > 0 ? '+' : '') + (v * 100).toFixed(1).replace('.', ',') + ' pts';
 const eur0 = (v: number) => new Intl.NumberFormat('de-DE', {style: 'currency', currency: 'EUR', maximumFractionDigits: 0}).format(v);
@@ -31,7 +31,7 @@ const mix = (o: Record<string, number>, label: (k: string) => string) => Object.
 const body = (s: Spec) => ({...s, starts: s.starts || null, ends: s.ends || null, channel: s.channel || null});
 
 function target(c: Spec) {
-  const parts = [...c.value_tier, ...c.tenure, ...c.lines, ...c.city];
+  const parts = [...c.value_tier, ...c.tenure, ...c.lines, ...(c.product ?? []), ...c.city];
   return parts.length ? parts.join(' · ') : 'All customers';
 }
 
@@ -82,12 +82,12 @@ function AdviceBox({advice}: {advice: Advice}) {
   </section>;
 }
 
-export function NewCampaign({open, onClose, onCreated}: {open: boolean; onClose: () => void; onCreated: (c: Campaign) => void}) {
+export function NewCampaign({open, onClose, onCreated, prefill}: {open: boolean; onClose: () => void; onCreated: (c: Campaign) => void; prefill?: Partial<Spec>}) {
   const modal = useRef<HTMLDialogElement>(null);
   const {data: o} = useApi<Options>('/campaigns/options');
   const [step, setStep] = useState(0), [spec, setSpec] = useState<Spec>(EMPTY), [chosen, setChosen] = useState<string[]>([]);
   const [a, setA] = useState<Audience | null>(null), [advice, setAdvice] = useState<Advice | null>(null), [busy, setBusy] = useState(''), [error, setError] = useState('');
-  useEffect(() => {if (open) modal.current?.showModal(); else {modal.current?.close();setStep(0);setSpec(EMPTY);setChosen([]);setA(null);setAdvice(null);setBusy('');setError('')}}, [open]);
+  useEffect(() => {if (open) {if (prefill) setSpec(s => ({...s, ...prefill})); modal.current?.showModal();} else {modal.current?.close();setStep(0);setSpec(EMPTY);setChosen([]);setA(null);setAdvice(null);setBusy('');setError('')}}, [open]);
   useEffect(() => {if (o && !spec.offer) setSpec(s => ({...s, offer: o.offers[0].id}))}, [o, spec.offer]);
   // Recount totals when segments change, without losing the segment list the brief produced.
   useEffect(() => {
