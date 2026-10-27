@@ -97,7 +97,6 @@ export default function Marketing({revision, onSelect, onChanged, notify}: Props
       <div className="mk-title-actions"><span className="pill">Rules revision {saved?.version} · nothing is sent automatically</span><button className="button primary" onClick={() => setCreating(true)}><Plus size={15} />New campaign</button></div>
     </PageTitle>
     <NewCampaign open={creating} prefill={prefill} onClose={() => { setCreating(false); setPrefill(undefined); }} onCreated={c => { setCreating(false); setPrefill(undefined); go('campaigns'); onChanged(); notify(`Campaign “${c.name}” saved as a draft. Approve & launch it when ready.`); }} />
-    <p className="page-intro">The engine proposes one next best action per customer, ranked by expected gain in customer lifetime value. Marketing sets the boundaries, approves offers, texts and tone, and watches whether contacts really cause the result.</p>
 
     <div className="metrics">
       <Metric label="Expected CLV gain, ready to approve" value={eur0(m.contactable_gain_eur)} hint={`${eur0(m.approved_gain_eur)} approved so far`} />
