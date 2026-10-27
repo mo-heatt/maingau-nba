@@ -13,7 +13,7 @@ from . import database as db
 from .ingestion import import_sources
 from .service import EngineService, safe
 from .replay import preview
-from . import ai_nba, outreach, portfolio, newsletter, developer, customer_import
+from . import ai_nba, assistant, outreach, portfolio, newsletter, developer, customer_import
 from .insights import customer_insights
 from .email_template import for_draft
 from .overview import overview as overview_data
@@ -197,6 +197,21 @@ class AIGenerate(BaseModel):
 
 class AIBatch(BaseModel):
     limit:int=Field(default=30,ge=1,le=50)
+
+class ChatTurn(BaseModel):
+    model_config=ConfigDict(extra='forbid')
+    role:Literal['user','assistant']
+    content:str=Field(min_length=1,max_length=2000)
+
+class Chat(BaseModel):
+    model_config=ConfigDict(extra='forbid')
+    messages:List[ChatTurn]=Field(min_length=1,max_length=40)
+
+@app.post('/api/assistant')
+def ask_assistant(body:Chat):
+    if body.messages[-1].role!='user':raise HTTPException(422,'The last message must be a question.')
+    try:return assistant.answer(engine(),[m.model_dump() for m in body.messages])
+    except assistant.AssistantError as exc:raise HTTPException(503,str(exc))
 
 @app.get('/api/ai/status')
 def ai_status():return ai_nba.provider_status()
