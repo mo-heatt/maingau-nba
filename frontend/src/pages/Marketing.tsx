@@ -14,8 +14,8 @@ type Props = {revision: number; onSelect: (id: string) => void; onChanged: () =>
 const TABS: [Tab, string, typeof Activity][] = [
   ['monitor', 'Monitor', Activity],
   ['recommendations', 'Recommendations', LayoutDashboard],
-  ['campaigns', 'Campaigns', Megaphone],
   ['approve', 'Approve', CheckCheck],
+  ['campaigns', 'Campaigns', Megaphone],
   ['steer', 'Steer', SlidersHorizontal],
   ['content', 'Content & tone', FileText],
   ['learn', 'Learn', FlaskConical],
