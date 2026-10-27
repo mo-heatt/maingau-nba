@@ -30,7 +30,8 @@ mounted read-only at `/opt/app/data`; it is never baked into the image and never
 ## Auto-deploy (watcher, no GitHub configuration needed)
 
 `wsvm41-admin`'s crontab runs `scripts/watch-deploy.sh` every 2 minutes
-(`flock` prevents overlap). For each environment it compares `origin/main` / `origin/dev`
+(the script takes `flock` on `/tmp/nba-deploy.lock` itself, so runs never overlap).
+For each environment it compares `origin/main` / `origin/dev`
 with the last deployed SHA and, on change:
 
 1. `git fetch` + checkout the branch head,
@@ -44,7 +45,7 @@ A deploy takes a few minutes (frontend build runs inside Docker on the VM).
 Install/repair the watcher after cloning:
 
 ```sh
-crontab -l | { cat; echo '*/2 * * * * flock -n /tmp/nba-deploy.lock /srv/maingau-nba/repo/scripts/watch-deploy.sh >> /srv/maingau-nba/deploy.log 2>&1'; } | crontab -
+crontab -l | { cat; echo '*/2 * * * * /srv/maingau-nba/repo/scripts/watch-deploy.sh >> /srv/maingau-nba/deploy.log 2>&1'; } | crontab -
 ```
 
 ## Optional: deploy from GitHub Actions immediately
