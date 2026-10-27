@@ -281,7 +281,7 @@ main{max-width:1740px}.customer-layout{grid-template-columns:208px minmax(0,1fr)
 .ov-problem.critical .ov-problem-icon{background:var(--danger-bg);color:var(--danger-text)}
 .ov-problem-tag{font-size:var(--t-xs);font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:var(--warning-text)}
 .ov-problem.critical .ov-problem-tag{color:var(--danger-text)}
-.ov-problem strong{display:block;font-size:30px;line-height:1.1;letter-spacing:-.8px;color:var(--danger-text);margin:14px 0 6px;white-space:nowrap}
+.ov-problem strong{display:block;font-size:30px;line-height:1.1;letter-spacing:-.8px;color:var(--text-strong);margin:14px 0 6px;white-space:nowrap}
 .ov-problem-what{font-size:var(--t-base);color:var(--text-strong);margin:0;line-height:1.5}
 .ov-problem-why{font-size:var(--t-sm);color:var(--text-muted);margin:8px 0 14px;line-height:1.5}
 .ov-problem-fix{display:flex;gap:8px;align-items:flex-start;margin:auto 0 0;padding-top:12px;border-top:1px solid var(--line);font-size:var(--t-sm);line-height:1.5;color:var(--text-strong)}
