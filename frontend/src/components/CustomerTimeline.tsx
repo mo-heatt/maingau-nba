@@ -1,7 +1,7 @@
 import {useState} from 'react';
 import {useApi} from '../api';
 import {Loading, Panel} from './ui';
-import TimelineTrack from './TimelineTrack';
+import TimelineTrack, {entryId} from './TimelineTrack';
 
 type Entry = {at: string; source: string; title: string; detail: string; flag: '' | 'bad' | 'warn' | 'good' | 'muted'; upcoming: boolean};
 type Timeline = {customer_id: string; since: string | null; snapshot: string; entries: Entry[]; sources: {key: string; label: string; count: number}[]};
@@ -19,14 +19,14 @@ export default function CustomerTimeline({id, revision}: {id: string; revision: 
   const items = t.entries.filter(e => !source || e.source === source);
   let year = '';
   return <Panel title="Customer timeline" subtitle={`Every system joined on ${t.customer_id}, from ${t.since ? date(t.since) : 'the first record'} to today · ${t.entries.length} entries`}>
-    <TimelineTrack entries={t.entries} snapshot={t.snapshot} />
+    <TimelineTrack entries={t.entries} snapshot={t.snapshot} labels={label} />
     <div className="tl-filters" role="group" aria-label="Filter by source system">
       <button className={!source ? 'active' : ''} aria-pressed={!source} onClick={() => {setSource(''); setShown(PAGE);}}>All <span>{t.entries.length}</span></button>
       {t.sources.map(s => <button key={s.key} className={source === s.key ? 'active' : ''} aria-pressed={source === s.key} onClick={() => {setSource(s.key); setShown(PAGE);}}>{s.label} <span>{s.count}</span></button>)}
     </div>
     <ol className="tl">{items.slice(0, shown).map((e, i) => {
       const y = e.at.slice(0, 4), head = y !== year ? (year = y) : null;
-      return <li key={i} className={'tl-item tl-' + (e.flag || 'plain') + (e.upcoming ? ' tl-upcoming' : '')}>
+      return <li key={i} id={entryId(e)} className={'tl-item tl-' + (e.flag || 'plain') + (e.upcoming ? ' tl-upcoming' : '')}>
         {head && <div className="tl-year">{head}</div>}
         <span className="tl-date">{date(e.at)}</span>
         <i className="tl-dot" aria-hidden="true" />
