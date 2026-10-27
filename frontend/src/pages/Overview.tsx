@@ -1,6 +1,6 @@
-import {ArrowRight, Check, X, Mail, MessageSquareText, AlertTriangle, ShieldAlert, BellOff, EyeOff, Scale, HeartCrack, CircleCheck} from 'lucide-react';
+import {ArrowRight, Check, X, Mail, MessageSquareText, AlertTriangle, ShieldAlert, BellOff, EyeOff, Scale, HeartCrack, CircleCheck, UserRound, Clock3, ShieldCheck, Trophy, Radio, Send} from 'lucide-react';
 import type {LucideIcon} from 'lucide-react';
-import type {ReactNode} from 'react';
+import type {CSSProperties, ReactNode} from 'react';
 import {useApi, eur, channel} from '../api';
 import type {Customer, Catalog, Replay} from '../types';
 import {Metric, Panel, Loading} from '../components/ui';
@@ -13,14 +13,14 @@ const pct = (v = 0, d = 0) => (v * 100).toFixed(d).replace('.', ',') + ' %';
 const signed = (v: number) => (v > 0 ? '+' : '') + eur(v);
 const day = (iso: string) => new Date(iso.slice(0, 10) + 'T12:00:00').toLocaleDateString('en-GB', {day: 'numeric', month: 'short'});
 
-const STEPS: [string, string][] = [
-  ['Profile', 'Everything about one customer in one row'],
-  ['When', 'Every night, and right away when something happens'],
-  ['Rules', 'Angry or unpaid bill? Fix, don’t sell. No consent? Don’t use the channel'],
-  ['Best offer', 'Chance of yes × what Maingau earns − cost. Biggest wins, or nothing'],
-  ['Channel & tone', 'Where they said yes and will see it soon; Du or Sie as they write'],
-  ['Message', 'Approved German text; AI only writes inside it'],
-  ['Approve & send', 'Marketing says yes; 1 in 10 is held back to measure'],
+const STEPS: [string, string, LucideIcon][] = [
+  ['Profile', 'Everything about one customer in one row', UserRound],
+  ['When', 'Every night, and right away when something happens', Clock3],
+  ['Rules', 'Angry or unpaid bill? Fix, don’t sell. No consent? Don’t use the channel', ShieldCheck],
+  ['Best offer', 'Chance of yes × what Maingau earns − cost. Biggest wins, or nothing', Trophy],
+  ['Channel & tone', 'Where they said yes and will see it soon; Du or Sie as they write', Radio],
+  ['Message', 'Approved German text; AI only writes inside it', MessageSquareText],
+  ['Approve & send', 'Marketing says yes; 1 in 10 is held back to measure', Send],
 ];
 
 const RULES = ['Consent is binding, per channel', 'Exclusions beat offers: complaint, dunning, cancellation', 'Human in the loop: nothing is sent without approval', 'Profiling only with consent, AI text too', 'No manipulation: approved texts, no personal prices or fake urgency', 'Payment data only as an exclusion', 'Every decision logged with inputs, rules, scores', 'Mock data only', 'Customer texts in German, Du or Sie'];
@@ -101,8 +101,21 @@ export default function Overview({revision, onGo, onSelect}: {revision: number; 
       </div>
     </Panel>
 
-    <Panel title="Our engine in seven steps" subtitle="Step 8, learn: after two weeks we compare contacted customers with the 1 in 10 held back. What really works is offered more often.">
-      <div className="ov-steps">{STEPS.map(([t, x], i) => <div key={t}><span>{i + 1}</span><h3>{t}</h3><p>{x}</p></div>)}</div>
+    <Panel title="Our engine in seven steps" subtitle="For every customer, every night and whenever something happens: from raw data to one approved message, then learning from the result.">
+      <div className="flow">
+        <ol className="flow-steps">{STEPS.map(([t, x, Icon], i) => <li key={t} className="flow-step" style={{'--i': i} as CSSProperties}>
+          <div className="flow-card">
+            <div className="flow-top"><span className="flow-num">{i + 1}</span><Icon size={18} aria-hidden="true" /></div>
+            <h3>{t}</h3><p>{x}</p>
+          </div>
+          {i < STEPS.length - 1 && <span className="flow-arrow" aria-hidden="true"><ArrowRight size={16} /></span>}
+        </li>)}</ol>
+        <div className="flow-loop" aria-label="Step 8, learn: results flow back into the best offer">
+          <svg viewBox="0 0 100 40" preserveAspectRatio="none" aria-hidden="true"><path d="M100 0 V22 Q100 34 90 34 H10 Q0 34 0 22 V0" /></svg>
+          <span className="flow-loop-head" aria-hidden="true" />
+          <p><b>8 · Learn</b> After two weeks, contacted customers are compared with the 1 in 10 held back. What really works raises the chance of yes in step 4.</p>
+        </div>
+      </div>
     </Panel>
 
     <Panel title="One real customer: their engine vs. ours" subtitle="Every line is taken from Maingau’s mock data and today’s event stream.">
