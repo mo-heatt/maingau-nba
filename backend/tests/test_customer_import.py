@@ -59,11 +59,9 @@ def test_templates_parse_cleanly():
 
 
 @pytest.fixture
-def database(tmp_path, monkeypatch):
-    source = db.ROOT / 'data/nba.sqlite'
-    if not source.exists(): pytest.skip('Local dataset required')
+def database(tmp_path, monkeypatch, source_db):
     dest = tmp_path / 'import.sqlite'
-    with sqlite3.connect(source) as src, sqlite3.connect(dest) as target: src.backup(target)
+    with sqlite3.connect(source_db) as src, sqlite3.connect(dest) as target: src.backup(target)
     monkeypatch.setenv('NBA_DB_PATH', str(dest));db.initialize()
     return dest
 
@@ -100,7 +98,7 @@ def test_engine_failure_stores_nothing(database):
     assert uploads(database) == before
 
 
-def test_api_returns_all_errors_as_422():
+def test_api_returns_all_errors_as_422(database):
     response = TestClient(app).post('/api/customers/import', json={'filename': 'c.csv', 'content': 'city;household_size\n;0\n'})
     assert response.status_code == 422
     detail = response.json()['detail']
