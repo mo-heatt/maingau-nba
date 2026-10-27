@@ -18,6 +18,7 @@ esac
 run() { if docker ps >/dev/null 2>&1; then "$@"; else sg docker -c "$*"; fi; }
 
 cd "$REPO"
+git config core.filemode false >/dev/null   # ignore mode-only diffs (e.g. chmod on the VM)
 git fetch origin "$BRANCH" -q
 SHA=$(git rev-parse "origin/$BRANCH")
 LAST=$(cat "$BASE/.deployed-$ENVIRONMENT" 2>/dev/null || echo none)
