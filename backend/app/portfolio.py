@@ -1,8 +1,115 @@
 """Known products with provenance; a competitor quote is not a competitor contract."""
 import json
 import re
+from typing import List
+
+from pydantic import BaseModel, ConfigDict, Field
+
+from . import ai_nba
 from . import database as db
 from .service import safe
+
+
+class UpgradeIdea(BaseModel):
+    model_config = ConfigDict(extra='forbid')
+    title: str = Field(min_length=3, max_length=90)
+    problem: str = Field(min_length=3, max_length=300)
+    benefit: str = Field(min_length=3, max_length=300)
+
+
+class UpgradeIdeas(BaseModel):
+    model_config = ConfigDict(extra='forbid')
+    ideas: List[UpgradeIdea] = Field(min_length=3, max_length=3)
+
+
+UPGRADE_PROMPT = (
+    'You support a MAINGAU Energie customer advisor. Propose exactly three upgrade ideas for the '
+    'customer product below. Each idea targets a different need, for example paying less, more '
+    'capacity or data volume, or more convenience. Use only the supplied product facts and the '
+    'MAINGAU catalogue entries as grounding; never invent prices, discounts, availability or dates. '
+    'Write titles, problems and benefits in short factual English; keep product names in German. '
+    'Do not cite evidence ids.'
+)
+
+# Deterministic fallback ideas, one per common need. Used when the AI provider is unavailable
+# and as the guaranteed baseline; they never invent prices or dates.
+RULE_IDEAS = {
+    'electricity': [
+        ('Check a smaller tariff tier', 'The household may use less energy than the current tier assumes.', 'Paying only for the capacity the household actually needs.'),
+        ('Price guarantee for planning safety', 'Energy prices can change at short notice.', 'A tariff with a longer price guarantee makes the monthly budget predictable.'),
+        ('Heat pump or dynamic tariff', 'If the household has a heat pump or flexible consumption, a special tariff may fit better.', 'Consumption can be moved to cheaper hours where the setup supports it.'),
+    ],
+    'gas': [
+        ('Compare tariff tiers', 'The current tariff may not match the actual consumption.', 'Paying only for the consumption the household actually has.'),
+        ('Price guarantee for planning safety', 'Gas prices can change at short notice.', 'A tariff with a longer price guarantee makes the monthly budget predictable.'),
+        ('Combine with an efficiency check', 'Older heating setups often waste energy.', 'Lower consumption without changing the comfort level.'),
+    ],
+    'mobile': [
+        ('Pay for less data', 'The booked data volume may exceed what the household actually uses.', 'A smaller tier can reduce the monthly fee without losing anything actually used.'),
+        ('More data volume', 'Streaming or mobile work can push a small plan to its limit.', 'The next tariff stage avoids extra charges and throttling.'),
+        ('Additional SIM for the household', 'Family members may still be on separate contracts.', 'One bundled contract with additional SIMs is easier to manage.'),
+    ],
+    'internet': [
+        ('Check the next speed stage', 'Slow connections or many parallel devices suggest the line is too small.', 'Stable connections for every device in the household.'),
+        ('Check fibre availability', 'DSL may no longer be the fastest option at the connection address.', 'Fibre, where available, handles streaming and home office easily.'),
+        ('Bundle with MAINGAU energy', 'Internet and electricity come from different providers today.', 'One provider for both means one contact point and combined offers.'),
+    ],
+    'charging': [
+        ('Home charging tariff check', 'Public charging is usually more expensive than the home wallbox.', 'Charging at home on the right tariff costs clearly less per kWh.'),
+        ('Wallbox integration into HEMS', 'The wallbox may not be part of the home energy management yet.', 'Solar surplus can be prioritised for charging.'),
+        ('Charging card for longer trips', 'Charging away from home needs a simple option.', 'One card or app for public charging across networks.'),
+    ],
+    'devices': [
+        ('Connect the device to HEMS', 'A connected device alone does not optimise anything yet.', 'The home energy management can steer the device intelligently.'),
+        ('Storage optimisation check', 'An existing home storage may not charge at the best times.', 'More self-used solar energy means less bought electricity.'),
+        ('Smart thermostats for the heating', 'Heating without schedules wastes energy.', 'Rooms are warm when needed and save energy the rest of the time.'),
+    ],
+    'shop': [
+        ('Smart Plug set for measurable savings', 'Standby and unnoticed consumers drive the bill up.', 'Consumption becomes visible and controllable per device.'),
+        ('Balcony solar for a first step', 'The household may want to produce its own electricity without a big installation.', 'A plug-in solar set lowers the bill with a small one-off cost.'),
+        ('Smart thermostats for the heating', 'Heating without schedules wastes energy.', 'Rooms are warm when needed and save energy the rest of the time.'),
+    ],
+}
+
+GENERIC_IDEAS = [
+    ('Check the tariff fits the usage', 'Usage may have changed since the product was chosen.', 'Paying only for what the household actually needs.'),
+    ('Look for a comfort upgrade', 'The current product may miss features the household now wants.', 'More convenience with a product that matches daily routines.'),
+    ('Bundle with other MAINGAU lines', 'The product may be cheaper or simpler together with other MAINGAU products.', 'One provider, one contact point, combined conditions.'),
+]
+
+CATEGORY_TO_LINE = {'electricity': 'energy', 'gas': 'energy', 'mobile': 'mobile', 'internet': 'internet',
+                    'charging': 'e_mobility', 'devices': 'smart_living', 'shop': 'shop'}
+
+
+def _catalogue(engine, category):
+    line = CATEGORY_TO_LINE.get(category)
+    rows = engine.X['product_catalog']
+    rows = rows if line is None else rows[rows.business_line == line]
+    return [{'product_id': r['product_id'], 'product_name': r['product_name'],
+             'description': r['description']} for r in rows.to_dict(orient='records')]
+
+
+def upgrade_ideas(engine, cid, product):
+    """Three upgrade ideas for one known product: AI grounded in the catalogue, rule-based fallback."""
+    engine.customer(cid)
+    profile = engine.customer(cid)
+    fallback = [{'title': t, 'problem': p, 'benefit': b} for t, p, b in RULE_IDEAS.get(product['category'], GENERIC_IDEAS)]
+    result = {'customer_id': cid, 'product_id': product['product_id'], 'ideas': fallback,
+              'source': 'catalogue-rules', 'model': None, 'note': None}
+    try:
+        material, usage = ai_nba.complete(UpgradeIdeas, UPGRADE_PROMPT, {
+            'customer': {'id': cid, 'tone': profile.get('tone')},
+            'product': {'name': product['name'], 'category': product['category'],
+                        'provider': product.get('provider', ''), 'status': product.get('status', ''),
+                        'details': product.get('details', {})},
+            'maingau_catalogue': _catalogue(engine, product['category'])})
+        result.update(ideas=[i.model_dump() for i in material.ideas], source='ai',
+                      model=ai_nba.provider_status()['model'], usage=usage)
+    except Exception as exc:  # ProviderError, validation, network — the rule ideas stay correct.
+        result['note'] = 'AI unavailable, showing catalogue-based standard ideas: ' + str(exc)
+    with db.connect() as c:
+        db.audit(c, 'upgrade_ideas_shown', {'product_id': product['product_id'], 'source': result['source']}, cid)
+    return result
 
 
 def external_records(cid):

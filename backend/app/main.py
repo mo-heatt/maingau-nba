@@ -8,7 +8,7 @@ from fastapi.responses import FileResponse, Response, JSONResponse
 from fastapi.exceptions import RequestValidationError
 from fastapi.exception_handlers import request_validation_exception_handler
 from fastapi.staticfiles import StaticFiles
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 from . import database as db
 from .ingestion import import_sources
 from .service import EngineService, safe
@@ -112,6 +112,18 @@ def customer_products(cid:str):return call(portfolio.products,engine(),cid)
 
 @app.post('/api/customers/{cid}/external-products')
 def external_product(cid:str,body:ExternalProduct):return call(portfolio.add_external,engine(),cid,body.model_dump())
+
+class UpgradeRequest(BaseModel):
+    model_config=ConfigDict(extra='forbid')
+    product_id:str=Field(min_length=1,max_length=120)
+    name:str=Field(min_length=1,max_length=150)
+    category:str=Field(min_length=1,max_length=40)
+    provider:str=Field(default='',max_length=120)
+    status:str=Field(default='',max_length=40)
+    details:dict=Field(default_factory=dict)
+
+@app.post('/api/customers/{cid}/upgrade-ideas')
+def upgrade_ideas(cid:str,body:UpgradeRequest):return call(portfolio.upgrade_ideas,engine(),cid,body.model_dump())
 
 @app.get('/api/customers/{cid}/timeline')
 def customer_timeline(cid:str):return call(timeline_data,engine(),cid)
