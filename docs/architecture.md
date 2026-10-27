@@ -146,6 +146,65 @@ Language travels through AI email generation, outreach and newsletters, saved ma
 
 Cached display data is never authority to contact a customer. The backend always checks eligibility at generation time. Production consent updates would require immediate server invalidation and cross-process propagation; this MVP has a fixed snapshot and one backend process.
 
+## Data refresh topology: the source of truth and every updater
+
+The NBA service is a downstream consumer. It owns its generated artefacts (decisions, materials, audits, campaigns) but never owns customer identity or consent. Data flows one way: source systems → NBA stores → derived caches. Nothing writes back to a source system, and no generated artefact can change a source record.
+
+```mermaid
+flowchart LR
+    subgraph SOURCES[Systems of record]
+      REG[Registration website: identities and consent]
+      SHOP[Shop / CRM: contracts and usage]
+      NEWSF[Editorial news feed]
+    end
+    REG -->|hourly delta, consent events also pushed| SYNC[Sync job: cursor, idempotent upsert]
+    SHOP -->|hourly delta| SYNC
+    SYNC --> SRC[(NBA source tables, append-only)]
+    SRC --> SNAP[Snapshot version, per-customer diff]
+    SNAP --> ENG[Engine evaluation cache, deterministic]
+    SNAP -->|revision bump for changed customers| GEN[AI artefacts regenerate on demand]
+    OPS[Operator: settings, overrides, imports, external products] --> ENG
+    OPS --> GEN
+    NEWSF -->|editorial selection| GEN
+    GEN --> ART[(ai_decisions, outreach_materials, newsletter_materials)]
+    ENG --> API[FastAPI REST API]
+    ART --> API
+```
+
+### Master source: the registration website
+
+The MAINGAU registration website (and any surface that creates a customer, such as shop checkout) is the authoritative source for identity, contact data, contracts and consent. The NBA service never invents a customer that does not exist there. The manual **Import customer** path exists for the demo; its rows are marked `origin='upload'` so sync-managed and manually added customers remain distinguishable.
+
+### Scheduled delta sync (hourly)
+
+1. **Cursor.** The sync job keeps a watermark per source (event id or `updated_at`), so every run is a small delta, never a full reload.
+2. **Pull.** New and updated customer records and consent events since the watermark, via the source API (consent changes should additionally arrive as pushed events, because consent freshness is compliance-critical; the hourly run is the fallback).
+3. **Load.** Rows are appended to the NBA source tables with `origin='sync:<source>'`. Consent changes are new event rows with effective timestamps — consent history is preserved, never overwritten (GDPR).
+4. **Rebuild and diff.** A new snapshot version is built; a per-customer feature diff decides which profiles actually changed.
+5. **Invalidate.** Only changed customers get a new revision epoch, so their cached AI decisions and materials become not current (the fingerprint check already implemented). Unchanged customers keep their validated artefacts — a sync costs model calls only for customers whose inputs moved.
+6. **Erasure.** A GDPR erasure request puts the customer on a permanent exclusion list and closes every channel. Artefacts remain for audit but can never qualify the customer for contact.
+
+### Every updater in one table
+
+| Data | Source / actor | Cadence | Mechanism | What it invalidates |
+| --- | --- | --- | --- | --- |
+| Identity, contact data, contracts, usage, consent | Registration website / CRM | Hourly delta; consent events pushed | Sync job → append-only source rows → new snapshot version | Profile and generated artefacts of changed customers only |
+| A brand-new customer outside the sync | Operator (demo path) | On demand | `POST /api/customers/import`, scored before commit | That customer's profile |
+| External product evidence | Operator | On demand | Attributed `external_products` records | That customer's candidates |
+| News items | Editorial feed | On demand | `news_items`, selected in the newsletter studio | Newsletter cache identity |
+| Settings, channel switches, limits, overrides | Operator | Immediate | Settings version bump | Engine evaluation cache (cheap, deterministic); AI artefacts only where the fingerprint changes |
+| Reviews, campaign responses | Operator | Immediate | Audit events | Review overlay only |
+| Campaign tracking results | Delivery platform (simulated in this MVP) | Daily | Feedback events | Insights and follow-up drafts |
+| AI decisions and copy | Model | **Never scheduled** | Generated on demand (studio open or explicit regenerate) and cached | Nothing — they are outputs, not inputs |
+
+### What is deliberately not scheduled
+
+Engine scoring is deterministic and cheap, so it is recomputed when the snapshot or settings change, not on a timer. AI decisions and copy are generated on demand only and cached; a sync never batch-generates copy for the whole customer base. Both rules keep the running cost proportional to actual interest instead of to the customer count.
+
+### Write-back
+
+The MVP has no write-back. In production the only justified return path is a narrow, consent-respecting reporting API towards the registration website (for example "was contacted" / "opted out"), built as an explicit integration — never a direct database write from the NBA side.
+
 ## Access and deployment limits
 
 Hessian keys entered in Developer area are stored only in backend memory, selected through an HttpOnly browser session cookie, expire after eight hours and are isolated per browser. The backend `.env` key remains the optional fallback. No key is sent to the model as customer data or committed in Git.
