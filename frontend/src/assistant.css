@@ -37,3 +37,15 @@ footer{padding-right:96px}
 /* Phones: the navigation becomes a 58px bar at the bottom, so sit above it */
 @media(max-width:640px){.assistant-fab{right:16px;bottom:76px}.assistant{right:16px;bottom:140px;height:calc(100vh - 160px)}footer{padding-right:15px;padding-bottom:84px}}
 @media(prefers-reduced-motion:reduce){.assistant-fab{transition:none}.assistant-fab:hover{transform:none}}
+
+/* Customer chat: in the middle of a customer profile, above the tabs, answers about that customer only */
+.customer-chat{display:flex;flex-direction:column;margin:0 0 26px;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
+.customer-chat header{display:flex;align-items:center;flex-wrap:wrap;gap:4px 8px;padding:14px 16px;border-bottom:1px solid var(--line);color:var(--text-strong)}
+.customer-chat header svg{color:var(--accent-warm)}
+.customer-chat h2{font-size:var(--t-md);margin:0}
+.customer-chat header span{font-size:var(--t-xs);color:var(--text-muted);margin-left:auto}
+.customer-chat .assistant-list{max-height:420px;min-height:0}
+.customer-chat .assistant-empty{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.customer-chat .assistant-empty p{flex-basis:100%;margin:0 0 4px}
+.customer-chat .assistant-suggestion{display:inline-block;width:auto;margin:0}
+.customer-chat .assistant-msg{max-width:min(88%,720px)}

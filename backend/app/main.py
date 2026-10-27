@@ -166,8 +166,11 @@ def marketing_preview(body:Settings):
 class Campaign(BaseModel):
     model_config=ConfigDict(extra='forbid')
     name:str=Field(min_length=1,max_length=80)
+    goal:str=Field(default='',max_length=500)
     offer:str
-    channel:str
+    channel:Optional[str]=None  # None: every customer gets their own best channel
+    segments:List[str]=Field(default=[],max_length=40)
+    follows:Optional[int]=None
     value_tier:List[str]=[]
     tenure:List[str]=[]
     lines:List[str]=[]
@@ -199,6 +202,12 @@ def campaign_list():return campaigns.all_campaigns(engine())
 
 @app.post('/api/campaigns/preview')
 def campaign_preview(body:Campaign):return campaign_call(campaigns.preview,engine(),body.model_dump(mode='json'))
+
+@app.post('/api/campaigns/suggest')
+def campaign_suggest(body:Campaign):return campaign_call(campaigns.suggest,engine(),body.model_dump(mode='json'))
+
+@app.post('/api/campaigns/{cid}/follow-up')
+def campaign_follow_up(cid:int):return campaign_call(campaigns.follow_up,engine(),cid)
 
 @app.post('/api/campaigns')
 def campaign_create(body:Campaign):return campaign_call(campaigns.create,engine(),body.model_dump(mode='json'))
@@ -257,11 +266,13 @@ class ChatTurn(BaseModel):
 class Chat(BaseModel):
     model_config=ConfigDict(extra='forbid')
     messages:List[ChatTurn]=Field(min_length=1,max_length=40)
+    customer_id:Optional[str]=Field(default=None,pattern=r'^MG-\d+$')
 
 @app.post('/api/assistant')
 def ask_assistant(body:Chat):
     if body.messages[-1].role!='user':raise HTTPException(422,'The last message must be a question.')
-    try:return assistant.answer(engine(),[m.model_dump() for m in body.messages])
+    try:return assistant.answer(engine(),[m.model_dump(exclude={'customer_id'}) for m in body.messages],body.customer_id)
+    except KeyError:raise HTTPException(404,'Customer not found')
     except assistant.AssistantError as exc:raise HTTPException(503,str(exc))
 
 @app.get('/api/ai/status')
