@@ -1,0 +1,53 @@
+# MAINGAU NBA — workshop VM stack (wsvm41).
+# prod (branch main)  -> app-prod  -> nginx :80   -> http://130.83.85.181:41080
+# dev  (branch dev)   -> app-dev   -> nginx :443  -> https://130.83.85.181:41443 (self-signed TLS)
+#
+# Run from the repository checkout at /srv/maingau-nba/repo:
+#   docker compose -f deploy/docker-compose.yml build app-prod
+#   docker compose -f deploy/docker-compose.yml up -d app-prod nginx
+#
+# Required on the host: /srv/maingau-nba/data (mock dataset, read-only)
+#                       /srv/maingau-nba/tls  (selfsigned.crt + selfsigned.key)
+
+name: maingau-nba
+
+services:
+  app-prod:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+    image: maingau-nba:prod
+    restart: unless-stopped
+    environment:
+      NBA_DB_PATH: /opt/app/db/nba-prod.sqlite
+      NBA_PUBLIC_APP_URL: http://130.83.85.181:41080
+    volumes:
+      - /srv/maingau-nba/data:/opt/app/data:ro
+      - nba-prod-db:/opt/app/db
+
+  app-dev:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+    image: maingau-nba:dev
+    restart: unless-stopped
+    environment:
+      NBA_DB_PATH: /opt/app/db/nba-dev.sqlite
+      NBA_PUBLIC_APP_URL: https://130.83.85.181:41443
+    volumes:
+      - /srv/maingau-nba/data:/opt/app/data:ro
+      - nba-dev-db:/opt/app/db
+
+  nginx:
+    image: nginx:alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - .:/etc/nginx/conf.d:ro
+      - /srv/maingau-nba/tls:/etc/nginx/tls:ro
+
+volumes:
+  nba-prod-db:
+  nba-dev-db:
