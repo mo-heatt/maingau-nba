@@ -1,4 +1,4 @@
-import {ArrowRight, Check, X, Mail, MessageSquareText, AlertTriangle, ShieldAlert, BellOff, EyeOff, Scale, HeartCrack, CircleCheck, UserRound, Clock3, ShieldCheck, Trophy, Radio, Send} from 'lucide-react';
+import {ArrowRight, Check, LayoutDashboard, UsersRound, Radar, SlidersHorizontal, X, Mail, MessageSquareText, AlertTriangle, ShieldAlert, BellOff, EyeOff, Scale, HeartCrack, CircleCheck, UserRound, Clock3, ShieldCheck, Trophy, Radio, Send} from 'lucide-react';
 import type {LucideIcon} from 'lucide-react';
 import type {CSSProperties, ReactNode} from 'react';
 import {useApi, eur, channel} from '../api';
@@ -148,7 +148,7 @@ export default function Overview({revision, onGo, onSelect}: {revision: number; 
     </Panel>
 
     <div className="ov-go">
-      {([['recommendations', 'Recommendations', 'Every customer: offer, channel, tone, expected gain and reason.'], ['customers', 'Customer 360°', 'For service agents: status, value, the best action and why.'], ['service', 'Service first', 'Case Radar: stuck customers, why, and one click to stop the harm.'], ['marketing', 'Marketing dashboard', 'Set limits, priorities and channels; approve texts and actions.'], ['method', 'How it works', 'The pipeline, event replay, learning loop and target architecture.']] as [View, string, string][]).map(([v, t, x]) => <button key={v} onClick={() => onGo(v)}><h3>{t} <ArrowRight size={14} /></h3><p>{x}</p></button>)}
+      {([['recommendations', 'Recommendations', 'Every customer: offer, channel, tone, expected gain and reason.', LayoutDashboard], ['customers', 'Customer 360°', 'For service agents: status, value, the best action and why.', UsersRound], ['service', 'Service first', 'Case Radar: stuck customers, why, and one click to stop the harm.', Radar], ['marketing', 'Marketing dashboard', 'Set limits, priorities and channels; approve texts and actions.', SlidersHorizontal]] as [View, string, string, LucideIcon][]).map(([v, t, x, Icon]) => <button key={v} onClick={() => onGo(v)}><h3><Icon size={18} aria-hidden="true" />{t} <ArrowRight size={14} /></h3><p>{x}</p></button>)}
     </div>
   </div>;
 }
