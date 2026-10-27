@@ -26,6 +26,10 @@ def message(s, decision):
     if not pick:
         return None
     t = s["tone"]
+    if str(s.get('language','de')).lower().startswith('en'):
+        if pick.get('type')=='service':
+            return {'language':'en','tone':t,'subject':'Help with your service issue','body':'Hello, we would like to help clarify your open service issue. Please tell us what happened and whether now is a convenient time to talk.'}
+        return {'language':'en','tone':t,'subject':'A suitable next step from MAINGAU','body':'Hello, '+pick['name']+' may be a suitable option to review. Please check the applicable terms, availability and suitability before deciding.'}
     subj, body = TEMPLATES[pick["offer"]][t]
     g = s["signals"].get("guarantee_ending", {}).get("value")
     if g:

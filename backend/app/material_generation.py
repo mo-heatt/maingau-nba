@@ -10,7 +10,7 @@ def generate(schema,prompt,packet,validate):
         request=dict(packet)
         if result['material'] is not None:
             request.update(previous_material=result['material'].model_dump(),errors_to_fix=result['errors'],
-                           repair_instruction='Correct every listed error in the complete response. Preserve verified facts and the selected NBA; do not change product, channel, tone or prices.')
+                           repair_instruction='Correct every listed error in the complete response. Preserve verified facts and the selected NBA; do not change product, channel, language, tone or prices.')
         try:
             material,usage=ai_nba.complete(schema,prompt,request)
         except ai_nba.ProviderError as exc:
@@ -29,7 +29,9 @@ def generate(schema,prompt,packet,validate):
 def explain(errors,tone):
     explanations=[]
     for error in errors:
-        if 'tone' in error or error in ('Use Du tone','Use Sie tone'):
+        if 'customer language' in error:
+            title='Wrong customer language';message='The draft was not written in the customer’s preferred language. Regenerate the text in that language.'
+        elif 'tone' in error or error in ('Use Du tone','Use Sie tone'):
             title='Mixed forms of address'
             message=f'The customer uses {"Du" if tone=="du" else "Sie"}, but parts of the draft use the other form of address.'
         elif 'Evidence' in error or 'cite' in error:

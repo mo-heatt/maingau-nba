@@ -20,6 +20,14 @@ For **MG-100126**, newsletter, portal/app personalisation and profiling are gran
 .venv/bin/python scripts/check_source_consents.py
 ```
 
+## Customer communication language
+
+`customer_master.preferred_contact_language` controls the generated customer message independently of the English operator UI. The MVP supports **English (`en`) and German (`de`)**. English uses an informal/professional register; German additionally applies Du/Sie. Language is supplied explicitly to email, call, SMS, push, web and newsletter generation, and localises the branded HTML shell and offer-card labels. Exact tariff names and source quotations remain unchanged.
+
+Language and the communication-contract version participate in cache identities. Saved German copy is not treated as current English material; regenerate legacy decisions/materials after updating. A conservative EN/DE text guard catches obvious language mismatches and feeds bounded copy repair. It is not a general language detector and cannot certify every short or mixed-language sentence.
+
+Hessian models depend on the issued key. The connected account listed `vllm/Kolibri-1`, `vllm/GLM-5.3-Flash` and `vllm/GLM-Flash:Latest` during verification. Both Kolibri and GLM-5.3-Flash passed a small English JSON-schema smoke check; this is not a quality benchmark. To evaluate another available model, set `NBA_AI_MODEL` in the backend environment and restart. Changing the model invalidates existing AI-context fingerprints; do not interpret a language-routing bug as proof that a different model is better.
+
 ## What is in the app
 
 | Area | What it does |
