@@ -31,11 +31,13 @@ def import_sources():
         db.audit(c,'dataset_imported',{'workbook':workbook.name,'snapshot':SNAPSHOT.isoformat()})
     wb.close()
 
-def load_tables():
+def load_tables(extra=()):
+    """extra: (source, record) pairs not yet stored, so an upload can be scored before it is committed."""
     grouped={}
     with db.connect() as c:
         for r in c.execute('SELECT source,payload FROM source_records ORDER BY id'):
             grouped.setdefault(r['source'],[]).append(json.loads(r['payload']))
+    for source,record in extra:grouped.setdefault(source,[]).append(record)
     tables={name:pd.DataFrame(rows) for name,rows in grouped.items()}
     # Observations must have been available by the source snapshot.
     cs=tables['charge_sessions'];tables['charge_sessions']=cs[pd.to_datetime(cs.cdr_received_at)<=SNAPSHOT].copy()

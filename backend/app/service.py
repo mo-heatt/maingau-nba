@@ -28,8 +28,8 @@ def control(cid):return int(hashlib.sha256(cid.encode()).hexdigest(),16)%1000<10
 
 
 class EngineService:
-    def __init__(self):
-        self.lock=RLock();self.X,self.quality=load_tables();self.P=params(self.X);self.A=acceptance_model(self.X)
+    def __init__(self,extra=()):
+        self.lock=RLock();self.X,self.quality=load_tables(extra);self.P=params(self.X);self.A=acceptance_model(self.X)
         self.catalog=self.X['product_catalog'].set_index('product_id');self._snapshot=CustomerSnapshot(build_state(self.X))
         comp=self.X['service_interactions'];comp=comp[(comp.category=='complaint')&(comp.status=='closed')]
         self.fcr=float(comp.first_contact_resolution.mean());self._cache={}
