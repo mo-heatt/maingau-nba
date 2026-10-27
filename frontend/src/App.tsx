@@ -9,6 +9,7 @@ import Marketing from './pages/Marketing';
 import Customers from './pages/Customers';
 import DeveloperArea from './components/DeveloperArea';
 import ServiceFirst from './pages/ServiceFirst';
+import AssistantChat from './components/AssistantChat';
 import {useApi} from './api';
 const views=['overview','recommendations','service','marketing','customers','method'] as const;
 type View=typeof views[number];
@@ -26,5 +27,5 @@ export default function App(){
   {toast&&<div className="toast" role="status"><span>{toast}</span><button onClick={()=>setToast('')}>Dismiss</button></div>}
   <main id="main-content" tabIndex={-1}>{(view==='overview'||view==='method')&&<Overview revision={revision} onGo={go} onSelect={select}/>} {view==='recommendations'&&<Recommendations revision={revision} onSelect={select}/>} {view==='service'&&<ServiceFirst revision={revision} onSelect={select}/>} {view==='marketing'&&<Marketing revision={revision} onSelect={select} onChanged={changed} notify={setToast}/>} {view==='customers'&&<Customers id={selected} onSelect={select} revision={revision} onChanged={changed} notify={setToast}/>}</main>
   <footer><span>MAINGAU NBA Console</span><span>{health?.customers??750} synthetic customers · Snapshot 30 Sep 2026 · Estimates, not guaranteed results</span></footer>
- </div><DeveloperArea open={developerOpen||view==='method'} initialTab={view==='method'?'architecture':developerTab} onClose={()=>{setDeveloperOpen(false);if(view==='method'){location.hash='overview';setView('overview')}}} onConfigured={changed} revision={revision}/></div>
+ </div><AssistantChat onSelect={select} onConnect={()=>{setDeveloperTab('connection');setDeveloperOpen(true)}}/><DeveloperArea open={developerOpen||view==='method'} initialTab={view==='method'?'architecture':developerTab} onClose={()=>{setDeveloperOpen(false);if(view==='method'){location.hash='overview';setView('overview')}}} onConfigured={changed} revision={revision}/></div>
 }

@@ -1,4 +1,4 @@
-import {ArrowRight, Check, X, Mail, MessageSquareText, AlertTriangle, ShieldAlert, BellOff, EyeOff, Scale, HeartCrack, CircleCheck, UserRound, Clock3, ShieldCheck, Trophy, Radio, Send} from 'lucide-react';
+import {ArrowRight, Check, LayoutDashboard, UsersRound, Radar, SlidersHorizontal, X, Mail, MessageSquareText, AlertTriangle, ShieldAlert, BellOff, EyeOff, Scale, HeartCrack, CircleCheck, UserRound, Clock3, ShieldCheck, Trophy, Radio, Send} from 'lucide-react';
 import type {LucideIcon} from 'lucide-react';
 import type {CSSProperties, ReactNode} from 'react';
 import {useApi, eur, channel} from '../api';
@@ -23,8 +23,6 @@ const STEPS: [string, string, LucideIcon][] = [
   ['Approve & send', 'Marketing says yes; 1 in 10 is held back to measure', Send],
 ];
 
-const RULES = ['Consent is binding, per channel', 'Exclusions beat offers: complaint, dunning, cancellation', 'Human in the loop: nothing is sent without approval', 'Profiling only with consent, AI text too', 'No manipulation: approved texts, no personal prices or fake urgency', 'Payment data only as an exclusion', 'Every decision logged with inputs, rules, scores', 'Mock data only', 'Customer texts in German, Du or Sie'];
-
 type Line = {date: string; kind: 'offer' | 'customer' | 'event'; text: string; bad?: boolean};
 
 function oldTimeline(c: Customer, names: Record<string, string>, events: Replay['changes']): Line[] {
@@ -44,7 +42,6 @@ export default function Overview({revision, onGo, onSelect}: {revision: number; 
   const {data: cat} = useApi<Catalog>('/catalog');
   const {data: replay} = useApi<Replay>('/replay', revision);
   const {data: svc} = useApi<Customer>('/customers/' + (o?.cases.service || 'MG-100004'), revision);
-  const {data: sale} = useApi<Customer>('/customers/' + (o?.cases.sale || 'MG-100068'), revision);
   if (error) return <Loading error={error} />;
   if (!o) return <Loading />;
   const L = o.legacy, resp = L.responses, total = Object.values(resp).reduce((a, b) => a + b, 0);
@@ -55,53 +52,46 @@ export default function Overview({revision, onGo, onSelect}: {revision: number; 
   const sentSvc = svc ? svc.history.filter(h => h.response !== 'held_out').length : 0;
   return <div className="overview">
     <section className="ov-hero">
-      <div className="eyebrow">MAINGAU challenge · One customer, every channel</div>
       <h1>For every customer, the one step worth the most: sell, fix, or wait.</h1>
-      <p>Maingau already has every source under one customer_id. What was missing is the decision on top. Our engine checks the rules, scores every possible action by the expected gain in customer lifetime value, and proposes the best one with the right channel and tone. Marketing approves; every decision is explained and logged.</p>
+      <p>Our engine checks the rules, scores every action by its expected gain in customer value, and proposes one step with the right channel and tone. Marketing approves.</p>
     </section>
 
     <div className="metrics">
-      <Metric label="Expected gain in customer value" value={eur(o.summary.expected_gain_eur)} hint={`across ${o.summary.customers} customers, this run`} />
+      <Metric label="Expected gain in customer value" value={eur(o.summary.expected_gain_eur)} />
       <Metric label="Consent or exclusion violations" value={o.violations} hint={`today’s engine: ${L.unchecked_and_no_consent} contacts without consent`} />
-      <Metric label="Problems fixed before selling" value={o.summary.service_fixes} hint="complaint or unpaid bill: service first" />
-      <Metric label="Left alone on purpose" value={left} hint="nothing worth a contact, limit reached, or a person decides" />
+      <Metric label="Problems fixed before selling" value={o.summary.service_fixes} />
+      <Metric label="Left alone on purpose" value={left} />
     </div>
 
-    <Panel title="What Maingau asked for" subtitle="The three questions and hard rules from the brief, and where each is built">
+    <Panel title="What Maingau asked for">
       <div className="ov-ask">
-        <div><span className="ov-tag">Built</span><h3>Decide</h3><p className="muted">Which offer, channel and tone per customer, ranked by expected CLV gain?</p><p>One action per customer with channel, Du/Sie and expected gain.</p><button className="button small" onClick={() => onGo('recommendations')}>Recommendations <ArrowRight size={12} /></button></div>
-        <div><span className="ov-tag">Built</span><h3>Explain</h3><p className="muted">Can a marketer see in one line why, and change it?</p><p>A one-line reason, every option scored, rules to steer, and overrides with a note.</p><button className="button small" onClick={() => onGo('marketing')}>Marketing <ArrowRight size={12} /></button></div>
-        <div><span className="ov-tag">Concept + demo</span><h3>Learn</h3><p className="muted">How do reactions improve it, and how do you prove cause?</p><p>A stable 10% control group; uplift feeds back into the chance of yes.</p><button className="button small" onClick={() => onGo('method')}>How it works <ArrowRight size={12} /></button></div>
+        <div><span className="ov-tag">Built</span><h3>Decide</h3><p>One action per customer with channel, Du/Sie and expected gain.</p><button className="button small" onClick={() => onGo('recommendations')}>Recommendations <ArrowRight size={12} /></button></div>
+        <div><span className="ov-tag">Built</span><h3>Explain</h3><p>A one-line reason, every option scored, rules to steer, and overrides with a note.</p><button className="button small" onClick={() => onGo('marketing')}>Marketing <ArrowRight size={12} /></button></div>
+        <div><span className="ov-tag">Concept + demo</span><h3>Learn</h3><p>A stable 10% control group; uplift feeds back into the chance of yes.</p><button className="button small" onClick={() => onGo('method')}>How it works <ArrowRight size={12} /></button></div>
       </div>
-      <ul className="ov-rules">{RULES.map(r => <li key={r}><Check size={14} />{r}</li>)}</ul>
     </Panel>
 
-    <Panel title="5 problems in today’s rule engine" subtitle={`Found in Maingau’s own data: ${L.actions.toLocaleString('en-GB')} decisions from June to September, made by ${L.rules} broad rules that look at segments, not at the person. Each card shows the problem, why it matters and how our engine fixes it.`}>
+    <Panel title="5 problems in today’s rule engine" subtitle={`${L.actions.toLocaleString('en-GB')} decisions from June to September, made by ${L.rules} segment rules.`}>
       <div className="ov-problems">
         <Problem tone="critical" Icon={ShieldAlert} tag="Legal risk" figure={String(L.consent_not_checked)}
           text={<>actions skipped the consent check; <b>{L.unchecked_and_no_consent}</b> reached a channel without consent.</>}
-          why="Contacting without consent breaks GDPR and UWG rules."
           fix={`Consent is checked for every channel, every time. Violations in our run: ${o.violations}.`} />
         <Problem tone="warning" Icon={BellOff} tag="Wasted contact" figure={`${L.app_push_without_app}/${L.app_push}`}
           text="app pushes went to customers who don’t have the app."
-          why="These messages could never arrive."
           fix="A channel is only used where the customer can see it: app installed, regular portal logins." />
         <Problem tone="warning" Icon={EyeOff} tag="Ignored" figure={pct(((resp.ignored || 0) + (resp.dismissed || 0)) / (total || 1))}
           text="of contacts were ignored or dismissed."
-          why="The same message to a whole segment teaches customers to ignore Maingau."
           fix={`One offer per person, ranked by expected gain. If nothing is worth it, no contact (${o.summary.no_contact} customers left alone).`} />
         <Problem tone="warning" Icon={Scale} tag="No proof of effect" figure={`${pct(o.acceptance.treated, 1)} vs ${pct(o.acceptance.control, 1)}`}
           text="bought after a contact vs. without one."
-          why="Contacts get credit for purchases that would have happened anyway. The control group is small, so treat the gap with care."
           fix="A stable 10% control group measures what each contact really adds." />
         <Problem tone="warning" Icon={HeartCrack} tag="Hurts service" figure={`${L.agent_dismissed_upset}/${L.agent_dismissed}`}
           text="sales tips dismissed by service agents because the customer was upset."
-          why="Selling to an upset customer makes the problem worse."
           fix="Service first: complaints and unpaid bills get a fix, not an offer. Stuck cases go on the Case Radar." />
       </div>
     </Panel>
 
-    <Panel title="Our engine in seven steps" subtitle="For every customer, every night and whenever something happens: from raw data to one approved message, then learning from the result.">
+    <Panel title="Our engine in seven steps">
       <div className="flow">
         <ol className="flow-steps">{STEPS.map(([t, x, Icon], i) => <li key={t} className="flow-step" style={{'--i': i} as CSSProperties}>
           <div className="flow-card">
@@ -118,7 +108,7 @@ export default function Overview({revision, onGo, onSelect}: {revision: number; 
       </div>
     </Panel>
 
-    <Panel title="One real customer: their engine vs. ours" subtitle="Every line is taken from Maingau’s mock data and today’s event stream.">
+    <Panel title="One real customer: their engine vs. ours">
       {!svc ? <Loading /> : <>
         <p className="ov-who">Customer <button className="link" onClick={() => onSelect(svc.id)}>{svc.id}</button>, {svc.city}, customer since {svc.since.slice(0, 4)}.</p>
         <div className="ov-vs">
@@ -142,24 +132,20 @@ export default function Overview({revision, onGo, onSelect}: {revision: number; 
           </div>
         </div>
       </>}
-      {sale && <div className="ov-sale"><div className="eyebrow">And a sale done right</div>
-        <p><button className="link" onClick={() => onSelect(sale.id)}>{sale.id}</button> · today: {sale.history.length ? sale.history.map(h => `${names[h.offer] || h.offer} by ${channel(h.channel).toLowerCase()}${h.channel === 'app_push' && !sale.app_installed ? ' (no app installed)' : ''}, ${h.response === 'ignored' ? 'no reaction' : h.response}`).join('; ') : 'no earlier contact'}.</p>
-        <p>Ours: <b>{sale.decision.name}</b> by {channel(sale.decision.channel).toLowerCase()}, “{sale.decision.tone === 'du' ? 'Du' : 'Sie'}”, expected <b>{signed(sale.decision.expected_gain_eur)}</b>. Why: {sale.decision.reason.split('. Via ')[0]}.</p></div>}
     </Panel>
 
     <div className="ov-go">
-      {([['recommendations', 'Recommendations', 'Every customer: offer, channel, tone, expected gain and reason.'], ['customers', 'Customer 360°', 'For service agents: status, value, the best action and why.'], ['service', 'Service first', 'Case Radar: stuck customers, why, and one click to stop the harm.'], ['marketing', 'Marketing dashboard', 'Set limits, priorities and channels; approve texts and actions.'], ['method', 'How it works', 'The pipeline, event replay, learning loop and target architecture.']] as [View, string, string][]).map(([v, t, x]) => <button key={v} onClick={() => onGo(v)}><h3>{t} <ArrowRight size={14} /></h3><p>{x}</p></button>)}
+      {([['recommendations', 'Recommendations', LayoutDashboard], ['customers', 'Customer 360°', UsersRound], ['service', 'Service first', Radar], ['marketing', 'Marketing dashboard', SlidersHorizontal]] as [View, string, LucideIcon][]).map(([v, t, Icon]) => <button key={v} onClick={() => onGo(v)}><h3><Icon size={18} aria-hidden="true" />{t} <ArrowRight size={14} /></h3></button>)}
     </div>
   </div>;
 }
 
-// One problem found in the current engine: what, why it matters, and how our engine fixes it.
-function Problem({tone, Icon, tag, figure, text, why, fix}: {tone: 'critical' | 'warning'; Icon: LucideIcon; tag: string; figure: string; text: ReactNode; why: string; fix: string}) {
+// One problem found in the current engine and how our engine fixes it.
+function Problem({tone, Icon, tag, figure, text, fix}: {tone: 'critical' | 'warning'; Icon: LucideIcon; tag: string; figure: string; text: ReactNode; fix: string}) {
   return <article className={'ov-problem ' + tone}>
     <header><span className="ov-problem-icon" aria-hidden="true"><Icon size={18} /></span><span className="ov-problem-tag">{tag}</span></header>
     <strong>{figure}</strong>
     <p className="ov-problem-what">{text}</p>
-    <p className="ov-problem-why">{why}</p>
     <p className="ov-problem-fix"><CircleCheck size={15} aria-hidden="true" /><span><b>Our fix:</b> {fix}</span></p>
   </article>;
 }

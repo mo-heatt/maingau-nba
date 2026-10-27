@@ -53,12 +53,12 @@ export default function ServiceFirst({revision, onSelect}: {revision: number; on
   if (!r) return <Loading />;
   const reminders = r.cards.filter(c => c.dunning_level > 0).length, sales = r.cards.reduce((n, c) => n + c.sales_while_waiting, 0);
   return <>
-    <PageTitle eyebrow="Service first · Case Radar" title="Fix the stuck cases before they escalate." />
-    <p className="page-intro">Our engine already stops selling to customers with a complaint or an unpaid bill. The radar goes one step further: it finds the ones who are stuck, explains why in one line, and lets a team lead stop the harm with one click. The flag is a rule, not AI.</p>
-    <div className="metrics"><Metric label="Stuck customers" value={r.cards.length} hint={'of ' + r.open_complaints + ' customers with an open complaint'} /><Metric label="Reminders during a complaint" value={reminders} hint="money demanded while they wait" /><Metric label="Sales messages while waiting" value={sales} hint="sent by today's engine; ours sends 0" /><Metric label="Longest wait" value={Math.max(...r.cards.map(c => c.days_waiting)) + ' days'} hint={'as of ' + d(r.as_of)} /></div>
+    <PageTitle eyebrow="Case Radar" title="Service first" />
+    <p className="page-intro">Customers stuck with an open complaint, and one click to stop the harm.</p>
+    <div className="metrics"><Metric label="Stuck customers" value={r.cards.length} hint={'of ' + r.open_complaints + ' customers with an open complaint'} /><Metric label="Reminders during a complaint" value={reminders} /><Metric label="Sales messages while waiting" value={sales} /><Metric label="Longest wait" value={Math.max(...r.cards.map(c => c.days_waiting)) + ' days'} hint={'as of ' + d(r.as_of)} /></div>
     <Panel title="Stuck cases, most urgent first" subtitle={'Flagged when a complaint is open and: ' + r.rules.join('; or ')}>
       <div className="radar-list">{r.cards.map(c => <RadarBox key={c.customer_id} c={c} onOpen={() => onSelect(c.customer_id)} />)}</div>
     </Panel>
-    <p className="small-text muted">Buttons are a demo: clicks are kept in this browser only and reach no real system. Pausing reminders and assigning a person would go to billing and the service team in production.</p>
+    <p className="small-text muted">Demo: clicks stay in this browser and reach no real system.</p>
   </>;
 }
