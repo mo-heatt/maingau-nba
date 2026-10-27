@@ -1,8 +1,8 @@
 import type {ReactNode} from 'react';
 import type {Decision,CustomerSummary} from '../types';
 import {eur,channel} from '../api';
-import {ArrowUpRight,ShieldCheck,Clock3,Headphones,UserRound,Minus,Mail,Check} from 'lucide-react';
-export function Badge({decision}:{decision:Decision}){const kind=decision.control_group?'control':decision.status==='approved'?'approved':decision.action;const labels:Record<string,string>={control:'Control group',approved:'Approved',offer:'Offer',service:'Service first',wait:'Contact limit',human_review:'Human review',none:'No contact'};const Icon=kind==='approved'?Check:kind==='service'?Headphones:kind==='wait'?Clock3:kind==='human_review'?UserRound:kind==='offer'?Mail:kind==='control'?ShieldCheck:Minus;return <span className={'badge '+kind}><Icon size={12}/>{labels[kind]||kind}</span>}
+import {ArrowUpRight} from 'lucide-react';
+export function Badge({decision}:{decision:Decision}){const kind=decision.control_group?'control':decision.status==='approved'?'approved':decision.action;const labels:Record<string,string>={control:'Control group',approved:'Approved',offer:'Offer',service:'Service first',wait:'Contact limit',human_review:'Human review',none:'No contact'};return <span className={'badge '+kind}>{labels[kind]||kind}</span>}
 export function Metric({label,value,hint}:{label:string;value:ReactNode;hint?:string}){return <div className="metric"><span>{label}</span><strong>{value}</strong>{hint&&<small>{hint}</small>}</div>}
 export function PageTitle({eyebrow,title,children}:{eyebrow:string;title:string;children?:ReactNode}){return <div className="page-title"><div><div className="eyebrow">{eyebrow}</div><h1>{title}</h1></div>{children}</div>}
 export function Panel({title,subtitle,children,action}:{title:string;subtitle?:string;children:ReactNode;action?:ReactNode}){return <section className="panel"><div className="panel-heading"><div><h2>{title}</h2>{subtitle&&<p>{subtitle}</p>}</div>{action}</div>{children}</section>}
