@@ -1,9 +1,10 @@
 import {isEnglish,toneLabel,englishProductDescriptions} from '../communication';
 import {useCustomerDecision} from './CustomerDecisionContext';
 import {useChannelPolicy} from './ChannelPolicy';
-import {useEffect, useState} from 'react';
+import {useEffect, useRef, useState} from 'react';
 import {Sparkles, RefreshCw, ArrowUpRight, Check, ChevronDown, ShieldCheck} from 'lucide-react';
 import {request, useApi, channel, eur} from '../api';
+import {STATIC_MODE} from '../staticApi';
 import type {Customer,Catalog,Product} from '../types';
 import {destination,productDescriptions} from './productPresentation';
 import OutreachWorkbench from './OutreachWorkbench';
@@ -46,6 +47,16 @@ export default function AIDecision({customer,revision,onReview,busyReview,onNews
  async function generate(){setBusy(true);setFailure('');try{await request('/customers/'+id+'/ai-nba','POST',{refresh:!!saved?.result});refreshDecision();refreshChannels()}catch(e){setFailure((e as Error).message)}finally{setBusy(false)}}
  const result=saved?.result,p=result?.proposal,mode=chosen??(status?.configured||result?.status==='validated'?'ai':'rules'),isAI=mode==='ai';
  const usable=!!result&&result.status==='validated'&&!!saved?.current;
+ // Generate automatically when the studio opens with nothing usable yet: the server caches
+ // validated results, so this only costs a model call when no current material exists.
+ const autoTried=useRef<string>('');
+ useEffect(()=>{
+  if(!isAI||!status?.configured||STATIC_MODE||busy||usable||failure)return;
+  const key=id+':'+revision;
+  if(autoTried.current===key)return;
+  autoTried.current=key;
+  generate();
+ },[isAI,status?.configured,usable,busy,failure,id,revision]);
  const productId=isAI?(usable?p?.product_id:null):customer.decision.product_id;
  const product=(isAI?result?.context.catalogue:catalog?.products)?.find(v=>v.product_id===productId);
  const action=isAI?p?.action:customer.decision.action;

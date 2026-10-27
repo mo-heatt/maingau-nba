@@ -2,7 +2,7 @@ import {isEnglish,toneLabel,englishProductDescriptions} from '../communication';
 import {STATIC_MODE} from '../staticApi';
 import GenerationStatus from './GenerationStatus';
 import {useChannelPolicy} from './ChannelPolicy';
-import {useEffect,useState} from 'react';
+import {useEffect,useRef,useState} from 'react';
 import {Mail,Phone,MessageSquare,Smartphone,Layout,RefreshCw,FileDown,Check,ChevronDown,Clock3,ArrowUpRight} from 'lucide-react';
 import {useApi,request} from '../api';
 import type {Customer,Product} from '../types';
@@ -33,6 +33,18 @@ export default function OutreachWorkbench({customer,decisionId,product,revision,
  useEffect(()=>setInterested(false),[format,decisionId]);
  useEffect(()=>{onNewsletterActive(format==='newsletter_email');return()=>onNewsletterActive(false)},[format,onNewsletterActive]);
  useEffect(()=>{if(context&&!permitted.includes(format))setFormat(permitted[0]||'')},[context,format]);
+ // Prepare the channel material automatically while nothing current exists for it: the server
+ // caches validated records, so a visit only costs a model call when generation is due.
+ const autoTried=useRef<string>('');
+ useEffect(()=>{
+  if(!context||STATIC_MODE||busy||error)return;
+  if(format==='newsletter_email'||!context.allowed_channels.includes(format))return;
+  if(record)return;
+  const key=customer.id+':'+decisionId+':'+format;
+  if(autoTried.current===key)return;
+  autoTried.current=key;
+  generate();
+ },[context,record,format,decisionId,customer.id,busy,error]);
  async function generate(){if(!context?.allowed_channels.includes(format))return;setBusy(true);setError('');try{await request('/customers/'+customer.id+'/outreach','POST',{decision_id:decisionId,channel:format,refresh:!!record});setTick(v=>v+1)}catch(e){setError((e as Error).message)}finally{setBusy(false)}}
  async function interest(){if(!record)return;try{await request('/customers/'+customer.id+'/outreach/'+record.id+'/response','POST',{response:'interested'});setInterested(true)}catch(e){setError((e as Error).message)}}
  const candidates=isService?([['agent_callback','Call',Phone],['email','Email',Mail],['sms','SMS',MessageSquare],['app_push','Push',Smartphone],['portal_popup','Web note',Layout],['newsletter_email','Newsletter',Mail]] as const):formats;

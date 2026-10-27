@@ -129,7 +129,7 @@ def _generate(engine,cid,article_id,mode,decision_id=None,refresh=False):
         if communication.language(gate['language'])=='de' and gate['tone']=='du' and re.search(r'\b(?:Sie|Ihnen)\b',text):errors.append('Use Du tone')
         return errors
     try:
-        packet={'language':communication.language(gate['language']),'mode':mode,'tone':gate['tone'],'article':article,'facts':facts,'quote':q if mode=='offer' else None,'validated_proposal':proposal}
+        packet={'language':communication.language(gate['language']),'output_language':communication.name(gate['language']),'mode':mode,'tone':gate['tone'],'article':article,'facts':facts,'quote':q if mode=='offer' else None,'validated_proposal':proposal}
         copy,_=ai_nba.complete(Copy,PROMPT+'\n'+communication.instruction(gate['language'],gate['tone']),packet)
         copy=normalise_editorial_reference(copy,source)
         errors=validate(copy)

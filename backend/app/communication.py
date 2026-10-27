@@ -10,6 +10,10 @@ def language(value):
     return code
 
 
+def name(value):
+    return {'de':'German','en':'English'}[language(value)]
+
+
 def instruction(value,tone):
     code=language(value)
     if code=='en':
