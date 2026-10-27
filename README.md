@@ -6,7 +6,7 @@ React + TypeScript on the frontend, FastAPI + SQLite on the backend. The rules e
 
 ## Architecture and source data
 
-See [System architecture and data flows](docs/architecture.md) for diagrams of source ingestion, Customer 360, AI NBA selection, offer/call-kit generation, newsletter, caching and feedback. The Developer area's **How it works** also distinguishes the running MVP from the production target.
+See [System architecture and data flows](docs/architecture.md) for diagrams of source ingestion, Customer 360, AI NBA selection, offer/call-kit generation, newsletter, caching and feedback. The Developer area's **How it works** also distinguishes the running MVP from the production target. An animated walkthrough of the backend data flow is served at https://mo-heatt.github.io/maingau-nba/architecture/ ([source](docs/architecture/index.html)).
 
 - **Recorded consent** comes from the original `consent_status` rows in SQLite. It is read only and shown separately from **Action availability**. A control group, missing app, contact cap or stale AI decision can block an action without changing consent.
 - **Recommended versus available:** a service callback is a recommendation, not an exclusive channel. Other consented channels can generate the same service action; the UI labels them as alternatives. Changing the channel does not change the NBA or turn service help into sales.
