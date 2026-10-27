@@ -1,6 +1,7 @@
 import {useEffect,useState} from 'react';
 import {Code2} from 'lucide-react';
 import Sidebar from './components/Sidebar';
+import Breadcrumbs from './components/Breadcrumbs';
 import ThemePicker from './components/ThemePicker';
 import Overview from './pages/Overview';
 import Recommendations from './pages/Recommendations';
@@ -21,9 +22,9 @@ export default function App(){
  const select=(id:string)=>{setSelected(id);const p=new URLSearchParams(view==='customers'?location.hash.split('?')[1]||'':'');p.set('customer',id);p.delete('tab');location.hash='customers?'+p.toString();setView('customers')};
  const changed=()=>setRevision(v=>v+1);
  return <div className="app"><a className="skip-link" href="#main-content" onClick={e=>{e.preventDefault();document.getElementById('main-content')?.focus();document.getElementById('main-content')?.scrollIntoView()}}>Skip to main content</a><Sidebar view={view==='method'?'overview':view} onNavigate={go} onDeveloper={()=>{setDeveloperTab('connection');setDeveloperOpen(true)}}/><div className="main-shell">
-  <header className="topbar"><div className="breadcrumb">Workspace <span>/</span> <b>{view==='customers'?(selected?'Customer 360°':'Customers'):titles[view]}</b></div><div className="topbar-right"><button className="button mobile-developer-entry" aria-label="Open Developer area" onClick={()=>{setDeveloperTab('connection');setDeveloperOpen(true)}}><Code2 size={15}/></button><ThemePicker/></div></header>
+  <header className="topbar"><Breadcrumbs view={view} title={titles[view]} customerId={selected}/><div className="topbar-right"><button className="button mobile-developer-entry" aria-label="Open Developer area" onClick={()=>{setDeveloperTab('connection');setDeveloperOpen(true)}}><Code2 size={15}/></button><ThemePicker/></div></header>
   {toast&&<div className="toast" role="status"><span>{toast}</span><button onClick={()=>setToast('')}>Dismiss</button></div>}
-  <main id="main-content" tabIndex={-1}>{(view==='overview'||view==='method')&&<Overview revision={revision} onGo={go} onSelect={select}/>} {view==='recommendations'&&<Recommendations revision={revision} onSelect={select}/>} {view==='service'&&<ServiceFirst revision={revision} onSelect={select}/>} {view==='marketing'&&<Marketing revision={revision} onSelect={select} onChanged={changed} notify={setToast}/>} {view==='customers'&&<Customers id={selected} onSelect={select} onBack={()=>go('customers')} revision={revision} onChanged={changed} notify={setToast}/>}</main>
+  <main id="main-content" tabIndex={-1}>{(view==='overview'||view==='method')&&<Overview revision={revision} onGo={go} onSelect={select}/>} {view==='recommendations'&&<Recommendations revision={revision} onSelect={select}/>} {view==='service'&&<ServiceFirst revision={revision} onSelect={select}/>} {view==='marketing'&&<Marketing revision={revision} onSelect={select} onChanged={changed} notify={setToast}/>} {view==='customers'&&<Customers id={selected} onSelect={select} revision={revision} onChanged={changed} notify={setToast}/>}</main>
   <footer><span>MAINGAU NBA Console</span><span>{health?.customers??750} synthetic customers · Snapshot 30 Sep 2026 · Estimates, not guaranteed results</span></footer>
  </div><DeveloperArea open={developerOpen||view==='method'} initialTab={view==='method'?'architecture':developerTab} onClose={()=>{setDeveloperOpen(false);if(view==='method'){location.hash='overview';setView('overview')}}} onConfigured={changed} revision={revision}/></div>
 }

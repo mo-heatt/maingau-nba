@@ -32,7 +32,7 @@ For **MG-100126**, newsletter, portal/app personalisation and profiling are gran
 | **Offer studio** | Engine/AI comparison, concrete demo product quotes, branded HTML email, call scripts, web, push and SMS material. |
 | **Developer area** | Hessian key connection, How it works, backend status and API documentation. Open it from the navigation footer or by double-clicking the logo. |
 
-The header theme control has three modes: **sun = light**, **monitor = system**, **moon = dark**. Manual choices persist; system mode follows the device. Navigation can collapse into an icon rail.
+The header theme control has three modes: **sun = light**, **monitor = system**, **moon = dark**. Manual choices persist; system mode follows the device. Navigation can collapse into an icon rail; its left yellow position marker and softer cursor marker follow the original workspace design. The circular collapse control appears at the right edge on hover and is keyboard accessible. Breadcrumbs appear once in the header; the Customers link returns to the list with its filters preserved.
 
 ## Run locally
 
