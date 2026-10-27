@@ -15,10 +15,10 @@
 .sidebar .brand-word { overflow: hidden; max-width: 145px; opacity: 1; transition: max-width 250ms ease, opacity 150ms ease; }
 .sidebar .brand-mark { display: inline-grid; place-items: center; width: 24px; height: 24px; margin: 0; flex-shrink: 0; color: #002657; line-height: 0; vertical-align: middle; }
 .sidebar .brand-mark svg { display: block; width: 16px; height: 16px; }
-.sidebar .brand-sub { display: block; white-space: nowrap; overflow: hidden; margin: 12px 10px 40px; font-size: 8px; letter-spacing: 2px; transition: opacity 150ms ease; }
+.sidebar .brand-sub { display: block; white-space: nowrap; overflow: hidden; margin: 12px 10px 40px; font-size: 10px; letter-spacing: 2px; transition: opacity 150ms ease; }
 .sidebar .nav-label { display: block; margin: 0 10px 14px; white-space: nowrap; overflow: hidden; }
 .sidebar nav { position: relative; width: max-content; max-width: 100%; padding-left: 16px; padding-right: 0; display: flex; flex-direction: column; align-items: flex-start; gap: 6px; margin: 0; }
-.sidebar .nav-item { width: max-content; max-width: 100%; min-height: 42px; gap: 10px; padding: 11px 12px; margin: 0; font-size: 12px; border-radius: 10px; position: relative; justify-content: flex-start; color: #b9c9df; transition: background-color 160ms ease, color 160ms ease, transform 160ms ease; }
+.sidebar .nav-item { width: max-content; max-width: 100%; min-height: 42px; gap: 10px; padding: 11px 12px; margin: 0; font-size: 13.5px; border-radius: 10px; position: relative; justify-content: flex-start; color: #b9c9df; transition: background-color 160ms ease, color 160ms ease, transform 160ms ease; }
 .sidebar .nav-item:hover { background: var(--rail-hover); color: #fff; transform: translateX(2px); }
 .sidebar .nav-item:active { transform: scale(.97); }
 .sidebar .nav-item svg { width: 19px; flex-shrink: 0; }
