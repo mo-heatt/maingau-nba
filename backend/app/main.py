@@ -243,6 +243,7 @@ def offer_response(cid:str,mid:int,body:OfferResponse):
 DIST=db.ROOT/'frontend/dist'
 if (DIST/'assets').exists():app.mount('/assets',StaticFiles(directory=DIST/'assets'),name='assets')
 if (DIST/'fonts').exists():app.mount('/fonts',StaticFiles(directory=DIST/'fonts'),name='fonts')
+if (DIST/'brand').exists():app.mount('/brand',StaticFiles(directory=DIST/'brand'),name='brand')
 @app.get('/',include_in_schema=False)
 def home():
     if not (DIST/'index.html').exists():raise HTTPException(503,'Run npm run build in frontend, or use the Vite dev server on port 5173.')
