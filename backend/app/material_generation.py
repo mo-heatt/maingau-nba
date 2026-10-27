@@ -6,11 +6,16 @@ MAX_ATTEMPTS=3  # Initial generation plus at most two repairs.
 
 def generate(schema,prompt,packet,validate):
     result={'material':None,'errors':[],'error':None,'usage':[],'attempts':[],'max_attempts':MAX_ATTEMPTS,'status':'failed'}
+    language=packet.get('language') if isinstance(packet,dict) else None
+    language_name={'de':'German','en':'English'}.get(str(language).lower() if language else '')
     for number in range(1,MAX_ATTEMPTS+1):
         request=dict(packet)
+        if language_name:request['required_output_language']=language_name
         if result['material'] is not None:
-            request.update(previous_material=result['material'].model_dump(),errors_to_fix=result['errors'],
-                           repair_instruction='Correct every listed error in the complete response. Preserve verified facts and the selected NBA; do not change product, channel, tone or prices.')
+            repair='Correct every listed error in the complete response.'
+            if language_name:repair+=' Rewrite the COMPLETE response in '+language_name+'; every headline, subject, sentence and list item must be '+language_name+'. Keep recognised product names unchanged.'
+            repair+=' Preserve verified facts and the selected NBA; do not change product, channel, language, tone or prices.'
+            request.update(previous_material=result['material'].model_dump(),errors_to_fix=result['errors'],repair_instruction=repair)
         try:
             material,usage=ai_nba.complete(schema,prompt,request)
         except ai_nba.ProviderError as exc:
@@ -29,7 +34,9 @@ def generate(schema,prompt,packet,validate):
 def explain(errors,tone):
     explanations=[]
     for error in errors:
-        if 'tone' in error or error in ('Use Du tone','Use Sie tone'):
+        if 'customer language' in error:
+            title='Wrong customer language';message='The draft was not written in the customer’s preferred language. Regenerate the text in that language.'
+        elif 'tone' in error or error in ('Use Du tone','Use Sie tone'):
             title='Mixed forms of address'
             message=f'The customer uses {"Du" if tone=="du" else "Sie"}, but parts of the draft use the other form of address.'
         elif 'Evidence' in error or 'cite' in error:

@@ -22,7 +22,8 @@ def test_service_sms_can_be_generated_without_changing_nba(engine,provider):
     assert result['quote']['product_id']=='P-SV-01'
     assert result['decision_id']==decision['id']
     assert len(result['material']['body'])<=160
-    assert 'Anliegen' in result['material']['body'] and 'Angebot' not in result['material']['body']
+    assert result['language']=='en' and 'issue' in result['material']['body']
+    assert 'Anliegen' not in result['material']['body']
     assert ai_nba.latest(engine,cid)['result']['id']==decision['id']
 
 

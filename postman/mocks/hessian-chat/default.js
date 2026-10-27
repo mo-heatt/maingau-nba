@@ -1,7 +1,7 @@
 // Local contract fixture; never a production AI fallback.
 const http = require('http');
 http.createServer(async (req, res) => {
-  if(req.method==='GET'&&req.url.endsWith('/v1/models')){const denied=req.headers.authorization==='Bearer rejected-key';res.writeHead(denied?401:200,{'Content-Type':'application/json'});res.end(JSON.stringify(denied?{error:'unauthorized'}:{data:[{id:'fixture'}]}));return;}
+  if(req.method==='GET'&&req.url.endsWith('/v1/models')){const denied=req.headers.authorization==='Bearer rejected-key'?401:req.headers.authorization==='Bearer forbidden-key'?403:0;res.writeHead(denied||200,{'Content-Type':'application/json'});res.end(JSON.stringify(denied?{error:'unauthorized'}:{data:[{id:'fixture'}]}));return;}
 
   if (req.method !== 'POST' || !req.url.endsWith('/v1/chat/completions')) {
     res.writeHead(501, {'Content-Type':'application/json'}); res.end('{}'); return;
@@ -12,12 +12,14 @@ http.createServer(async (req, res) => {
   if(body.model==='timeout'){await new Promise(r=>setTimeout(r,1000))}
   const source=JSON.parse(body.messages[1].content), packet=source.context||source;
   const facts=packet.facts||source.facts||[];
+  const english=(source.language||packet.policy?.language)==='en';
   const evidence=facts.slice(0,2).map(f=>({fact_id:f.id,quote:f.quote}));
   if(body.model==='bad-evidence')evidence[0]={fact_id:'F999999',quote:'invented'};
   let result;
-  if(body.messages[0].content.includes('Write a finished German MAINGAU newsletter')){
-    const quote=source.quote; const quoted=quote?.target?.name?(' Vorschlag: '+quote.target.name+(quote.target.monthly_eur!==undefined?(' für '+quote.target.monthly_eur+' EUR im Monat.') :'.')):'';
+  if(body.messages[0].content.includes('MAINGAU newsletter')){
+    const quote=source.quote; const quoted=quote?.target?.name?((english?' Proposal: ':' Vorschlag: ')+quote.target.name+(quote.target.monthly_eur!==undefined?((english?' for ':' für ')+quote.target.monthly_eur+(english?' EUR per month.':' EUR im Monat.')) :'.')):'';
     result={headline:'Ein nützlicher Hinweis',subject:'Ein Update von MAINGAU',body:'Hallo! Hier ist ein hilfreicher Hinweis aus unserem Ratgeber.'+quoted,benefit_points:['Mehr im Originalbeitrag lesen'],evidence:facts.filter(f=>f.id==='N1').map(f=>({fact_id:f.id,quote:f.quote}))};
+    if(english)result={...result,headline:'A helpful update',subject:'An update from MAINGAU',body:'Here is a helpful update from our guide.'+quoted,benefit_points:['Read the original article for details']};
   } else if(body.messages[0].content.includes('Create MAINGAU outreach material')){
     const call=['outbound_call','agent_callback'].includes(source.channel);
     result={headline:'Ein passender nächster Schritt',subject:['email','newsletter_email'].includes(source.channel)?'Ein konkretes Angebot':null,
@@ -29,8 +31,16 @@ http.createServer(async (req, res) => {
       result={...result,headline:'Gemeinsam das Anliegen klären',subject:result.subject?(formal?'Hilfe zu Ihrem Anliegen':'Hilfe zu deinem Anliegen'):null,body:formal?'Wir helfen Ihnen gern, Ihr offenes Anliegen zu klären.':'Wir helfen dir gern, dein offenes Anliegen zu klären.',benefit_points:['Unterstützung beim offenen Anliegen'],discovery_questions:call?[formal?'Was ist Ihnen bei der Klärung wichtig?':'Was ist dir bei der Klärung wichtig?']:[],offer_pitch:call?(formal?'Wir klären gemeinsam Ihr Anliegen.':'Wir klären gemeinsam dein Anliegen.'):null};
       if(call)result.body='Offenes Serviceanliegen; nächster Schritt ist die gemeinsame Klärung.';
     }
-  } else if(body.messages[0].content.includes('German MAINGAU email')){
-    result={subject:'Ein passender nächster Schritt',body:'Guten Tag, wir möchten gemeinsam eine passende Option prüfen.',evidence};
+    if(english){
+      const service=source.proposal?.action==='service';
+      result={...result,headline:service?'Help with your open issue':'A suitable next step',subject:result.subject?'A message from MAINGAU':null,
+        body:body.model==='bad-price'?'This costs €99.99.':call?'The customer has an open issue requiring clarification.':service?'We can help clarify your open issue.':'A suitable option based on the available information.',benefit_points:[service?'Help with your issue':'A suitable data package'],
+        opening:call?'Hello, is now a convenient time to talk?':null,discovery_questions:call?['Could you explain what happened?']:[],offer_pitch:call?'We can review the available information together.':null,
+        objections:call?[{concern:'I need time to think.',response:'Of course, take your time.'}]:[],closing:call?'Would you like to discuss the next step?':null};
+      if(body.model==='wrong-language')result.body='Wir helfen dir gerne mit deinem offenen Anliegen.';
+    }
+  } else if(body.messages[0].content.includes('MAINGAU email draft')){
+    result=english?{subject:'A suitable next step',body:'Hello, we would like to review a suitable option with you.',evidence}:{subject:'Ein passender nächster Schritt',body:'Guten Tag, wir möchten gemeinsam eine passende Option prüfen.',evidence};
   } else {
     const policy=packet.policy;
     let action=policy.forced_action||'offer';
