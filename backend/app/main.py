@@ -18,6 +18,7 @@ from .insights import customer_insights
 from .email_template import for_draft
 from .overview import overview as overview_data
 from .radar import radar as radar_data
+from .timeline import timeline as timeline_data
 
 @asynccontextmanager
 async def lifespan(app):
@@ -111,6 +112,9 @@ def customer_products(cid:str):return call(portfolio.products,engine(),cid)
 
 @app.post('/api/customers/{cid}/external-products')
 def external_product(cid:str,body:ExternalProduct):return call(portfolio.add_external,engine(),cid,body.model_dump())
+
+@app.get('/api/customers/{cid}/timeline')
+def customer_timeline(cid:str):return call(timeline_data,engine(),cid)
 
 @app.get('/api/customers/{cid}/insights')
 def insights(cid:str):return call(customer_insights,engine(),cid)

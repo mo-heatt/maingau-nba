@@ -1,7 +1,7 @@
 import {useEffect,useLayoutEffect,useRef,useState} from 'react';
 import type {CSSProperties,PointerEvent} from 'react';
 import {Code2,Compass,Radar,ChevronLeft,ChevronRight,LayoutDashboard,SlidersHorizontal,UsersRound} from 'lucide-react';
-const items=[['overview','Overview',Compass],['recommendations','Recommendations',LayoutDashboard],['service','Service first',Radar],['marketing','Marketing',SlidersHorizontal],['customers','Customers',UsersRound]] as const;
+const items=[['overview','Overview',Compass],['recommendations','Recommendations',LayoutDashboard],['customers','Customer 360°',UsersRound],['service','Service first',Radar],['marketing','Marketing',SlidersHorizontal]] as const;
 type View=typeof items[number][0];
 function initialCollapsed(){try{const saved=localStorage.getItem('maingau-navigation-collapsed');if(saved!==null)return saved==='true'}catch{/* Keep navigation usable without storage. */}return window.matchMedia('(max-width: 950px)').matches}
 export default function Sidebar({view,onNavigate,onDeveloper}:{view:View;onNavigate:(view:View)=>void;onDeveloper:()=>void}){

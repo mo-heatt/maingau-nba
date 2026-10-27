@@ -7,6 +7,12 @@ from .engine.scoring import score_customer
 from .engine.arbitration import arbitrate
 
 
+def label(d):
+    """Offer plus channel, so a channel change is visible too."""
+    ch=(d.get('pick') or {}).get('channel_label') or (d.get('pick') or {}).get('channel')
+    return d['title']+(' · '+ch if ch and d['action']=='offer' else '')
+
+
 def preview(engine):
     path=db.ROOT/'data/event_stream_2026-10-01.jsonl'
     if not path.exists():return {'available':False,'changes':[]}
@@ -21,5 +27,5 @@ def preview(engine):
         before=decide();note=apply_event(s,event,engine.P)
         if note is None:unhandled[event['event_type']]+=1;continue
         after=decide();key=lambda d:(d['action'],(d.get('pick') or {}).get('offer'),(d.get('pick') or {}).get('channel'))
-        rows.append({'event_id':event['event_id'],'customer_id':cid,'type':event['event_type'],'occurred_at':event['occurred_at'],'ingested_at':event['ingested_at'],'note':note,'before':before['title'],'after':after['title'],'changed':key(before)!=key(after)})
-    return {'available':True,'mode':'dry_run','source_events':len(events),'duplicates_skipped':duplicates,'handled':len(rows),'changed':sum(r['changed'] for r in rows),'unhandled_types':dict(unhandled),'changes':rows,'note':'Preview only. Current customer state is not changed; unhandled event types are listed explicitly.'}
+        rows.append({'event_id':event['event_id'],'customer_id':cid,'type':event['event_type'],'occurred_at':event['occurred_at'],'ingested_at':event['ingested_at'],'note':note,'before':label(before),'after':label(after),'changed':key(before)!=key(after)})
+    return {'available':True,'mode':'dry_run','source_events':len(events),'duplicates_skipped':duplicates,'handled':len(rows),'changed':sum(r['changed'] for r in rows),'unhandled_types':dict(unhandled),'changes':rows,'note':'Preview only. Current customer state is not changed; event types that never change a decision are listed below the table.'}
