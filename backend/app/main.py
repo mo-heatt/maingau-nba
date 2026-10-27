@@ -18,6 +18,7 @@ from .insights import customer_insights
 from .email_template import for_draft
 from .overview import overview as overview_data
 from .radar import radar as radar_data
+from . import orchestration
 from .timeline import timeline as timeline_data
 
 @asynccontextmanager
@@ -157,6 +158,10 @@ def override(cid:str,body:Override):return call(engine().override,cid,body.offer
 
 @app.get('/api/marketing')
 def marketing():return engine().marketing()
+
+@app.post('/api/marketing/preview')
+def marketing_preview(body:Settings):
+    data=body.model_dump();data.pop('version');return call(orchestration.preview,engine(),data)
 
 @app.get('/api/replay')
 def replay():return preview(engine())
