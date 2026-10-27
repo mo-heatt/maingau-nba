@@ -27,7 +27,7 @@ def test_every_imported_consent_matches_workbook(engine):
         source=[{k:serial(v) for k,v in zip(headers,row) if k} for row in rows]
     finally:wb.close()
     with db.connect() as c:
-        stored=[json.loads(row[0]) for row in c.execute("SELECT payload FROM source_records WHERE source='consent_status' ORDER BY id")]
+        stored=[json.loads(row[0]) for row in c.execute("SELECT payload FROM source_records WHERE source='consent_status' AND origin='workbook' ORDER BY id")]
     assert source==stored
     for row in source:
         consent=engine.customer(row['customer_id'])['consent'][row['consent_type']]

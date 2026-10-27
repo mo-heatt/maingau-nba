@@ -18,7 +18,10 @@ def compare(workbook,database):
     finally:wb.close()
     connection=sqlite3.connect(Path(database).resolve().as_uri()+'?mode=ro',uri=True)
     try:
-        actual=[json.loads(r[0]) for r in connection.execute("SELECT payload FROM source_records WHERE source='consent_status' ORDER BY id")]
+        # Uploaded customers (origin='upload') are not in the workbook; older databases have no origin column yet.
+        uploads='origin' in {r[1] for r in connection.execute('PRAGMA table_info(source_records)')}
+        sql="SELECT payload FROM source_records WHERE source='consent_status'"+(" AND origin='workbook'" if uploads else '')+' ORDER BY id'
+        actual=[json.loads(r[0]) for r in connection.execute(sql)]
     finally:connection.close()
     canonical=lambda rows:sorted(json.dumps(row,sort_keys=True,ensure_ascii=False) for row in rows)
     return {'workbook_rows':len(expected),'database_rows':len(actual),'equal':canonical(expected)==canonical(actual)}

@@ -7,6 +7,7 @@ This describes the running MVP, not a proposed production platform. Snapshot: 30
 ```mermaid
 flowchart LR
     XLSX[Original Excel workbook] -->|Initial import only| SQL[(SQLite source_records)]
+    UPLOAD[Customer file upload CSV/JSON] -->|Checked, scored, then appended| SQL
     SQL -->|Startup load and snapshot masking| SNAP[Read-only CustomerSnapshot]
     SNAP --> ENG[EngineService: signals, scoring and policy]
     ENG --> API[FastAPI REST API]
@@ -21,6 +22,18 @@ flowchart LR
 The workbook is imported into `source_records` once, when that table is empty. Subsequent requests read the SQLite-backed snapshot, not Excel. Replacing the workbook does **not** replace the database automatically. A changed dataset requires an explicit migration or a separate fresh database, never deleting the working database to repair a UI misunderstanding.
 
 `load_tables()` reconstructs tables at startup and applies observation-time masking: late charge records are excluded and service resolutions after the snapshot are treated as not yet resolved. `build_state()` joins by `customer_id`, derives features and creates one profile per customer. `CustomerSnapshot` stores private copies and returns detached records. Its public mapping has no assignment method. SQLite triggers reject updates/deletes to imported source rows. These are accidental-write safeguards, not an access-control boundary against an administrator who can alter the schema.
+
+### Customer import
+
+**Import customer** in the directory creates exactly one new customer from a CSV or JSON file (`POST /api/customers/import`, templates at `/api/customers/import/template?format=csv|json`). The flow:
+
+1. **Check.** Every problem in the file is reported at once; nothing is written. Existing IDs are rejected, never overwritten. A missing consent is recorded as `not_given`, never as granted. Newsletter consent without a double opt-in date leaves the newsletter channel blocked.
+2. **Score before storing.** The server builds a candidate engine with the new rows and evaluates the customer. Only if that succeeds are the rows committed, because stored source rows can never be removed again. The preview shows the engine's next action.
+3. **Append.** One `customer_master`, one `customer_value` and six `consent_status` rows are inserted with `origin='upload'` (workbook rows keep `origin='workbook'`), plus a `customer_imported` audit entry with the file's SHA-256. The candidate engine then replaces the running one.
+
+A new customer has no contracts: margin, costs and CLV start at 0, churn at the portfolio median (`model_version: new_customer_default_v1`). The consent integrity check compares only `origin='workbook'` rows with the workbook.
+
+**Known limitation:** the upload records a new customer's *initial* consents with `source: data_import`, without authentication or consent evidence. It cannot change any existing consent. In production this path needs the same safeguards as a consent writer below.
 
 Consent has no edit endpoint in this MVP. A future consent writer needs authenticated events, evidence, effective timestamps, audit, a new snapshot version and cache invalidation. AI and offer generation have no authority to change source consent.
 

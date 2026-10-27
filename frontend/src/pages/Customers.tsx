@@ -5,5 +5,5 @@ export default function Customers({id,onSelect,onBack,revision,onChanged,notify}
  const directoryScroll=useRef(0);
  useLayoutEffect(()=>{window.scrollTo({top:id?0:directoryScroll.current,behavior:'instant'})},[id]);
  const select=(next:string)=>{directoryScroll.current=window.scrollY;onSelect(next)};
- return <><div hidden={id!==null}><CustomerDirectory active={id===null} revision={revision} onSelect={select}/></div>{id&&<Customer360 key={id} id={id} onBack={onBack} revision={revision} onChanged={onChanged} notify={notify}/>}</>
+ return <><div hidden={id!==null}><CustomerDirectory active={id===null} revision={revision} onSelect={select} onChanged={onChanged} notify={notify}/></div>{id&&<Customer360 key={id} id={id} onBack={onBack} revision={revision} onChanged={onChanged} notify={notify}/>}</>
 }

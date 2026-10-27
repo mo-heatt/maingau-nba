@@ -42,8 +42,12 @@ def initialize():
         BEGIN SELECT RAISE(ABORT, 'Imported source records are immutable; use an audited source migration'); END;
         CREATE TRIGGER IF NOT EXISTS source_records_no_delete BEFORE DELETE ON source_records
         BEGIN SELECT RAISE(ABORT, 'Imported source records are immutable; use an audited source migration'); END;
-        PRAGMA user_version=6;
+        PRAGMA user_version=7;
         ''')
+        # Uploaded customers are appended next to the workbook rows; origin keeps the two apart.
+        # ADD COLUMN with a default leaves existing rows untouched, so the immutability triggers still hold.
+        if 'origin' not in {r['name'] for r in c.execute('PRAGMA table_info(source_records)')}:
+            c.execute("ALTER TABLE source_records ADD COLUMN origin TEXT NOT NULL DEFAULT 'workbook'")
         c.execute('INSERT OR IGNORE INTO settings VALUES (1,1,?)',(json.dumps({'contact_cap_30d':3,'min_dclv_eur':0,'offers_off':[],'channels_off':[],'priorities':{},'tone_mode':'mirror','content_approvals':{}}),))
 
 def audit(c,kind,payload,customer_id=None):
