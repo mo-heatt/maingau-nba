@@ -123,13 +123,19 @@ flowchart TD
     SAVE --> PREVIEW[Preview / download unsent email or inspect call kit]
 ```
 
-Email uses German copy inside the branded HTML template. Call kits separate the internal brief from spoken opening, discovery, pitch, objections and closing. Portal, push and SMS use their own format and length checks. At most **one draft plus two copy repairs** run; provider failure stops the run. Copy repair does not recalculate the NBA or weaken validation. Demo tariffs and availability still require verification. There is no send connector.
+Email uses the customer’s preferred English or German language inside the branded HTML template. Call kits separate the internal brief from spoken opening, discovery, pitch, objections and closing. Portal, push and SMS use their own format and length checks. At most **one draft plus two copy repairs** run; provider failure stops the run. Copy repair does not recalculate the NBA or weaken validation. Demo tariffs and availability still require verification. There is no send connector.
 
 ## Flow: newsletter and feedback
 
 Editorial newsletter generation checks newsletter consent, double opt-in, contact limit, control group and selected source/purpose independently of the sales proposal. A source-led product offer must also satisfy its product/personalisation rules. The selected article's date and evidence are preserved; old guidance is not presented as breaking news.
 
 Demo responses (`interested` / `not_now`) are audit events. Reviews and overrides are separate records; an override must pass current gates. They do not rewrite source consent, create contracts, deliver messages or train the model online. Historical acceptance estimates are computed from supplied, sufficiently mature action history; live causal uplift learning is future work.
+
+## Customer language contract
+
+The imported `preferred_contact_language` is authoritative for generated communication (supported: `de`, `en`). The operator interface stays English. `communication.py` normalises the language, supplies an explicit writer instruction and conservatively checks common wrong-language output; it is a heuristic, not a complete language detector. German source records and product names never select the writing language. Du/Sie validation applies only to German; English uses informal or professional register.
+
+Language travels through AI email generation, outreach and newsletters, saved material metadata, HTML `lang` and fixed copy, and frontend offer labels. Currency claims are checked in both prefix (`€14.99`) and suffix (`14,99 €`) forms. Copy repair preserves language and retains the existing attempt bound. Context/material fingerprints include the communication version and language. Legacy German materials are not current for English customers, and generation checks remain server-side. Source preferences are not edited.
 
 ## Caching and invalidation
 
