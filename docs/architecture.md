@@ -2,6 +2,24 @@
 
 This describes the running MVP, not a proposed production platform. Snapshot: 30 September 2026. FastAPI owns the rules, data and model calls; React renders results and starts explicit operations. There is no automatic delivery or background retraining.
 
+## Visual walkthrough
+
+An interactive, animated presentation of how a request becomes a decision lives at [`docs/architecture/index.html`](architecture/index.html). It is served by GitHub Pages at **https://mo-heatt.github.io/maingau-nba/architecture/** — scroll to follow the request flow, the deterministic engine, the evidence-checked LLM layer and the guarantees wired between them. The frames below are snapshots of that walkthrough.
+
+![Inside the engine](architecture/screens/01-hero.png)
+
+![Request flow — one request, one engine](architecture/screens/02-request-flow.png)
+
+![Decision engine — deterministic by design](architecture/screens/03-decision-engine.png)
+
+![LLM mechanics — AI on top, never in charge](architecture/screens/04-llm-mechanics.png)
+
+![Features you can open live](architecture/screens/05-features.png)
+
+![Caching — fingerprints, not hope](architecture/screens/06-caching.png)
+
+![Delivery — ship loop](architecture/screens/07-delivery.png)
+
 ## Runtime and storage
 
 ```mermaid
